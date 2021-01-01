@@ -6,6 +6,7 @@ using Nop.Core.Domain.Localization;
 using Nop.Core.Domain.Media;
 using Nop.Core.Domain.Orders;
 using Nop.Core.Domain.Stores;
+using Nop.Core.Domain.Topics;
 using Nop.Plugin.Api.DTO.Categories;
 using Nop.Plugin.Api.DTO.Images;
 using Nop.Plugin.Api.DTO.Languages;
@@ -17,6 +18,7 @@ using Nop.Plugin.Api.DTO.Products;
 using Nop.Plugin.Api.DTO.ShoppingCarts;
 using Nop.Plugin.Api.DTO.SpecificationAttributes;
 using Nop.Plugin.Api.DTO.Stores;
+using Nop.Plugin.Api.DTOs.Topics;
 using Nop.Plugin.Api.MappingExtensions;
 using Nop.Plugin.Api.Services;
 //using Nop.Plugin.Api.Services;
@@ -30,6 +32,7 @@ using Nop.Services.Orders;
 using Nop.Services.Security;
 using Nop.Services.Seo;
 using Nop.Services.Stores;
+using Nop.Services.Topics;
 
 namespace Nop.Plugin.Api.Helpers
 {
@@ -55,6 +58,7 @@ namespace Nop.Plugin.Api.Helpers
         private readonly IStoreMappingService _storeMappingService;
         private readonly IStoreService _storeService;
         private readonly IUrlRecordService _urlRecordService;
+        private readonly ITopicService _topicService;
 
         public DTOHelper(
             IProductService productService,
@@ -75,7 +79,8 @@ namespace Nop.Plugin.Api.Helpers
             IManufacturerService manufacturerService,
             IOrderService orderService,
             IProductAttributeConverter productAttributeConverter,
-            IShoppingCartService shoppingCartService)
+            IShoppingCartService shoppingCartService,
+            ITopicService topicService)
         {
             _productService = productService;
             _aclService = aclService;
@@ -96,6 +101,7 @@ namespace Nop.Plugin.Api.Helpers
             _orderService = orderService;
             _productAttributeConverter = productAttributeConverter;
             _shoppingCartService = shoppingCartService;
+            _topicService = topicService;
         }
 
         public ProductDto PrepareProductDTO(Product product)
@@ -186,6 +192,12 @@ namespace Nop.Plugin.Api.Helpers
             }
 
             return orderDto;
+        }
+
+        public TopicDto PrepareTopicDTO(Topic topic)
+        {
+            var topicDto = topic.ToDto();
+            return topicDto;
         }
 
         public ShoppingCartItemDto PrepareShoppingCartItemDTO(ShoppingCartItem shoppingCartItem)
