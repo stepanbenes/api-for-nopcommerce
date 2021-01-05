@@ -58,7 +58,6 @@ namespace Nop.Plugin.Api.Helpers
         private readonly IStoreMappingService _storeMappingService;
         private readonly IStoreService _storeService;
         private readonly IUrlRecordService _urlRecordService;
-        private readonly ITopicService _topicService;
 
         public DTOHelper(
             IProductService productService,
@@ -79,8 +78,7 @@ namespace Nop.Plugin.Api.Helpers
             IManufacturerService manufacturerService,
             IOrderService orderService,
             IProductAttributeConverter productAttributeConverter,
-            IShoppingCartService shoppingCartService,
-            ITopicService topicService)
+            IShoppingCartService shoppingCartService)
         {
             _productService = productService;
             _aclService = aclService;
@@ -101,7 +99,6 @@ namespace Nop.Plugin.Api.Helpers
             _orderService = orderService;
             _productAttributeConverter = productAttributeConverter;
             _shoppingCartService = shoppingCartService;
-            _topicService = topicService;
         }
 
         public ProductDto PrepareProductDTO(Product product)

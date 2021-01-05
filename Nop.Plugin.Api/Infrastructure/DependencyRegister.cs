@@ -7,6 +7,7 @@ using Nop.Core.Domain.Catalog;
 using Nop.Core.Domain.Common;
 using Nop.Core.Domain.Customers;
 using Nop.Core.Domain.Orders;
+using Nop.Core.Domain.Topics;
 using Nop.Core.Infrastructure;
 using Nop.Core.Infrastructure.DependencyManagement;
 using Nop.Plugin.Api.Converters;
@@ -17,6 +18,7 @@ using Nop.Plugin.Api.Maps;
 using Nop.Plugin.Api.ModelBinders;
 using Nop.Plugin.Api.Services;
 using Nop.Plugin.Api.Validators;
+using Nop.Services.Topics;
 
 namespace Nop.Plugin.Api.Infrastructure
 {
@@ -75,12 +77,16 @@ namespace Nop.Plugin.Api.Infrastructure
             builder.RegisterType<OrderFactory>().As<IFactory<Order>>().InstancePerLifetimeScope();
             builder.RegisterType<ShoppingCartItemFactory>().As<IFactory<ShoppingCartItem>>().InstancePerLifetimeScope();
             builder.RegisterType<ManufacturerFactory>().As<IFactory<Manufacturer>>().InstancePerLifetimeScope();
+            builder.RegisterType<TopicFactory>().As<IFactory<Topic>>().InstancePerLifetimeScope();
 
             builder.RegisterType<JsonPropertyMapper>().As<IJsonPropertyMapper>().InstancePerLifetimeScope();
 
             builder.RegisterType<HttpContextAccessor>().As<IHttpContextAccessor>().SingleInstance();
 
             builder.RegisterType<Dictionary<string, object>>().SingleInstance();
+
+            builder.RegisterType<TopicService>().As<ITopicService>().InstancePerLifetimeScope();
+
         }
     }
 }

@@ -55,7 +55,10 @@ namespace Nop.Plugin.Api.Infrastructure
 
                 }
             }
-           
+            services.Configure<IISServerOptions>(options =>
+            {
+                options.AllowSynchronousIO = true;
+            });
         }
 
         public void Configure(IApplicationBuilder app)
