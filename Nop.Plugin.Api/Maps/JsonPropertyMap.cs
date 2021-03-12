@@ -12,33 +12,14 @@ namespace Nop.Plugin.Api.Maps
 {
     public class JsonPropertyMapper : IJsonPropertyMapper
     {
-        private IStaticCacheManager _cacheManager;
-        private ICacheKeyService _cacheKeyService => EngineContext.Current.Resolve<ICacheKeyService>();
-        private IStaticCacheManager StaticCacheManager => _cacheManager ?? (_cacheManager = EngineContext.Current.Resolve<IStaticCacheManager>());
-
         public Dictionary<string, Tuple<string, Type>> GetMap(Type type)
         {
-            if (!StaticCacheManager.IsSet(Constants.Configurations.JsonTypeMapsPattern))
-            {
-                StaticCacheManager.Set(_cacheKeyService.PrepareKeyForDefaultCache(Constants.Configurations.JsonTypeMapsPattern), new Dictionary<string, Dictionary<string, Tuple<string, Type>>>());
-            }
-
-            var typeMaps =
-                StaticCacheManager.Get<Dictionary<string, Dictionary<string, Tuple<string, Type>>>>(_cacheKeyService.PrepareKeyForDefaultCache(Constants.Configurations.JsonTypeMapsPattern), () => null);
-
-            if (!typeMaps.ContainsKey(type.Name))
-            {
-                Build(type);
-            }
-
-            return typeMaps[type.Name];
+            // TODO: add caching
+            return Build(type);
         }
 
-        private void Build(Type type)
+        private Dictionary<string, Tuple<string, Type>> Build(Type type)
         {
-            var typeMaps =
-                StaticCacheManager.Get<Dictionary<string, Dictionary<string, Tuple<string, Type>>>>(_cacheKeyService.PrepareKeyForDefaultCache(Constants.Configurations.JsonTypeMapsPattern), () => null);
-
             var mapForCurrentType = new Dictionary<string, Tuple<string, Type>>();
 
             var typeProps = type.GetProperties();
@@ -59,10 +40,7 @@ namespace Nop.Plugin.Api.Maps
                 }
             }
 
-            if (!typeMaps.ContainsKey(type.Name))
-            {
-                typeMaps.Add(type.Name, mapForCurrentType);
-            }
+            return mapForCurrentType;
         }
     }
 }

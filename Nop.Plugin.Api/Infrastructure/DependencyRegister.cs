@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using Autofac;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Nop.Core.Configuration;
 using Nop.Core.Domain.Catalog;
 using Nop.Core.Domain.Common;
@@ -25,67 +25,65 @@ namespace Nop.Plugin.Api.Infrastructure
     [UsedImplicitly]
     public class DependencyRegister : IDependencyRegistrar
     {
-        public void Register(ContainerBuilder builder, ITypeFinder typeFinder, NopConfig config)
+        public void Register(IServiceCollection services, ITypeFinder typeFinder, AppSettings appSettings)
         {
-            RegisterPluginServices(builder);
-
-            RegisterModelBinders(builder);
+            RegisterPluginServices(services);
+            RegisterModelBinders(services);
         }
 
         public virtual int Order => short.MaxValue;
 
-        private void RegisterModelBinders(ContainerBuilder builder)
+        private void RegisterModelBinders(IServiceCollection services)
         {
-            builder.RegisterGeneric(typeof(ParametersModelBinder<>)).InstancePerLifetimeScope();
-            builder.RegisterGeneric(typeof(JsonModelBinder<>)).InstancePerLifetimeScope();
+            services.AddScoped(typeof(ParametersModelBinder<>));
+            services.AddScoped(typeof(JsonModelBinder<>));
         }
 
-        private void RegisterPluginServices(ContainerBuilder builder)
+        private void RegisterPluginServices(IServiceCollection services)
         {
             //builder.RegisterType<ClientService>().As<IClientService>().InstancePerLifetimeScope();
             //builder.RegisterType<CustomerApiService>().As<ICustomerApiService>().InstancePerLifetimeScope();
-            builder.RegisterType<CategoryApiService>().As<ICategoryApiService>().InstancePerLifetimeScope();
-            builder.RegisterType<ProductApiService>().As<IProductApiService>().InstancePerLifetimeScope();
-            builder.RegisterType<ProductCategoryMappingsApiService>().As<IProductCategoryMappingsApiService>().InstancePerLifetimeScope();
-            builder.RegisterType<ProductManufacturerMappingsApiService>().As<IProductManufacturerMappingsApiService>().InstancePerLifetimeScope();
-            builder.RegisterType<OrderApiService>().As<IOrderApiService>().InstancePerLifetimeScope();
-            builder.RegisterType<ShoppingCartItemApiService>().As<IShoppingCartItemApiService>().InstancePerLifetimeScope();
-            builder.RegisterType<OrderItemApiService>().As<IOrderItemApiService>().InstancePerLifetimeScope();
-            builder.RegisterType<ProductAttributesApiService>().As<IProductAttributesApiService>().InstancePerLifetimeScope();
-            builder.RegisterType<ProductPictureService>().As<IProductPictureService>().InstancePerLifetimeScope();
-            builder.RegisterType<ProductAttributeConverter>().As<IProductAttributeConverter>().InstancePerLifetimeScope();
-            builder.RegisterType<SpecificationAttributesApiService>().As<ISpecificationAttributeApiService>().InstancePerLifetimeScope();
-            builder.RegisterType<NewsLetterSubscriptionApiService>().As<INewsLetterSubscriptionApiService>().InstancePerLifetimeScope();
-            builder.RegisterType<ManufacturerApiService>().As<IManufacturerApiService>().InstancePerLifetimeScope();
+            services.AddScoped<ICategoryApiService, CategoryApiService>();
+            services.AddScoped<IProductApiService, ProductApiService>();
+            services.AddScoped<IProductCategoryMappingsApiService, ProductCategoryMappingsApiService>();
+            services.AddScoped<IProductManufacturerMappingsApiService, ProductManufacturerMappingsApiService>();
+            services.AddScoped<IOrderApiService, OrderApiService>();
+            services.AddScoped<IShoppingCartItemApiService, ShoppingCartItemApiService>();
+            services.AddScoped<IOrderItemApiService, OrderItemApiService>();
+            services.AddScoped<IProductAttributesApiService, ProductAttributesApiService>();
+            services.AddScoped<IProductPictureService, ProductPictureService>();
+            services.AddScoped<IProductAttributeConverter, ProductAttributeConverter>();
+            services.AddScoped<ISpecificationAttributeApiService, SpecificationAttributesApiService>();
+            services.AddScoped<INewsLetterSubscriptionApiService, NewsLetterSubscriptionApiService>();
+            services.AddScoped<IManufacturerApiService, ManufacturerApiService>();
 
-            builder.RegisterType<MappingHelper>().As<IMappingHelper>().InstancePerLifetimeScope();
-            builder.RegisterType<CustomerRolesHelper>().As<ICustomerRolesHelper>().InstancePerLifetimeScope();
-            builder.RegisterType<JsonHelper>().As<IJsonHelper>().InstancePerLifetimeScope();
-            builder.RegisterType<DTOHelper>().As<IDTOHelper>().InstancePerLifetimeScope();
+            services.AddScoped<IMappingHelper, MappingHelper>();
+            services.AddScoped<ICustomerRolesHelper, CustomerRolesHelper>();
+            services.AddScoped<IJsonHelper, JsonHelper>();
+            services.AddScoped<IDTOHelper, DTOHelper>();
 
-            builder.RegisterType<JsonFieldsSerializer>().As<IJsonFieldsSerializer>().InstancePerLifetimeScope();
+            services.AddScoped<IJsonFieldsSerializer, JsonFieldsSerializer>();
 
-            builder.RegisterType<FieldsValidator>().As<IFieldsValidator>().InstancePerLifetimeScope();
+            services.AddScoped<IFieldsValidator, FieldsValidator>();
 
-            builder.RegisterType<ObjectConverter>().As<IObjectConverter>().InstancePerLifetimeScope();
-            builder.RegisterType<ApiTypeConverter>().As<IApiTypeConverter>().InstancePerLifetimeScope();
+            services.AddScoped<IObjectConverter, ObjectConverter>();
+            services.AddScoped<IApiTypeConverter, ApiTypeConverter>();
 
-            builder.RegisterType<CategoryFactory>().As<IFactory<Category>>().InstancePerLifetimeScope();
-            builder.RegisterType<ProductFactory>().As<IFactory<Product>>().InstancePerLifetimeScope();
-            builder.RegisterType<CustomerFactory>().As<IFactory<Customer>>().InstancePerLifetimeScope();
-            builder.RegisterType<AddressFactory>().As<IFactory<Address>>().InstancePerLifetimeScope();
-            builder.RegisterType<OrderFactory>().As<IFactory<Order>>().InstancePerLifetimeScope();
-            builder.RegisterType<ShoppingCartItemFactory>().As<IFactory<ShoppingCartItem>>().InstancePerLifetimeScope();
-            builder.RegisterType<ManufacturerFactory>().As<IFactory<Manufacturer>>().InstancePerLifetimeScope();
-            builder.RegisterType<TopicFactory>().As<IFactory<Topic>>().InstancePerLifetimeScope();
+            services.AddScoped<IFactory<Category>, CategoryFactory>();
+            services.AddScoped<IFactory<Product>, ProductFactory>();
+            services.AddScoped<IFactory<Customer>, CustomerFactory>();
+            services.AddScoped<IFactory<Address>, AddressFactory>();
+            services.AddScoped<IFactory<Order>, OrderFactory>();
+            services.AddScoped<IFactory<ShoppingCartItem>, ShoppingCartItemFactory>();
+            services.AddScoped<IFactory<Manufacturer>, ManufacturerFactory>();
+            services.AddScoped<IFactory<Topic>, TopicFactory>();
 
-            builder.RegisterType<JsonPropertyMapper>().As<IJsonPropertyMapper>().InstancePerLifetimeScope();
+            services.AddScoped<IJsonPropertyMapper, JsonPropertyMapper>();
 
-            builder.RegisterType<HttpContextAccessor>().As<IHttpContextAccessor>().SingleInstance();
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddSingleton<Dictionary<string, object>>(); // TODO: ?
 
-            builder.RegisterType<Dictionary<string, object>>().SingleInstance();
-
-            builder.RegisterType<TopicService>().As<ITopicService>().InstancePerLifetimeScope();
+            services.AddScoped<ITopicService, TopicService>();
 
         }
     }

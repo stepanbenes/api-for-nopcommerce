@@ -1,4 +1,6 @@
-﻿using Nop.Core;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using Nop.Core;
 using Nop.Core.Domain.Customers;
 using Nop.Plugin.Api.Domain;
 using Nop.Services.Configuration;
@@ -31,71 +33,70 @@ namespace Nop.Plugin.Api.Infrastructure
             _webHelper = webHelper;
         }
 
-        public override void Install()
+        public override async Task InstallAsync()
         {
             //locales
 
-            _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Api", "Api plugin");
-            _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Api.Admin.Menu.ManageClients", "Manage Api Clients");
-            _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Api.Admin.Configure", "Configure Web Api");
-            _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Api.Admin.GeneralSettings", "General Settings");
-            _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Api.Admin.EnableApi", "Enable Api");
-            _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Api.Admin.EnableApi.Hint",
-                                                                 "By checking this settings you can Enable/Disable the Web Api");
+            await _localizationService.AddLocaleResourceAsync(new Dictionary<string, string>
+            {
+                { "Plugins.Api", "Api plugin"},
+            {"Plugins.Api.Admin.Menu.ManageClients", "Manage Api Clients"},
+            {"Plugins.Api.Admin.Configure", "Configure Web Api"},
+            {"Plugins.Api.Admin.GeneralSettings", "General Settings"},
+            {                "Plugins.Api.Admin.EnableApi", "Enable Api"},
+                {                "Plugins.Api.Admin.EnableApi.Hint",            "By checking this settings you can Enable/Disable the Web Api"},
+            {                    "Plugins.Api.Admin.Menu.Title", "API"},
+                {                    "Plugins.Api.Admin.Menu.Settings.Title", "Settings"},
+            {                    "Plugins.Api.Admin.Page.Settings.Title", "Api Settings"},
+            {                    "Plugins.Api.Admin.Settings.GeneralSettingsTitle", "General Settings"},
+            {                    "Plugins.Api.Admin.Edit", "Edit"},
+            {                    "Api.Categories.Fields.Id.Invalid", "Id is invalid"},
+            {                    "Api.InvalidPropertyType", "Invalid Property Type"},
+            {                    "Api.InvalidType", "Invalid {0} type"},
+            {                    "Api.InvalidRequest", "Invalid request"},
+            {                    "Api.InvalidRootProperty", "Invalid root property"},
+            {                    "Api.NoJsonProvided", "No Json provided"},
+            {                    "Api.InvalidJsonFormat", "Json format is invalid"},
+            {                    "Api.Category.InvalidImageAttachmentFormat", "Invalid image attachment base64 format"},
+            {                    "Api.Category.InvalidImageSrc", "Invalid image source"},
+            {                    "Api.Category.InvalidImageSrcType", "You have provided an invalid image source/attachment "},
+            });
 
-            _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Api.Admin.Menu.Title", "API");
-            _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Api.Admin.Menu.Settings.Title", "Settings");
-
-            _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Api.Admin.Page.Settings.Title", "Api Settings");
 
 
-            _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Api.Admin.Settings.GeneralSettingsTitle", "General Settings");
-            _localizationService.AddOrUpdatePluginLocaleResource("Plugins.Api.Admin.Edit", "Edit");
+            await _settingService.SaveSettingAsync(new ApiSettings());
 
-            _localizationService.AddOrUpdatePluginLocaleResource("Api.Categories.Fields.Id.Invalid", "Id is invalid");
-            _localizationService.AddOrUpdatePluginLocaleResource("Api.InvalidPropertyType", "Invalid Property Type");
-            _localizationService.AddOrUpdatePluginLocaleResource("Api.InvalidType", "Invalid {0} type");
-            _localizationService.AddOrUpdatePluginLocaleResource("Api.InvalidRequest", "Invalid request");
-            _localizationService.AddOrUpdatePluginLocaleResource("Api.InvalidRootProperty", "Invalid root property");
-            _localizationService.AddOrUpdatePluginLocaleResource("Api.NoJsonProvided", "No Json provided");
-            _localizationService.AddOrUpdatePluginLocaleResource("Api.InvalidJsonFormat", "Json format is invalid");
-            _localizationService.AddOrUpdatePluginLocaleResource("Api.Category.InvalidImageAttachmentFormat", "Invalid image attachment base64 format");
-            _localizationService.AddOrUpdatePluginLocaleResource("Api.Category.InvalidImageSrc", "Invalid image source");
-            _localizationService.AddOrUpdatePluginLocaleResource("Api.Category.InvalidImageSrcType", "You have provided an invalid image source/attachment ");
-
-            _settingService.SaveSetting(new ApiSettings());
-
-            var apiRole = _customerService.GetCustomerRoleBySystemName(Constants.Roles.ApiRoleSystemName);
+            var apiRole = await _customerService.GetCustomerRoleBySystemNameAsync(Constants.Roles.ApiRoleSystemName);
 
             if (apiRole == null)
             {
                 apiRole = new CustomerRole
-                          {
-                              Name = Constants.Roles.ApiRoleName,
-                              Active = true,
-                              SystemName = Constants.Roles.ApiRoleSystemName
-                          };
+                {
+                    Name = Constants.Roles.ApiRoleName,
+                    Active = true,
+                    SystemName = Constants.Roles.ApiRoleSystemName
+                };
 
-                _customerService.InsertCustomerRole(apiRole);
+                await _customerService.InsertCustomerRoleAsync(apiRole);
             }
             else if (apiRole.Active == false)
             {
                 apiRole.Active = true;
-                _customerService.UpdateCustomerRole(apiRole);
+                await _customerService.UpdateCustomerRoleAsync(apiRole);
             }
 
 
-            base.Install();
+            await base.InstallAsync();
 
             // Changes to Web.Config trigger application restart.
             // This doesn't appear to affect the Install function, but just to be safe we will made web.config changes after the plugin was installed.
             //_webConfigMangerHelper.AddConfiguration();
         }
 
-        public override void Uninstall()
+        public override async Task UninstallAsync()
         {
             //locales
-            _localizationService.DeletePluginLocaleResources("Plugins.Api");
+            await _localizationService.DeleteLocaleResourceAsync("Plugins.Api");
 
             //_localizationService.DeletePluginLocaleResource("Plugins.Api.Admin.Menu.Title");
             //_localizationService.DeletePluginLocaleResource("Plugins.Api.Admin.Menu.Settings.Title");
@@ -109,41 +110,43 @@ namespace Nop.Plugin.Api.Infrastructure
             //_localizationService.DeletePluginLocaleResource("Plugins.Api.Admin.Edit");
 
 
-            var apiRole = _customerService.GetCustomerRoleBySystemName(Constants.Roles.ApiRoleSystemName);
+            var apiRole = await _customerService.GetCustomerRoleBySystemNameAsync(Constants.Roles.ApiRoleSystemName);
             if (apiRole != null)
             {
                 apiRole.Active = false;
-                _customerService.UpdateCustomerRole(apiRole);
+                await _customerService.UpdateCustomerRoleAsync(apiRole);
             }
 
 
-            base.Uninstall();
+            await base.UninstallAsync();
         }
 
-        public void ManageSiteMap(SiteMapNode rootNode)
+        public async Task ManageSiteMapAsync(SiteMapNode rootNode)
         {
-            var pluginMenuName = _localizationService.GetResource("Plugins.Api.Admin.Menu.Title", _workContext.WorkingLanguage.Id, defaultValue: "API");
+            var workingLanguage = await _workContext.GetWorkingLanguageAsync();
 
-            var settingsMenuName = _localizationService.GetResource("Plugins.Api.Admin.Menu.Settings.Title", _workContext.WorkingLanguage.Id, defaultValue: "API");
+            var pluginMenuName = await _localizationService.GetResourceAsync("Plugins.Api.Admin.Menu.Title", workingLanguage.Id, defaultValue: "API");
+
+            var settingsMenuName = await _localizationService.GetResourceAsync("Plugins.Api.Admin.Menu.Settings.Title", workingLanguage.Id, defaultValue: "API");
 
             const string adminUrlPart = "Admin/";
 
             var pluginMainMenu = new SiteMapNode
-                                 {
-                                     Title = pluginMenuName,
-                                     Visible = true,
-                                     SystemName = "Api-Main-Menu",
-                                     IconClass = "fa-genderless"
-                                 };
+            {
+                Title = pluginMenuName,
+                Visible = true,
+                SystemName = "Api-Main-Menu",
+                IconClass = "fa-genderless"
+            };
 
             pluginMainMenu.ChildNodes.Add(new SiteMapNode
-                                          {
-                                              Title = settingsMenuName,
-                                              Url = _webHelper.GetStoreLocation() + adminUrlPart + "ApiAdmin/Settings",
-                                              Visible = true,
-                                              SystemName = "Api-Settings-Menu",
-                                              IconClass = "fa-genderless"
-                                          });
+            {
+                Title = settingsMenuName,
+                Url = _webHelper.GetStoreLocation() + adminUrlPart + "ApiAdmin/Settings",
+                Visible = true,
+                SystemName = "Api-Settings-Menu",
+                IconClass = "fa-genderless"
+            });
 
 
             rootNode.ChildNodes.Add(pluginMainMenu);
