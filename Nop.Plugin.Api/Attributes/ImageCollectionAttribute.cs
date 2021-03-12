@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Nop.Plugin.Api.DTO.Images;
 
 namespace Nop.Plugin.Api.Attributes
@@ -7,7 +8,7 @@ namespace Nop.Plugin.Api.Attributes
     {
         private Dictionary<string, string> _errors = new Dictionary<string, string>();
 
-        public override void Validate(object instance)
+        public override async Task ValidateAsync(object instance)
         {
             // Images are not required so they could be null
             // and there is nothing to validate in this case
@@ -18,7 +19,7 @@ namespace Nop.Plugin.Api.Attributes
                 {
                     var imageValidationAttribute = new ImageValidationAttribute();
 
-                    imageValidationAttribute.Validate(image);
+                    await imageValidationAttribute.ValidateAsync(image);
 
                     var errorsForImage = imageValidationAttribute.GetErrors();
 

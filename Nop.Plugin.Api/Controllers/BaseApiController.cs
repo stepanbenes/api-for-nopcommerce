@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -102,7 +103,7 @@ namespace Nop.Plugin.Api.Controllers
             return new ErrorActionResult(errorsJson, statusCode);
         }
 
-        protected void UpdateAclRoles<TEntity>(TEntity entity, List<int> passedRoleIds) where TEntity : BaseEntity, IAclSupported
+        protected async Task UpdateAclRolesAsync<TEntity>(TEntity entity, List<int> passedRoleIds) where TEntity : BaseEntity, IAclSupported
         {
             if (passedRoleIds == null)
             {
@@ -111,8 +112,8 @@ namespace Nop.Plugin.Api.Controllers
 
             entity.SubjectToAcl = passedRoleIds.Any();
 
-            var existingAclRecords = AclService.GetAclRecords(entity);
-            var allCustomerRoles = CustomerService.GetAllCustomerRoles(true);
+            var existingAclRecords = await AclService.GetAclRecordsAsync(entity);
+            var allCustomerRoles = await CustomerService.GetAllCustomerRolesAsync(true);
             foreach (var customerRole in allCustomerRoles)
             {
                 if (passedRoleIds.Contains(customerRole.Id))
@@ -120,7 +121,7 @@ namespace Nop.Plugin.Api.Controllers
                     //new role
                     if (existingAclRecords.Count(acl => acl.CustomerRoleId == customerRole.Id) == 0)
                     {
-                        AclService.InsertAclRecord(entity, customerRole.Id);
+                        await AclService.InsertAclRecordAsync(entity, customerRole.Id);
                     }
                 }
                 else
@@ -129,13 +130,13 @@ namespace Nop.Plugin.Api.Controllers
                     var aclRecordToDelete = existingAclRecords.FirstOrDefault(acl => acl.CustomerRoleId == customerRole.Id);
                     if (aclRecordToDelete != null)
                     {
-                        AclService.DeleteAclRecord(aclRecordToDelete);
+                        await AclService.DeleteAclRecordAsync(aclRecordToDelete);
                     }
                 }
             }
         }
 
-        protected void UpdateStoreMappings<TEntity>(TEntity entity, List<int> passedStoreIds) where TEntity : BaseEntity, IStoreMappingSupported
+        protected async Task UpdateStoreMappingsAsync<TEntity>(TEntity entity, List<int> passedStoreIds) where TEntity : BaseEntity, IStoreMappingSupported
         {
             if (passedStoreIds == null)
             {
@@ -144,8 +145,8 @@ namespace Nop.Plugin.Api.Controllers
 
             entity.LimitedToStores = passedStoreIds.Any();
 
-            var existingStoreMappings = StoreMappingService.GetStoreMappings(entity);
-            var allStores = StoreService.GetAllStores();
+            var existingStoreMappings = await StoreMappingService.GetStoreMappingsAsync(entity);
+            var allStores = await StoreService.GetAllStoresAsync();
             foreach (var store in allStores)
             {
                 if (passedStoreIds.Contains(store.Id))
@@ -153,7 +154,7 @@ namespace Nop.Plugin.Api.Controllers
                     //new store
                     if (existingStoreMappings.Count(sm => sm.StoreId == store.Id) == 0)
                     {
-                        StoreMappingService.InsertStoreMapping(entity, store.Id);
+                        await StoreMappingService.InsertStoreMappingAsync(entity, store.Id);
                     }
                 }
                 else
@@ -162,7 +163,7 @@ namespace Nop.Plugin.Api.Controllers
                     var storeMappingToDelete = existingStoreMappings.FirstOrDefault(sm => sm.StoreId == store.Id);
                     if (storeMappingToDelete != null)
                     {
-                        StoreMappingService.DeleteStoreMapping(storeMappingToDelete);
+                        await StoreMappingService.DeleteStoreMappingAsync(storeMappingToDelete);
                     }
                 }
             }

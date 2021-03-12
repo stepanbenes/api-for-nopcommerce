@@ -25,7 +25,7 @@ namespace Nop.Plugin.Api.Infrastructure
 
             if (apiConfigSection != null)
             {
-                var apiConfig = services.ConfigureStartupConfig<ApiConfiguration>(apiConfigSection);
+                var apiConfig = services.AddConfig<ApiConfiguration>(apiConfigSection);
 
                 if (!string.IsNullOrEmpty(apiConfig.SecurityKey))
                 {

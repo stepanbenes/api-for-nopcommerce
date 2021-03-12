@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Nop.Core.Domain.Orders;
 using Nop.Core.Domain.Payments;
 using Nop.Core.Domain.Shipping;
@@ -7,7 +8,7 @@ namespace Nop.Plugin.Api.Factories
 {
     public class OrderFactory : IFactory<Order>
     {
-        public Order Initialize()
+        public Task<Order> InitializeAsync()
         {
             var order = new Order();
 
@@ -17,7 +18,7 @@ namespace Nop.Plugin.Api.Factories
             order.ShippingStatus = ShippingStatus.NotYetShipped;
             order.OrderStatus = OrderStatus.Pending;
 
-            return order;
+            return Task.FromResult(order);
         }
     }
 }

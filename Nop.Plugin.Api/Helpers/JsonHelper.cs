@@ -15,11 +15,6 @@ namespace Nop.Plugin.Api.Helpers
         public JsonHelper(ILanguageService languageService, ILocalizationService localizationService)
         {
             _localizationService = localizationService;
-
-            var language = languageService.GetAllLanguages().FirstOrDefault();
-            _languageId = language != null
-                              ? language.Id
-                              : 0;
         }
 
         #endregion
@@ -27,8 +22,6 @@ namespace Nop.Plugin.Api.Helpers
         #region Private Fields
 
         private readonly ILocalizationService _localizationService;
-
-        private readonly int _languageId;
 
         #endregion
 
@@ -39,13 +32,13 @@ namespace Nop.Plugin.Api.Helpers
             var json = GetRequestBodyString(stream, rewindStream);
             if (string.IsNullOrEmpty(json))
             {
-                throw new InvalidOperationException(_localizationService.GetResource("Api.NoJsonProvided", _languageId, false));
+                throw new InvalidOperationException("No Json provided");
             }
 
             var requestBodyDictioanry = DeserializeToDictionary(json);
             if (requestBodyDictioanry == null || requestBodyDictioanry.Count == 0)
             {
-                throw new InvalidOperationException(_localizationService.GetResource("Api.InvalidJsonFormat", _languageId, false));
+                throw new InvalidOperationException("Json format is invalid");
             }
 
             return requestBodyDictioanry;
@@ -101,7 +94,7 @@ namespace Nop.Plugin.Api.Helpers
                     return token.Select(ToObject).ToList();
 
                 default:
-                    return ((JValue) token).Value;
+                    return ((JValue)token).Value;
             }
         }
 

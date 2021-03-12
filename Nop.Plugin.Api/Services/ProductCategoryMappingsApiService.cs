@@ -4,6 +4,7 @@ using Nop.Data;
 using Nop.Core.Domain.Catalog;
 using Nop.Plugin.Api.DataStructures;
 using Nop.Plugin.Api.Infrastructure;
+using System.Threading.Tasks;
 
 namespace Nop.Plugin.Api.Services
 {
@@ -31,14 +32,14 @@ namespace Nop.Plugin.Api.Services
             return GetMappingsQuery(productId, categoryId).Count();
         }
 
-        public ProductCategory GetById(int id)
+        public Task<ProductCategory> GetByIdAsync(int id)
         {
             if (id <= 0)
             {
                 return null;
             }
 
-            return _productCategoryMappingsRepository.GetById(id);
+            return _productCategoryMappingsRepository.GetByIdAsync(id);
         }
 
         private IQueryable<ProductCategory> GetMappingsQuery(

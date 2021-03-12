@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using Nop.Core;
 using Nop.Plugin.Api.Areas.Admin.Models;
 using Nop.Plugin.Api.Domain;
@@ -38,10 +39,10 @@ namespace Nop.Plugin.Api.Areas.Admin.Controllers
         }
 
         [HttpGet]
-        public IActionResult Settings()
+        public async Task<IActionResult> Settings()
         {
-            var storeScope = _storeContext.ActiveStoreScopeConfiguration;
-            var apiSettings = _settingService.LoadSetting<ApiSettings>(storeScope);
+            var storeScope = await _storeContext.GetActiveStoreScopeConfigurationAsync();
+            var apiSettings = await _settingService.LoadSettingAsync<ApiSettings>(storeScope);
             var model = apiSettings.ToModel();
 
             // Store Settings
@@ -49,20 +50,20 @@ namespace Nop.Plugin.Api.Areas.Admin.Controllers
 
             if (model.EnableApi_OverrideForStore || storeScope == 0)
             {
-                _settingService.SaveSetting(apiSettings, x => x.EnableApi, storeScope, false);
+                await _settingService.SaveSettingAsync(apiSettings, x => x.EnableApi, storeScope, false);
             }
 
             //now clear settings cache
-            _settingService.ClearCache();
+            await _settingService.ClearCacheAsync();
 
             return View($"~/Plugins/Nop.Plugin.Api/Areas/Admin/Views/ApiAdmin/Settings.cshtml", model);
         }
 
         [HttpPost]
-        public IActionResult Settings(ConfigurationModel model)
+        public async Task<IActionResult> Settings(ConfigurationModel model)
         {
             //load settings for a chosen store scope
-            var storeScope = _storeContext.ActiveStoreScopeConfiguration;
+            var storeScope = await _storeContext.GetActiveStoreScopeConfigurationAsync();
 
             var settings = model.ToEntity();
 
@@ -72,15 +73,15 @@ namespace Nop.Plugin.Api.Areas.Admin.Controllers
 
             if (model.EnableApi_OverrideForStore || storeScope == 0)
             {
-                _settingService.SaveSetting(settings, x => x.EnableApi, storeScope, false);
+                await _settingService.SaveSettingAsync(settings, x => x.EnableApi, storeScope, false);
             }
 
             //now clear settings cache
-            _settingService.ClearCache();
+            await _settingService.ClearCacheAsync();
 
-            _customerActivityService.InsertActivity("EditApiSettings", "Edit Api Settings");
+            await _customerActivityService.InsertActivityAsync("EditApiSettings", "Edit Api Settings");
 
-            _notificationService.SuccessNotification(_localizationService.GetResource("Admin.Plugins.Saved"));
+            _notificationService.SuccessNotification(await _localizationService.GetResourceAsync("Admin.Plugins.Saved"));
 
             return View($"~/Plugins/Nop.Plugin.Api/Areas/Admin/Views/ApiAdmin/Settings.cshtml", model);
         }

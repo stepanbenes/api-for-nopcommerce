@@ -1,7 +1,9 @@
-﻿namespace Nop.Plugin.Api.Factories
+﻿using System.Threading.Tasks;
+
+namespace Nop.Plugin.Api.Factories
 {
     public interface IFactory<T>
     {
-        T Initialize();
+        Task<T> InitializeAsync();
     }
 }

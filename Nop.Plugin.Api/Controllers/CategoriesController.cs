@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Nop.Core.Domain.Catalog;
 using Nop.Core.Domain.Discounts;
@@ -74,7 +75,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(CategoriesRootObject), (int) HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int) HttpStatusCode.BadRequest)]
         [GetRequestsErrorInterceptorActionFilter]
-        public IActionResult GetCategories(CategoriesParametersModel parameters)
+        public async Task<IActionResult> GetCategories(CategoriesParametersModel parameters)
         {
             if (parameters.Limit < Constants.Configurations.MinLimit || parameters.Limit > Constants.Configurations.MaxLimit)
             {
@@ -90,9 +91,9 @@ namespace Nop.Plugin.Api.Controllers
                                                                   parameters.UpdatedAtMin, parameters.UpdatedAtMax,
                                                                   parameters.Limit, parameters.Page, parameters.SinceId,
                                                                   parameters.ProductId, parameters.PublishedStatus)
-                                                   .Where(c => StoreMappingService.Authorize(c));
+                                                   .WhereAwait(async c => await StoreMappingService.AuthorizeAsync(c));
 
-            IList<CategoryDto> categoriesAsDtos = allCategories.Select(category => _dtoHelper.PrepareCategoryDTO(category)).ToList();
+            IList<CategoryDto> categoriesAsDtos = await allCategories.SelectAwait(async category => await _dtoHelper.PrepareCategoryDTOAsync(category)).ToListAsync();
 
             var categoriesRootObject = new CategoriesRootObject
                                        {
@@ -115,9 +116,9 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(string), (int) HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int) HttpStatusCode.BadRequest)]
         [GetRequestsErrorInterceptorActionFilter]
-        public IActionResult GetCategoriesCount(CategoriesCountParametersModel parameters)
+        public async Task<IActionResult> GetCategoriesCount(CategoriesCountParametersModel parameters)
         {
-            var allCategoriesCount = _categoryApiService.GetCategoriesCount(parameters.CreatedAtMin, parameters.CreatedAtMax,
+            var allCategoriesCount = await _categoryApiService.GetCategoriesCountAsync(parameters.CreatedAtMin, parameters.CreatedAtMax,
                                                                             parameters.UpdatedAtMin, parameters.UpdatedAtMax,
                                                                             parameters.PublishedStatus, parameters.ProductId);
 
@@ -143,7 +144,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(ErrorsRootObject), (int) HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int) HttpStatusCode.Unauthorized)]
         [GetRequestsErrorInterceptorActionFilter]
-        public IActionResult GetCategoryById(int id, string fields = "")
+        public async Task<IActionResult> GetCategoryById(int id, string fields = "")
         {
             if (id <= 0)
             {
@@ -157,7 +158,7 @@ namespace Nop.Plugin.Api.Controllers
                 return Error(HttpStatusCode.NotFound, "category", "category not found");
             }
 
-            var categoryDto = _dtoHelper.PrepareCategoryDTO(category);
+            var categoryDto = await _dtoHelper.PrepareCategoryDTOAsync(category);
 
             var categoriesRootObject = new CategoriesRootObject();
 
@@ -174,7 +175,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(ErrorsRootObject), 422)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int) HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int) HttpStatusCode.Unauthorized)]
-        public IActionResult CreateCategory(
+        public async Task<IActionResult> CreateCategory(
             [ModelBinder(typeof(JsonModelBinder<CategoryDto>))]
             Delta<CategoryDto> categoryDelta)
         {
@@ -191,11 +192,11 @@ namespace Nop.Plugin.Api.Controllers
             // We need to insert the picture before the category so we can obtain the picture id and map it to the category.
             if (categoryDelta.Dto.Image?.Binary != null)
             {
-                insertedPicture = PictureService.InsertPicture(categoryDelta.Dto.Image.Binary, categoryDelta.Dto.Image.MimeType, string.Empty);
+                insertedPicture = await PictureService.InsertPictureAsync(categoryDelta.Dto.Image.Binary, categoryDelta.Dto.Image.MimeType, string.Empty);
             }
 
             // Inserting the new category
-            var category = _factory.Initialize();
+            var category = await _factory.InitializeAsync();
             categoryDelta.Merge(category);
 
             if (insertedPicture != null)
@@ -203,27 +204,27 @@ namespace Nop.Plugin.Api.Controllers
                 category.PictureId = insertedPicture.Id;
             }
 
-            _categoryService.InsertCategory(category);
+            await _categoryService.InsertCategoryAsync(category);
 
 
-            UpdateAclRoles(category, categoryDelta.Dto.RoleIds);
+            await UpdateAclRolesAsync(category, categoryDelta.Dto.RoleIds);
 
-            UpdateDiscounts(category, categoryDelta.Dto.DiscountIds);
+            await UpdateDiscountsAsync(category, categoryDelta.Dto.DiscountIds);
 
-            UpdateStoreMappings(category, categoryDelta.Dto.StoreIds);
+            await UpdateStoreMappingsAsync(category, categoryDelta.Dto.StoreIds);
 
             //search engine name
             if (categoryDelta.Dto.SeName != null)
             {
-                var seName = _urlRecordService.ValidateSeName(category, categoryDelta.Dto.SeName, category.Name, true);
-                _urlRecordService.SaveSlug(category, seName, 0);
+                var seName = await _urlRecordService.ValidateSeNameAsync(category, categoryDelta.Dto.SeName, category.Name, true);
+                await _urlRecordService.SaveSlugAsync(category, seName, 0);
             }
 
-            CustomerActivityService.InsertActivity("AddNewCategory",
-                                                   LocalizationService.GetResource("ActivityLog.AddNewCategory"), category);
+            await CustomerActivityService.InsertActivityAsync("AddNewCategory",
+                                                   await LocalizationService.GetResourceAsync("ActivityLog.AddNewCategory"), category);
 
             // Preparing the result dto of the new category
-            var newCategoryDto = _dtoHelper.PrepareCategoryDTO(category);
+            var newCategoryDto = await _dtoHelper.PrepareCategoryDTOAsync(category);
 
             var categoriesRootObject = new CategoriesRootObject();
 
@@ -241,7 +242,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(string), (int) HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(string), (int) HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int) HttpStatusCode.BadRequest)]
-        public IActionResult UpdateCategory(
+        public async Task<IActionResult> UpdateCategory(
             [ModelBinder(typeof(JsonModelBinder<CategoryDto>))]
             Delta<CategoryDto> categoryDelta)
         {
@@ -262,29 +263,29 @@ namespace Nop.Plugin.Api.Controllers
 
             category.UpdatedOnUtc = DateTime.UtcNow;
 
-            _categoryService.UpdateCategory(category);
+            await _categoryService.UpdateCategoryAsync(category);
 
-            UpdatePicture(category, categoryDelta.Dto.Image);
+            await UpdatePictureAsync(category, categoryDelta.Dto.Image);
 
-            UpdateAclRoles(category, categoryDelta.Dto.RoleIds);
+            await UpdateAclRolesAsync(category, categoryDelta.Dto.RoleIds);
 
-            UpdateDiscounts(category, categoryDelta.Dto.DiscountIds);
+            await UpdateDiscountsAsync(category, categoryDelta.Dto.DiscountIds);
 
-            UpdateStoreMappings(category, categoryDelta.Dto.StoreIds);
+            await UpdateStoreMappingsAsync(category, categoryDelta.Dto.StoreIds);
 
             //search engine name
             if (categoryDelta.Dto.SeName != null)
             {
-                var seName = _urlRecordService.ValidateSeName(category, categoryDelta.Dto.SeName, category.Name, true);
-                _urlRecordService.SaveSlug(category, seName, 0);
+                var seName = await _urlRecordService.ValidateSeNameAsync(category, categoryDelta.Dto.SeName, category.Name, true);
+                await _urlRecordService.SaveSlugAsync(category, seName, 0);
             }
 
-            _categoryService.UpdateCategory(category);
+            await _categoryService.UpdateCategoryAsync(category);
 
-            CustomerActivityService.InsertActivity("UpdateCategory",
-                                                   LocalizationService.GetResource("ActivityLog.UpdateCategory"), category);
+            await CustomerActivityService.InsertActivityAsync("UpdateCategory",
+                                                   await LocalizationService.GetResourceAsync("ActivityLog.UpdateCategory"), category);
 
-            var categoryDto = _dtoHelper.PrepareCategoryDTO(category);
+            var categoryDto = await _dtoHelper.PrepareCategoryDTOAsync(category);
 
             var categoriesRootObject = new CategoriesRootObject();
 
@@ -302,7 +303,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(string), (int) HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(string), (int) HttpStatusCode.Unauthorized)]
         [GetRequestsErrorInterceptorActionFilter]
-        public IActionResult DeleteCategory(int id)
+        public async Task<IActionResult> DeleteCategory(int id)
         {
             if (id <= 0)
             {
@@ -316,15 +317,15 @@ namespace Nop.Plugin.Api.Controllers
                 return Error(HttpStatusCode.NotFound, "category", "category not found");
             }
 
-            _categoryService.DeleteCategory(categoryToDelete);
+            await _categoryService.DeleteCategoryAsync(categoryToDelete);
 
             //activity log
-            CustomerActivityService.InsertActivity("DeleteCategory", LocalizationService.GetResource("ActivityLog.DeleteCategory"), categoryToDelete);
+            await CustomerActivityService.InsertActivityAsync("DeleteCategory", await LocalizationService.GetResourceAsync("ActivityLog.DeleteCategory"), categoryToDelete);
 
             return new RawJsonActionResult("{}");
         }
 
-        private void UpdatePicture(Category categoryEntityToUpdate, ImageDto imageDto)
+        private async Task UpdatePictureAsync(Category categoryEntityToUpdate, ImageDto imageDto)
         {
             // no image specified then do nothing
             if (imageDto == null)
@@ -333,12 +334,12 @@ namespace Nop.Plugin.Api.Controllers
             }
 
             Picture updatedPicture;
-            var currentCategoryPicture = PictureService.GetPictureById(categoryEntityToUpdate.PictureId);
+            var currentCategoryPicture = await PictureService.GetPictureByIdAsync(categoryEntityToUpdate.PictureId);
 
             // when there is a picture set for the category
             if (currentCategoryPicture != null)
             {
-                PictureService.DeletePicture(currentCategoryPicture);
+                await PictureService.DeletePictureAsync(currentCategoryPicture);
 
                 // When the image attachment is null or empty.
                 if (imageDto.Binary == null)
@@ -347,7 +348,7 @@ namespace Nop.Plugin.Api.Controllers
                 }
                 else
                 {
-                    updatedPicture = PictureService.InsertPicture(imageDto.Binary, imageDto.MimeType, string.Empty);
+                    updatedPicture = await PictureService.InsertPictureAsync(imageDto.Binary, imageDto.MimeType, string.Empty);
                     categoryEntityToUpdate.PictureId = updatedPicture.Id;
                 }
             }
@@ -356,21 +357,21 @@ namespace Nop.Plugin.Api.Controllers
             {
                 if (imageDto.Binary != null)
                 {
-                    updatedPicture = PictureService.InsertPicture(imageDto.Binary, imageDto.MimeType, string.Empty);
+                    updatedPicture = await PictureService.InsertPictureAsync(imageDto.Binary, imageDto.MimeType, string.Empty);
                     categoryEntityToUpdate.PictureId = updatedPicture.Id;
                 }
             }
         }
 
-        private void UpdateDiscounts(Category category, List<int> passedDiscountIds)
+        private async Task UpdateDiscountsAsync(Category category, List<int> passedDiscountIds)
         {
             if (passedDiscountIds == null)
             {
                 return;
             }
 
-            var allDiscounts = DiscountService.GetAllDiscounts(DiscountType.AssignedToCategories, showHidden: true);
-            var appliedCategoryDiscount = DiscountService.GetAppliedDiscounts(category);
+            var allDiscounts = await DiscountService.GetAllDiscountsAsync(DiscountType.AssignedToCategories, showHidden: true);
+            var appliedCategoryDiscount = await DiscountService.GetAppliedDiscountsAsync(category);
             foreach (var discount in allDiscounts)
             {
                 if (passedDiscountIds.Contains(discount.Id))
@@ -390,7 +391,7 @@ namespace Nop.Plugin.Api.Controllers
                     }
                 }
             }
-            _categoryService.UpdateCategory(category);
+            await _categoryService.UpdateCategoryAsync(category);
         }
     }
 }

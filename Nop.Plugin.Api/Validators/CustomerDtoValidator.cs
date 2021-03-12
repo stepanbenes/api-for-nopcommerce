@@ -98,47 +98,48 @@ namespace Nop.Plugin.Api.Validators
 
         private void SetRolesRule()
         {
-            if (HttpMethod == HttpMethod.Post || RequestJsonDictionary.ContainsKey("role_ids"))
-            {
-                IList<CustomerRole> customerRoles = null;
+            System.Console.WriteLine();
+            //if (HttpMethod == HttpMethod.Post || RequestJsonDictionary.ContainsKey("role_ids"))
+            //{
+            //    IList<CustomerRole> customerRoles = null;
 
-                RuleFor(x => x.RoleIds)
-                    .NotNull()
-                    .Must(roles => roles.Count > 0)
-                    .WithMessage("role_ids required")
-                    .DependentRules(() => RuleFor(dto => dto.RoleIds)
-                                          .Must(roleIds =>
-                                          {
-                                              if (customerRoles == null)
-                                              {
-                                                  customerRoles = _customerRolesHelper.GetValidCustomerRoles(roleIds);
-                                              }
+            //    RuleFor(x => x.RoleIds)
+            //        .NotNull()
+            //        .Must(roles => roles.Count > 0)
+            //        .WithMessage("role_ids required")
+            //        .DependentRules(() => RuleFor(dto => dto.RoleIds)
+            //                              .Must(roleIds =>
+            //                              {
+            //                                  if (customerRoles == null)
+            //                                  {
+            //                                      customerRoles = _customerRolesHelper.GetValidCustomerRoles(roleIds);
+            //                                  }
 
-                                              var isInGuestAndRegisterRoles = _customerRolesHelper.IsInGuestsRole(customerRoles) &&
-                                                                              _customerRolesHelper.IsInRegisteredRole(customerRoles);
+            //                                  var isInGuestAndRegisterRoles = _customerRolesHelper.IsInGuestsRole(customerRoles) &&
+            //                                                                  _customerRolesHelper.IsInRegisteredRole(customerRoles);
 
-                                              // Customer can not be in guest and register roles simultaneously
-                                              return !isInGuestAndRegisterRoles;
-                                          })
-                                          .WithMessage("must not be in guest and register roles simultaneously")
-                                          .DependentRules(() => RuleFor(dto => dto.RoleIds)
-                                                                .Must(roleIds =>
-                                                                {
-                                                                    if (customerRoles == null)
-                                                                    {
-                                                                        customerRoles = _customerRolesHelper.GetValidCustomerRoles(roleIds);
-                                                                    }
+            //                                  // Customer can not be in guest and register roles simultaneously
+            //                                  return !isInGuestAndRegisterRoles;
+            //                              })
+            //                              .WithMessage("must not be in guest and register roles simultaneously")
+            //                              .DependentRules(() => RuleFor(dto => dto.RoleIds)
+            //                                                    .Must(roleIds =>
+            //                                                    {
+            //                                                        if (customerRoles == null)
+            //                                                        {
+            //                                                            customerRoles = _customerRolesHelper.GetValidCustomerRoles(roleIds);
+            //                                                        }
 
-                                                                    var isInGuestOrRegisterRoles = _customerRolesHelper.IsInGuestsRole(customerRoles) ||
-                                                                                                   _customerRolesHelper.IsInRegisteredRole(customerRoles);
+            //                                                        var isInGuestOrRegisterRoles = _customerRolesHelper.IsInGuestsRole(customerRoles) ||
+            //                                                                                       _customerRolesHelper.IsInRegisteredRole(customerRoles);
 
-                                                                    // Customer must be in either guest or register role.
-                                                                    return isInGuestOrRegisterRoles;
-                                                                })
-                                                                .WithMessage("must be in guest or register role")
-                                                         )
-                                   );
-            }
+            //                                                        // Customer must be in either guest or register role.
+            //                                                        return isInGuestOrRegisterRoles;
+            //                                                    })
+            //                                                    .WithMessage("must be in guest or register role")
+            //                                             )
+            //                       );
+            //}
         }
 
         private void SetShoppingCartItemsRule()

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -44,7 +45,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [Route("/token")]
         [HttpGet]
-        public IActionResult Create(TokenRequest model)
+        public async Task<IActionResult> Create(TokenRequest model)
         {
             if (string.IsNullOrEmpty(model.Username))
             {
@@ -56,7 +57,7 @@ namespace Nop.Plugin.Api.Controllers
                 return Json(new TokenResponse("Missing password"));
             }
 
-            var customer = ValidateUser(model);
+            var customer = await ValidateUserAsync(model);
 
             if (customer != null)
             {
@@ -66,27 +67,24 @@ namespace Nop.Plugin.Api.Controllers
             return Json(new TokenResponse("Access Denied"));
         }
 
-        private CustomerLoginResults LoginCustomer(TokenRequest model)
+        private Task<CustomerLoginResults> LoginCustomerAsync(TokenRequest model)
         {
-            var loginResult = _customerRegistrationService
-                .ValidateCustomer(model.Username, model.Password);
-
-            return loginResult;
+            return _customerRegistrationService.ValidateCustomerAsync(model.Username, model.Password);
         }
 
-        private Customer ValidateUser(TokenRequest model)
+        private async Task<Customer> ValidateUserAsync(TokenRequest model)
         {
-            var result = LoginCustomer(model);
+            var result = await LoginCustomerAsync(model);
 
             if (result == CustomerLoginResults.Successful)
             {
-                var customer = _customerSettings.UsernamesEnabled
-                                   ? _customerService.GetCustomerByUsername(model.Username)
-                                   : _customerService.GetCustomerByEmail(model.Username);
+                var customer = await (_customerSettings.UsernamesEnabled
+                                   ? _customerService.GetCustomerByUsernameAsync(model.Username)
+                                   : _customerService.GetCustomerByEmailAsync(model.Username));
 
 
                 //activity log
-                _customerActivityService.InsertActivity(customer, "Api.TokenRequest", "User API token request", customer);
+                await _customerActivityService.InsertActivityAsync(customer, "Api.TokenRequest", "User API token request", customer);
 
                 return customer;
             }

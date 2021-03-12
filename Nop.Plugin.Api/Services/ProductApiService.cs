@@ -7,6 +7,7 @@ using Nop.Core.Domain.Vendors;
 using Nop.Plugin.Api.DataStructures;
 using Nop.Plugin.Api.Infrastructure;
 using Nop.Services.Stores;
+using System.Threading.Tasks;
 
 namespace Nop.Plugin.Api.Services
 {
@@ -46,7 +47,7 @@ namespace Nop.Plugin.Api.Services
             return new ApiList<Product>(query, page - 1, limit);
         }
 
-        public int GetProductsCount(
+        public async Task<int> GetProductsCountAsync(
             DateTime? createdAtMin = null, DateTime? createdAtMax = null,
             DateTime? updatedAtMin = null, DateTime? updatedAtMax = null, bool? publishedStatus = null, string vendorName = null,
             int? categoryId = null)
@@ -54,7 +55,7 @@ namespace Nop.Plugin.Api.Services
             var query = GetProductsQuery(createdAtMin, createdAtMax, updatedAtMin, updatedAtMax, vendorName,
                                          publishedStatus, categoryId: categoryId);
 
-            return query.ToList().Count(p => _storeMappingService.Authorize(p));
+            return await query.WhereAwait(async p => await _storeMappingService.AuthorizeAsync(p)).CountAsync();
         }
 
         public Product GetProductById(int productId)

@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Nop.Core.Infrastructure;
 using Nop.Plugin.Api.DTO.Images;
 using Nop.Services.Media;
@@ -23,7 +24,7 @@ namespace Nop.Plugin.Api.Attributes
             _pictureService = EngineContext.Current.Resolve<IPictureService>();
         }
 
-        public override void Validate(object instance)
+        public override async Task ValidateAsync(object instance)
         {
             var imageDto = instance as ImageDto;
 
@@ -66,7 +67,7 @@ namespace Nop.Plugin.Api.Attributes
                 {
                     // Here we handle the check if the file passed is actual image and if the image is valid according to the 
                     // restrictions set in the administration.
-                    ValidatePictureBiteArray(imageBytes, mimeType);
+                    await ValidatePictureByteArrayAsync(imageBytes, mimeType);
                 }
 
                 imageDto.Binary = imageBytes;
@@ -141,13 +142,13 @@ namespace Nop.Plugin.Api.Attributes
             return codec.MimeType;
         }
 
-        private void ValidatePictureBiteArray(byte[] imageBytes, string mimeType)
+        private async Task ValidatePictureByteArrayAsync(byte[] imageBytes, string mimeType)
         {
             if (imageBytes != null)
             {
                 try
                 {
-                    imageBytes = _pictureService.ValidatePicture(imageBytes, mimeType);
+                    imageBytes = await _pictureService.ValidatePictureAsync(imageBytes, mimeType);
                 }
                 catch (Exception ex)
                 {

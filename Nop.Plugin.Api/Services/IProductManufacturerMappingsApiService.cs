@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Nop.Core.Domain.Catalog;
 using Nop.Plugin.Api.Infrastructure;
 
@@ -12,6 +13,6 @@ namespace Nop.Plugin.Api.Services
 
         int GetMappingsCount(int? productId = null, int? manufacturerId = null);
 
-        ProductManufacturer GetById(int id);
+        Task<ProductManufacturer> GetByIdAsync(int id);
     }
 }

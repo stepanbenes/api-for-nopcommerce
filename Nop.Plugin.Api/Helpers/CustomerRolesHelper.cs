@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Nop.Core.Caching;
 using Nop.Core.Domain.Customers;
 using Nop.Services.Customers;
@@ -19,13 +20,13 @@ namespace Nop.Plugin.Api.Helpers
             _cacheManager = cacheManager;
         }
 
-        public IList<CustomerRole> GetValidCustomerRoles(List<int> roleIds)
+        public async Task<IList<CustomerRole>> GetValidCustomerRolesAsync(List<int> roleIds)
         {
             // This is needed because the caching messes up the entity framework context
             // and when you try to send something TO the database it throws an exception.
-            _cacheManager.RemoveByPrefix(CUSTOMERROLES_ALL_KEY);
+            await _cacheManager.RemoveByPrefixAsync(CUSTOMERROLES_ALL_KEY);
 
-            var allCustomerRoles = _customerService.GetAllCustomerRoles(true);
+            var allCustomerRoles = await _customerService.GetAllCustomerRolesAsync(true);
             var newCustomerRoles = new List<CustomerRole>();
             foreach (var customerRole in allCustomerRoles)
             {

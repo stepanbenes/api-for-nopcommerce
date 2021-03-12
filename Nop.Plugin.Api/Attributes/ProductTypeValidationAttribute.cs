@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Nop.Core.Domain.Catalog;
 
 namespace Nop.Plugin.Api.Attributes
@@ -8,13 +9,13 @@ namespace Nop.Plugin.Api.Attributes
     {
         private readonly Dictionary<string, string> _errors = new Dictionary<string, string>();
 
-        public override void Validate(object instance)
+        public override Task ValidateAsync(object instance)
         {
             // Product Type is not required so it could be null
             // and there is nothing to validate in this case
             if (instance == null)
             {
-                return;
+                return Task.CompletedTask;
             }
 
             var isDefined = Enum.IsDefined(typeof(ProductType), instance);
@@ -23,6 +24,8 @@ namespace Nop.Plugin.Api.Attributes
             {
                 _errors.Add("ProductType", "Invalid product type");
             }
+
+            return Task.CompletedTask;
         }
 
         public override Dictionary<string, string> GetErrors()

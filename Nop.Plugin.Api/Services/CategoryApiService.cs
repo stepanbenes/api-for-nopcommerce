@@ -6,6 +6,7 @@ using Nop.Core.Domain.Catalog;
 using Nop.Plugin.Api.DataStructures;
 using Nop.Plugin.Api.Infrastructure;
 using Nop.Services.Stores;
+using System.Threading.Tasks;
 
 namespace Nop.Plugin.Api.Services
 {
@@ -56,7 +57,7 @@ namespace Nop.Plugin.Api.Services
             return category;
         }
 
-        public int GetCategoriesCount(
+        public async Task<int> GetCategoriesCountAsync(
             DateTime? createdAtMin = null, DateTime? createdAtMax = null,
             DateTime? updatedAtMin = null, DateTime? updatedAtMax = null,
             bool? publishedStatus = null, int? productId = null)
@@ -64,7 +65,7 @@ namespace Nop.Plugin.Api.Services
             var query = GetCategoriesQuery(createdAtMin, createdAtMax, updatedAtMin, updatedAtMax,
                                            publishedStatus, productId);
 
-            return query.Count(c => _storeMappingService.Authorize(c));
+            return await query.WhereAwait(async c => await _storeMappingService.AuthorizeAsync(c)).CountAsync();
         }
 
         private IQueryable<Category> GetCategoriesQuery(

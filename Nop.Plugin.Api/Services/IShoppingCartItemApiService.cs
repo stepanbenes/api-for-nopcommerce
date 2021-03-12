@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Nop.Core.Domain.Orders;
 using Nop.Plugin.Api.Infrastructure;
 
@@ -12,6 +13,6 @@ namespace Nop.Plugin.Api.Services
             DateTime? updatedAtMin = null, DateTime? updatedAtMax = null, int limit = Constants.Configurations.DefaultLimit,
             int page = Constants.Configurations.DefaultPageValue);
 
-        ShoppingCartItem GetShoppingCartItem(int id);
+        Task<ShoppingCartItem> GetShoppingCartItemAsync(int id);
     }
 }

@@ -4,6 +4,7 @@ using Nop.Data;
 using Nop.Core.Domain.Catalog;
 using Nop.Plugin.Api.DataStructures;
 using Nop.Plugin.Api.Infrastructure;
+using System.Threading.Tasks;
 
 namespace Nop.Plugin.Api.Services
 {
@@ -30,14 +31,14 @@ namespace Nop.Plugin.Api.Services
             return GetProductAttributesQuery().Count();
         }
 
-        ProductAttribute IProductAttributesApiService.GetById(int id)
+        Task<ProductAttribute> IProductAttributesApiService.GetByIdAsync(int id)
         {
             if (id <= 0)
             {
                 return null;
             }
 
-            return _productAttributesRepository.GetById(id);
+            return _productAttributesRepository.GetByIdAsync(id);
         }
 
         private IQueryable<ProductAttribute> GetProductAttributesQuery(int sinceId = Constants.Configurations.DefaultSinceId)

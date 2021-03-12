@@ -1,4 +1,5 @@
-﻿using Nop.Core.Domain.Catalog;
+﻿using System.Threading.Tasks;
+using Nop.Core.Domain.Catalog;
 using Nop.Core.Domain.Localization;
 using Nop.Core.Domain.Orders;
 using Nop.Core.Domain.Stores;
@@ -19,17 +20,6 @@ namespace Nop.Plugin.Api.Helpers
 {
     public interface IDTOHelper
     {
-        ProductDto PrepareProductDTO(Product product);
-        CategoryDto PrepareCategoryDTO(Category category);
-        OrderDto PrepareOrderDTO(Order order);
-        ShoppingCartItemDto PrepareShoppingCartItemDTO(ShoppingCartItem shoppingCartItem);
-        OrderItemDto PrepareOrderItemDTO(OrderItem orderItem);
-        StoreDto PrepareStoreDTO(Store store);
-        LanguageDto PrepareLanguageDto(Language language);
-        ProductAttributeDto PrepareProductAttributeDTO(ProductAttribute productAttribute);
-        ProductSpecificationAttributeDto PrepareProductSpecificationAttributeDto(ProductSpecificationAttribute productSpecificationAttribute);
-        SpecificationAttributeDto PrepareSpecificationAttributeDto(SpecificationAttribute specificationAttribute);
-        ManufacturerDto PrepareManufacturerDto(Manufacturer manufacturer);
-        TopicDto PrepareTopicDTO(Topic topic);
+        Task<CategoryDto> PrepareCategoryDTOAsync(Category category);
     }
 }

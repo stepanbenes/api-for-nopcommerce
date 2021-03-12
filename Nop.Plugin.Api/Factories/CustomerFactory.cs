@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Nop.Core.Domain.Customers;
 
 namespace Nop.Plugin.Api.Factories
 {
     public class CustomerFactory : IFactory<Customer>
     {
-        public Customer Initialize()
+        public Task<Customer> InitializeAsync()
         {
             var defaultCustomer = new Customer
                                   {
@@ -15,7 +16,7 @@ namespace Nop.Plugin.Api.Factories
                                       Active = true
                                   };
 
-            return defaultCustomer;
+            return Task.FromResult(defaultCustomer);
         }
     }
 }

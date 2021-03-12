@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Nop.Core.Domain.Customers;
@@ -13,7 +14,7 @@ namespace Nop.Plugin.Api.Authorization.Requirements
 {
     public class CustomerRoleRequirement : IAuthorizationRequirement
     {
-        public bool IsCustomerInRole()
+        public async Task<bool> IsCustomerInRoleAsync()
         {
             try
             {
@@ -25,11 +26,11 @@ namespace Nop.Plugin.Api.Authorization.Requirements
                 {
                     var customerService = EngineContext.Current.Resolve<ICustomerService>();
 
-                    var customer = customerService.GetCustomerByGuid(customerGuid);
+                    var customer = await customerService.GetCustomerByGuidAsync(customerGuid);
                    
                     if (customer != null)
                     {
-                        var customerRoles = customerService.GetCustomerRoles(customer);
+                        var customerRoles = await customerService.GetCustomerRolesAsync(customer);
                         return IsInApiRole(customerRoles);
                     }
                 }

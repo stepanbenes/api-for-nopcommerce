@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Nop.Core.Domain.Catalog;
 using Nop.Plugin.Api.Infrastructure;
 
@@ -16,7 +17,7 @@ namespace Nop.Plugin.Api.Services
             int sinceId = Constants.Configurations.DefaultSinceId,
             int? productId = null, bool? publishedStatus = null);
 
-        int GetCategoriesCount(
+        Task<int> GetCategoriesCountAsync(
             DateTime? createdAtMin = null, DateTime? createdAtMax = null, DateTime? updatedAtMin = null, DateTime? updatedAtMax = null,
             bool? publishedStatus = null, int? productId = null);
     }

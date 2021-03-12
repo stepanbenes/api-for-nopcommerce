@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Nop.Core.Infrastructure;
 using Nop.Services.Vendors;
 
@@ -17,13 +18,13 @@ namespace Nop.Plugin.Api.Attributes
 
         private IVendorService VendorService => _vendorService ?? (_vendorService = EngineContext.Current.Resolve<IVendorService>());
 
-        public override void Validate(object instance)
+        public override async Task ValidateAsync(object instance)
         {
             if (instance != null && int.TryParse(instance.ToString(), out var vendorId))
             {
                 if (vendorId > 0)
                 {
-                    var vendor = VendorService.GetVendorById(vendorId);
+                    var vendor = await VendorService.GetVendorByIdAsync(vendorId);
 
                     if (vendor == null)
                     {

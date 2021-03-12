@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Nop.Core.Domain.Catalog;
 
 namespace Nop.Plugin.Api.Factories
@@ -12,7 +13,7 @@ namespace Nop.Plugin.Api.Factories
             _catalogSettings = catalogSettings;
         }
 
-        public Manufacturer Initialize()
+        public Task<Manufacturer> InitializeAsync()
         {
             // TODO: cache the default entity.
             var defaultManufacturer = new Manufacturer();
@@ -26,7 +27,7 @@ namespace Nop.Plugin.Api.Factories
             defaultManufacturer.CreatedOnUtc = DateTime.UtcNow;
             defaultManufacturer.UpdatedOnUtc = DateTime.UtcNow;
 
-            return defaultManufacturer;
+            return Task.FromResult(defaultManufacturer);
         }
     }
 }

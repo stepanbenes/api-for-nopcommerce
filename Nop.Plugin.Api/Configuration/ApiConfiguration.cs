@@ -1,6 +1,8 @@
-﻿namespace Nop.Plugin.Api.Configuration
+﻿using Nop.Core.Configuration;
+
+namespace Nop.Plugin.Api.Configuration
 {
-    public class ApiConfiguration
+    public class ApiConfiguration : IConfig
     {
         public int AllowedClockSkewInMinutes { get; set; } = 5;
 

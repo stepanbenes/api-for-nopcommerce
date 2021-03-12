@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Nop.Core.Domain.Catalog;
 using Nop.Services.Catalog;
 
@@ -16,13 +17,13 @@ namespace Nop.Plugin.Api.Factories
             _catalogSettings = catalogSettings;
         }
 
-        public Category Initialize()
+        public async Task<Category> InitializeAsync()
         {
             // TODO: cache the default entity.
             var defaultCategory = new Category();
 
             // Set the first template as the default one.
-            var firstTemplate = _categoryTemplateService.GetAllCategoryTemplates().FirstOrDefault();
+            var firstTemplate = (await _categoryTemplateService.GetAllCategoryTemplatesAsync()).FirstOrDefault();
 
             if (firstTemplate != null)
             {

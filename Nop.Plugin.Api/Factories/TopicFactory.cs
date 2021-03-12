@@ -1,13 +1,14 @@
-﻿using Nop.Core.Domain.Topics;
+﻿using System.Threading.Tasks;
+using Nop.Core.Domain.Topics;
 
 namespace Nop.Plugin.Api.Factories
 {
     public class TopicFactory : IFactory<Topic>
     {
-        public Topic Initialize()
+        public Task<Topic> InitializeAsync()
         {
             var topic = new Topic();
-            return topic;
+            return Task.FromResult(topic);
         }
     }
 }

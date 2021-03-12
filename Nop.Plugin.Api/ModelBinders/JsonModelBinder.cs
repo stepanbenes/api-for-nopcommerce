@@ -16,34 +16,23 @@ namespace Nop.Plugin.Api.ModelBinders
     public class JsonModelBinder<T> : IModelBinder where T : class, new()
     {
         private readonly IJsonHelper _jsonHelper;
-
-        private readonly int _languageId;
         private readonly ILocalizationService _localizationService;
+        private readonly ILanguageService _languageService;
 
         public JsonModelBinder(IJsonHelper jsonHelper, ILocalizationService localizationService, ILanguageService languageService)
         {
             _jsonHelper = jsonHelper;
             _localizationService = localizationService;
-
-            // Languages are ordered by display order so the first language will be with the smallest display order.
-            var firstLanguage = languageService.GetAllLanguages().FirstOrDefault();
-            if (firstLanguage != null)
-            {
-                _languageId = firstLanguage.Id;
-            }
-            else
-            {
-                _languageId = 0;
-            }
+            _languageService = languageService;
         }
 
-        public Task BindModelAsync(ModelBindingContext bindingContext)
+        public async Task BindModelAsync(ModelBindingContext bindingContext)
         {
             var propertyValuePairs = GetPropertyValuePairs(bindingContext);
             if (propertyValuePairs == null)
             {
                 bindingContext.Result = ModelBindingResult.Failed();
-                return Task.CompletedTask;
+                return;
             }
 
             if (bindingContext.ModelState.IsValid)
@@ -62,14 +51,14 @@ namespace Nop.Plugin.Api.ModelBinders
 
                 // We need to call this method here so it will be certain that the routeDataId will be in the propertyValuePairs
                 // when the request is PUT.
-                ValidateValueTypes(bindingContext, propertyValuePairs);
+                await ValidateValueTypesAsync(bindingContext, propertyValuePairs);
 
                 Delta<T> delta = null;
 
                 if (bindingContext.ModelState.IsValid)
                 {
                     delta = new Delta<T>(propertyValuePairs);
-                    ValidateModel(bindingContext, propertyValuePairs, delta.Dto);
+                    await ValidateModelAsync(bindingContext, propertyValuePairs, delta.Dto);
                 }
 
                 if (bindingContext.ModelState.IsValid)
@@ -86,8 +75,6 @@ namespace Nop.Plugin.Api.ModelBinders
             {
                 bindingContext.Result = ModelBindingResult.Failed();
             }
-
-            return Task.CompletedTask;
         }
 
         private Dictionary<string, object> GetPropertyValuePairs(ModelBindingContext bindingContext)
@@ -125,7 +112,7 @@ namespace Nop.Plugin.Api.ModelBinders
             return routeDataId;
         }
 
-        private void ValidateValueTypes(ModelBindingContext bindingContext, Dictionary<string, object> propertyValuePairs)
+        private async Task ValidateValueTypesAsync(ModelBindingContext bindingContext, Dictionary<string, object> propertyValuePairs)
         {
             var errors = new Dictionary<string, string>();
 
@@ -134,13 +121,28 @@ namespace Nop.Plugin.Api.ModelBinders
 
             if (!typeValidator.IsValid(propertyValuePairs))
             {
+                int languageId;
+                // Languages are ordered by display order so the first language will be with the smallest display order.
+                var firstLanguage = (await _languageService.GetAllLanguagesAsync()).FirstOrDefault();
+                if (firstLanguage != null)
+                {
+                    languageId = firstLanguage.Id;
+                }
+                else
+                {
+                    languageId = 0;
+                }
+
+                string invalidTypeText = await _localizationService.GetResourceAsync("Api.InvalidType", languageId, false);
+                string invalidPropertyTypeText = await _localizationService.GetResourceAsync("Api.InvalidPropertyType", languageId, false);
+
                 foreach (var invalidProperty in typeValidator.InvalidProperties)
                 {
-                    var key = string.Format(_localizationService.GetResource("Api.InvalidType", _languageId, false), invalidProperty);
+                    var key = string.Format(invalidTypeText, invalidProperty);
 
                     if (!errors.ContainsKey(key))
                     {
-                        errors.Add(key, _localizationService.GetResource("Api.InvalidPropertyType", _languageId, false));
+                        errors.Add(key, invalidPropertyTypeText);
                     }
                 }
             }
@@ -154,7 +156,7 @@ namespace Nop.Plugin.Api.ModelBinders
             }
         }
 
-        private void ValidateModel(ModelBindingContext bindingContext, Dictionary<string, object> propertyValuePairs, T dto)
+        private async Task ValidateModelAsync(ModelBindingContext bindingContext, Dictionary<string, object> propertyValuePairs, T dto)
         {
             // this method validates each property by checking if it has an attribute that inherits from BaseValidationAttribute
             // these attribtues are different than FluentValidation attributes, so they need to be validated manually
@@ -173,7 +175,7 @@ namespace Nop.Plugin.Api.ModelBinders
 
                 if (validationAttribute != null)
                 {
-                    validationAttribute.Validate(property.GetValue(dto));
+                    await validationAttribute.ValidateAsync(property.GetValue(dto));
                     var errors = validationAttribute.GetErrors();
 
                     if (errors.Count > 0)

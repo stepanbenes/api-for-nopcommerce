@@ -39,7 +39,8 @@ namespace Nop.Plugin.Api.Services
         private IQueryable<NewsLetterSubscription> GetNewsLetterSubscriptionsQuery(
             DateTime? createdAtMin = null, DateTime? createdAtMax = null, bool? onlyActive = true)
         {
-            var query = _newsLetterSubscriptionRepository.Table.Where(nls => nls.StoreId == _storeContext.CurrentStore.Id);
+            var currentStore = _storeContext.GetCurrentStore();
+            var query = _newsLetterSubscriptionRepository.Table.Where(nls => nls.StoreId == currentStore.Id);
 
             if (onlyActive != null && onlyActive == true)
             {

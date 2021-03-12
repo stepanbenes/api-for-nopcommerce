@@ -6,6 +6,7 @@ using Nop.Data;
 using Nop.Core.Domain.Orders;
 using Nop.Plugin.Api.DataStructures;
 using Nop.Plugin.Api.Infrastructure;
+using System.Threading.Tasks;
 
 namespace Nop.Plugin.Api.Services
 {
@@ -31,9 +32,9 @@ namespace Nop.Plugin.Api.Services
             return new ApiList<ShoppingCartItem>(query, page - 1, limit);
         }
 
-        public ShoppingCartItem GetShoppingCartItem(int id)
+        public Task<ShoppingCartItem> GetShoppingCartItemAsync(int id)
         {
-            return _shoppingCartItemsRepository.GetById(id);
+            return _shoppingCartItemsRepository.GetByIdAsync(id);
         }
 
         private IQueryable<ShoppingCartItem> GetShoppingCartItemsQuery(
@@ -68,7 +69,7 @@ namespace Nop.Plugin.Api.Services
             }
 
             // items for the current store only
-            var currentStoreId = _storeContext.CurrentStore.Id;
+            var currentStoreId = _storeContext.GetCurrentStore().Id;
             query = query.Where(c => c.StoreId == currentStoreId);
 
             query = query.OrderBy(shoppingCartItem => shoppingCartItem.Id);

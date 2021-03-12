@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Nop.Core.Domain.Catalog;
 using Nop.Core.Domain.Directory;
 using Nop.Services.Directory;
@@ -16,11 +17,11 @@ namespace Nop.Plugin.Api.Factories
             _measureSettings = measureSettings;
         }
 
-        public Product Initialize()
+        public async Task<Product> InitializeAsync()
         {
             var defaultProduct = new Product();
 
-            defaultProduct.Weight = _measureService.GetMeasureWeightById(_measureSettings.BaseWeightId).Ratio;
+            defaultProduct.Weight = (await _measureService.GetMeasureWeightByIdAsync(_measureSettings.BaseWeightId)).Ratio;
 
             defaultProduct.CreatedOnUtc = DateTime.UtcNow;
             defaultProduct.UpdatedOnUtc = DateTime.UtcNow;
