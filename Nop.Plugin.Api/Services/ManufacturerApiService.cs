@@ -42,19 +42,18 @@ namespace Nop.Plugin.Api.Services
 
             if (languageId.HasValue)
             {
-                //var localizedNames = _localizedPropertyRepository.TableNoTracking.Where(x => x.LocaleKeyGroup == "Manufacturer" && languageId == languageId.Value);
-                //foreach (var cat in list)
-                //{
-                //    var localizedName = localizedNames.FirstOrDefault(x => x.EntityId == cat.Id);
-                //    if (localizedName != null)
-                //    {
-                //        cat.Name = localizedName.LocaleValue;
-                //    }
-                //}
+                var localizedNames = _localizedPropertyRepository.Table.Where(x => x.LocaleKeyGroup == "Manufacturer" && languageId == languageId.Value);
+                foreach (var cat in list)
+                {
+                    var localizedName = localizedNames.FirstOrDefault(x => x.EntityId == cat.Id);
+                    if (localizedName != null)
+                    {
+                        cat.Name = localizedName.LocaleValue;
+                    }
+                }
             }
 
             return list;
-            //return new ApiList<Manufacturer>(query, page - 1, limit);
         }
 
         public Manufacturer GetManufacturerById(int id)

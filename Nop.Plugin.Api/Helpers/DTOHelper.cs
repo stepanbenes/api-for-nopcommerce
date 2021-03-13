@@ -22,7 +22,6 @@ using Nop.Plugin.Api.DTO.Stores;
 using Nop.Plugin.Api.DTOs.Topics;
 using Nop.Plugin.Api.MappingExtensions;
 using Nop.Plugin.Api.Services;
-//using Nop.Plugin.Api.Services;
 using Nop.Services.Catalog;
 using Nop.Services.Customers;
 using Nop.Services.Directory;
@@ -141,7 +140,7 @@ namespace Nop.Plugin.Api.Helpers
             var categoryDto = category.ToDto();
 
             var picture = await _pictureService.GetPictureByIdAsync(category.PictureId);
-            var imageDto = PrepareImageDto(picture);
+            var imageDto = await PrepareImageDtoAsync(picture);
 
             if (imageDto != null)
             {
@@ -262,7 +261,7 @@ namespace Nop.Plugin.Api.Helpers
             var manufacturerDto = manufacturer.ToDto();
 
             var picture = await _pictureService.GetPictureByIdAsync(manufacturer.PictureId);
-            var imageDto = PrepareImageDto(picture);
+            var imageDto = await PrepareImageDtoAsync(picture);
 
             if (imageDto != null)
             {
@@ -303,7 +302,7 @@ namespace Nop.Plugin.Api.Helpers
             // Here we prepare the resulted dto image.
             foreach (var productPicture in productPictures)
             {
-                var imageDto = PrepareImageDto(await _pictureService.GetPictureByIdAsync(productPicture.PictureId));
+                var imageDto = await PrepareImageDtoAsync(await _pictureService.GetPictureByIdAsync(productPicture.PictureId));
 
                 if (imageDto != null)
                 {
@@ -321,18 +320,20 @@ namespace Nop.Plugin.Api.Helpers
             }
         }
 
-        private ImageDto PrepareImageDto(Picture picture)
+        private async Task<ImageDto> PrepareImageDtoAsync(Picture picture)
         {
             ImageDto image = null;
 
             if (picture != null)
             {
+                (string url, _) = await _pictureService.GetPictureUrlAsync(picture);
+
                 // We don't use the image from the passed dto directly 
                 // because the picture may be passed with src and the result should only include the base64 format.
                 image = new ImageDto
                 {
                     //Attachment = Convert.ToBase64String(picture.PictureBinary),
-                    //Src = _pictureService.GetPictureUrl(picture)
+                    Src = url
                 };
             }
 
@@ -376,13 +377,10 @@ namespace Nop.Plugin.Api.Helpers
                     AttributeControlTypeId = productAttributeMapping.AttributeControlTypeId,
                     DisplayOrder = productAttributeMapping.DisplayOrder,
                     IsRequired = productAttributeMapping.IsRequired,
-                    //TODO: Somnath
-                    //ProductAttributeValues = _productAttributeService.GetProductAttributeValueById(productAttributeMapping.Id).
-                    //                                                .Select(x =>
-                    //                                                            PrepareProductAttributeValueDto(x,
-                    //                                                                                            productAttributeMapping
-                    //                                                                                                .Product))
-                    //                                                .ToList()
+                    ProductAttributeValues = await (await _productAttributeService.GetProductAttributeValuesAsync(productAttributeMapping.Id))
+                                                    .SelectAwait(async attributeValue => await PrepareProductAttributeValueDtoAsync(attributeValue,
+                                                        await _productService.GetProductByIdAsync(productAttributeMapping.ProductId)))
+                                                    .ToListAsync()
                 };
             }
 
@@ -401,7 +399,7 @@ namespace Nop.Plugin.Api.Helpers
                 if (productAttributeValue.ImageSquaresPictureId > 0)
                 {
                     var imageSquaresPicture = await _pictureService.GetPictureByIdAsync(productAttributeValue.ImageSquaresPictureId);
-                    var imageDto = PrepareImageDto(imageSquaresPicture);
+                    var imageDto = await PrepareImageDtoAsync(imageSquaresPicture);
                     productAttributeValueDto.ImageSquaresImage = imageDto;
                 }
 

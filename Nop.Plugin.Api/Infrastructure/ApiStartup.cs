@@ -95,7 +95,7 @@ namespace Nop.Plugin.Api.Infrastructure
                     
                     a.Use(async (context, next) =>
                                 {
-                                    Console.WriteLine("API Call");
+                                    // API Call
                                     context.Request.EnableBuffering();
                                     await next();
                                 });
