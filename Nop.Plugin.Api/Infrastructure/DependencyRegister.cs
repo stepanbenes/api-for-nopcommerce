@@ -41,8 +41,7 @@ namespace Nop.Plugin.Api.Infrastructure
 
         private void RegisterPluginServices(IServiceCollection services)
         {
-            //builder.RegisterType<ClientService>().As<IClientService>().InstancePerLifetimeScope();
-            //builder.RegisterType<CustomerApiService>().As<ICustomerApiService>().InstancePerLifetimeScope();
+            services.AddScoped<ICustomerApiService, CustomerApiService>();
             services.AddScoped<ICategoryApiService, CategoryApiService>();
             services.AddScoped<IProductApiService, ProductApiService>();
             services.AddScoped<IProductCategoryMappingsApiService, ProductCategoryMappingsApiService>();
@@ -81,7 +80,7 @@ namespace Nop.Plugin.Api.Infrastructure
             services.AddScoped<IJsonPropertyMapper, JsonPropertyMapper>();
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            services.AddSingleton<Dictionary<string, object>>(); // TODO: ?
+            services.AddSingleton<Dictionary<string, object>>(); // TODO: refactor to typed class. make Scoped?
 
             services.AddScoped<ITopicService, TopicService>();
 

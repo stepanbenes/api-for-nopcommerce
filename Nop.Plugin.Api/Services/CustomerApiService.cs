@@ -18,17 +18,19 @@ using Nop.Plugin.Api.MappingExtensions;
 using Nop.Services.Localization;
 using Nop.Services.Stores;
 using Nop.Services.Caching;
+using System.Threading.Tasks;
 
 namespace Nop.Plugin.Api.Services
 {
     public class CustomerApiService : ICustomerApiService
     {
-        private const string FirstName = "firstname";
-        private const string LastName = "lastname";
-        private const string LanguageId = "languageid";
-        private const string DateOfBirth = "dateofbirth";
-        private const string Gender = "gender";
-        private const string KeyGroup = "customer";
+        private const string FIRST_NAME = "firstname";
+        private const string LAST_NAME = "lastname";
+        private const string LANGUAGE_ID = "languageid";
+        private const string DATE_OF_BIRTH = "dateofbirth";
+        private const string GENDER = "gender";
+        private const string KEY_GROUP = "customer";
+
         private readonly IStaticCacheManager _cacheManager;
         private readonly IRepository<Customer> _customerRepository;
         private readonly IRepository<GenericAttribute> _genericAttributeRepository;
@@ -56,28 +58,28 @@ namespace Nop.Plugin.Api.Services
             _cacheManager = staticCacheManager;
         }
 
-        public IList<CustomerDto> GetCustomersDtos(
+        public async Task<IList<CustomerDto>> GetCustomersDtosAsync(
             DateTime? createdAtMin = null, DateTime? createdAtMax = null, int limit = Constants.Configurations.DefaultLimit,
             int page = Constants.Configurations.DefaultPageValue, int sinceId = Constants.Configurations.DefaultSinceId)
         {
             var query = GetCustomersQuery(createdAtMin, createdAtMax, sinceId);
 
-            var result = HandleCustomerGenericAttributes(null, query, limit, page);
+            var result = await HandleCustomerGenericAttributesAsync(null, query, limit, page);
 
-            SetNewsletterSubscribtionStatus(result);
+            await SetNewsletterSubscribtionStatusAsync(result);
 
             return result;
         }
 
-        public int GetCustomersCount()
+        public Task<int> GetCustomersCountAsync()
         {
-            return _customerRepository.Table.Count(customer => !customer.Deleted
+            return _customerRepository.Table.CountAsync(customer => !customer.Deleted
                                                                && (customer.RegisteredInStoreId == 0 ||
-                                                                   customer.RegisteredInStoreId == _storeContext.CurrentStore.Id));
+                                                                   customer.RegisteredInStoreId == _storeContext.GetCurrentStore().Id));
         }
 
         // Need to work with dto object so we can map the first and last name from generic attributes table.
-        public IList<CustomerDto> Search(
+        public async Task<IList<CustomerDto>> SearchAsync(
             string queryParams = "", string order = Constants.Configurations.DefaultOrder,
             int page = Constants.Configurations.DefaultPageValue, int limit = Constants.Configurations.DefaultLimit)
         {
@@ -104,29 +106,29 @@ namespace Nop.Plugin.Api.Services
                     //}
                 }
 
-                result = HandleCustomerGenericAttributes(searchParams, query, limit, page, order);
+                result = await HandleCustomerGenericAttributesAsync(searchParams, query, limit, page, order);
             }
 
             return result;
         }
 
-        public Dictionary<string, string> GetFirstAndLastNameByCustomerId(int customerId)
+        public Task<Dictionary<string, string>> GetFirstAndLastNameByCustomerIdAsync(int customerId)
         {
             return _genericAttributeRepository.Table.Where(
                                                            x =>
-                                                               x.KeyGroup == KeyGroup && x.EntityId == customerId &&
-                                                               (x.Key == FirstName || x.Key == LastName))
-                                              .ToDictionary(x => x.Key.ToLowerInvariant(), y => y.Value);
+                                                               x.KeyGroup == KEY_GROUP && x.EntityId == customerId &&
+                                                               (x.Key == FIRST_NAME || x.Key == LAST_NAME))
+                                              .ToDictionaryAsync(x => x.Key.ToLowerInvariant(), y => y.Value);
         }
 
-        public Customer GetCustomerEntityById(int id)
+        public async Task<Customer> GetCustomerEntityByIdAsync(int id)
         {
-            var customer = _customerRepository.Table.FirstOrDefault(c => c.Id == id && !c.Deleted);
+            var customer = await _customerRepository.Table.FirstOrDefaultAsync(c => c.Id == id && !c.Deleted);
 
             return customer;
         }
 
-        public CustomerDto GetCustomerById(int id, bool showDeleted = false)
+        public async Task<CustomerDto> GetCustomerByIdAsync(int id, bool showDeleted = false)
         {
             if (id == 0)
             {
@@ -134,16 +136,16 @@ namespace Nop.Plugin.Api.Services
             }
 
             // Here we expect to get two records, one for the first name and one for the last name.
-            var customerAttributeMappings = (from customer in _customerRepository.Table //NoTracking
+            var customerAttributeMappings = await (from customer in _customerRepository.Table //NoTracking
                                              join attribute in _genericAttributeRepository.Table //NoTracking
                                                  on customer.Id equals attribute.EntityId
                                              where customer.Id == id &&
                                                    attribute.KeyGroup == "Customer"
                                              select new CustomerAttributeMappingDto
-                                                    {
-                                                        Attribute = attribute,
-                                                        Customer = customer
-                                                    }).ToList();
+                                             {
+                                                 Attribute = attribute,
+                                                 Customer = customer
+                                             }).ToListAsync();
 
             CustomerDto customerDto = null;
 
@@ -154,23 +156,23 @@ namespace Nop.Plugin.Api.Services
                 // The customer object is the same in all mappings.
                 customerDto = customer.ToDto();
 
-                var defaultStoreLanguageId = GetDefaultStoreLangaugeId();
+                var defaultStoreLanguageId = await GetDefaultStoreLangaugeIdAsync();
 
                 // If there is no Language Id generic attribute create one with the default language id.
                 if (!customerAttributeMappings.Any(cam => cam?.Attribute != null &&
-                                                          cam.Attribute.Key.Equals(LanguageId, StringComparison.InvariantCultureIgnoreCase)))
+                                                          cam.Attribute.Key.Equals(LANGUAGE_ID, StringComparison.InvariantCultureIgnoreCase)))
                 {
                     var languageId = new GenericAttribute
-                                     {
-                                         Key = LanguageId,
-                                         Value = defaultStoreLanguageId.ToString()
-                                     };
+                    {
+                        Key = LANGUAGE_ID,
+                        Value = defaultStoreLanguageId.ToString()
+                    };
 
                     var customerAttributeMappingDto = new CustomerAttributeMappingDto
-                                                      {
-                                                          Customer = customer,
-                                                          Attribute = languageId
-                                                      };
+                    {
+                        Customer = customer,
+                        Attribute = languageId
+                    };
 
                     customerAttributeMappings.Add(customerAttributeMappingDto);
                 }
@@ -184,25 +186,25 @@ namespace Nop.Plugin.Api.Services
 
                     if (mapping.Attribute != null)
                     {
-                        if (mapping.Attribute.Key.Equals(FirstName, StringComparison.InvariantCultureIgnoreCase))
+                        if (mapping.Attribute.Key.Equals(FIRST_NAME, StringComparison.InvariantCultureIgnoreCase))
                         {
                             customerDto.FirstName = mapping.Attribute.Value;
                         }
-                        else if (mapping.Attribute.Key.Equals(LastName, StringComparison.InvariantCultureIgnoreCase))
+                        else if (mapping.Attribute.Key.Equals(LAST_NAME, StringComparison.InvariantCultureIgnoreCase))
                         {
                             customerDto.LastName = mapping.Attribute.Value;
                         }
-                        else if (mapping.Attribute.Key.Equals(LanguageId, StringComparison.InvariantCultureIgnoreCase))
+                        else if (mapping.Attribute.Key.Equals(LANGUAGE_ID, StringComparison.InvariantCultureIgnoreCase))
                         {
                             customerDto.LanguageId = mapping.Attribute.Value;
                         }
-                        else if (mapping.Attribute.Key.Equals(DateOfBirth, StringComparison.InvariantCultureIgnoreCase))
+                        else if (mapping.Attribute.Key.Equals(DATE_OF_BIRTH, StringComparison.InvariantCultureIgnoreCase))
                         {
                             customerDto.DateOfBirth = string.IsNullOrEmpty(mapping.Attribute.Value)
-                                                          ? (DateTime?) null
+                                                          ? (DateTime?)null
                                                           : DateTime.Parse(mapping.Attribute.Value);
                         }
-                        else if (mapping.Attribute.Key.Equals(Gender, StringComparison.InvariantCultureIgnoreCase))
+                        else if (mapping.Attribute.Key.Equals(GENDER, StringComparison.InvariantCultureIgnoreCase))
                         {
                             customerDto.Gender = mapping.Attribute.Value;
                         }
@@ -223,7 +225,7 @@ namespace Nop.Plugin.Api.Services
                 }
             }
 
-            SetNewsletterSubscribtionStatus(customerDto);
+            await SetNewsletterSubscribtionStatusAsync(customerDto);
 
             return customerDto;
         }
@@ -284,7 +286,7 @@ namespace Nop.Plugin.Api.Services
         /// <param name="page"></param>
         /// <param name="order"></param>
         /// <returns></returns>
-        private IList<CustomerDto> HandleCustomerGenericAttributes(
+        private async Task<IList<CustomerDto>> HandleCustomerGenericAttributesAsync(
             IReadOnlyDictionary<string, string> searchParams, IQueryable<Customer> query,
             int limit = Constants.Configurations.DefaultLimit, int page = Constants.Configurations.DefaultPageValue,
             string order = Constants.Configurations.DefaultOrder)
@@ -307,40 +309,40 @@ namespace Nop.Plugin.Api.Services
                                                               .Where(attr => attr.EntityId == customer.Id &&
                                                                              attr.KeyGroup == "Customer").DefaultIfEmpty()
                  select new CustomerAttributeMappingDto
-                        {
-                            Attribute = attribute,
-                            Customer = customer
-                        }).GroupBy(x => x.Customer.Id);
+                 {
+                     Attribute = attribute,
+                     Customer = customer
+                 }).GroupBy(x => x.Customer.Id);
 
             if (searchParams != null && searchParams.Count > 0)
             {
-                if (searchParams.ContainsKey(FirstName))
+                if (searchParams.ContainsKey(FIRST_NAME))
                 {
-                    allRecordsGroupedByCustomerId = GetCustomerAttributesMappingsByKey(allRecordsGroupedByCustomerId, FirstName, searchParams[FirstName]);
+                    allRecordsGroupedByCustomerId = GetCustomerAttributesMappingsByKey(allRecordsGroupedByCustomerId, FIRST_NAME, searchParams[FIRST_NAME]);
                 }
 
-                if (searchParams.ContainsKey(LastName))
+                if (searchParams.ContainsKey(LAST_NAME))
                 {
-                    allRecordsGroupedByCustomerId = GetCustomerAttributesMappingsByKey(allRecordsGroupedByCustomerId, LastName, searchParams[LastName]);
+                    allRecordsGroupedByCustomerId = GetCustomerAttributesMappingsByKey(allRecordsGroupedByCustomerId, LAST_NAME, searchParams[LAST_NAME]);
                 }
 
-                if (searchParams.ContainsKey(LanguageId))
+                if (searchParams.ContainsKey(LANGUAGE_ID))
                 {
-                    allRecordsGroupedByCustomerId = GetCustomerAttributesMappingsByKey(allRecordsGroupedByCustomerId, LanguageId, searchParams[LanguageId]);
+                    allRecordsGroupedByCustomerId = GetCustomerAttributesMappingsByKey(allRecordsGroupedByCustomerId, LANGUAGE_ID, searchParams[LANGUAGE_ID]);
                 }
 
-                if (searchParams.ContainsKey(DateOfBirth))
+                if (searchParams.ContainsKey(DATE_OF_BIRTH))
                 {
-                    allRecordsGroupedByCustomerId = GetCustomerAttributesMappingsByKey(allRecordsGroupedByCustomerId, DateOfBirth, searchParams[DateOfBirth]);
+                    allRecordsGroupedByCustomerId = GetCustomerAttributesMappingsByKey(allRecordsGroupedByCustomerId, DATE_OF_BIRTH, searchParams[DATE_OF_BIRTH]);
                 }
 
-                if (searchParams.ContainsKey(Gender))
+                if (searchParams.ContainsKey(GENDER))
                 {
-                    allRecordsGroupedByCustomerId = GetCustomerAttributesMappingsByKey(allRecordsGroupedByCustomerId, Gender, searchParams[Gender]);
+                    allRecordsGroupedByCustomerId = GetCustomerAttributesMappingsByKey(allRecordsGroupedByCustomerId, GENDER, searchParams[GENDER]);
                 }
             }
 
-            var result = GetFullCustomerDtos(allRecordsGroupedByCustomerId, page, limit, order);
+            var result = await GetFullCustomerDtosAsync(allRecordsGroupedByCustomerId, page, limit, order);
 
             return result;
         }
@@ -349,7 +351,7 @@ namespace Nop.Plugin.Api.Services
         ///     This method is responsible for getting customer dto records with first and last names set from the attribute
         ///     mappings.
         /// </summary>
-        private IList<CustomerDto> GetFullCustomerDtos(
+        private async Task<IList<CustomerDto>> GetFullCustomerDtosAsync(
             IQueryable<IGrouping<int, CustomerAttributeMappingDto>> customerAttributesMappings,
             int page = Constants.Configurations.DefaultPageValue, int limit = Constants.Configurations.DefaultLimit,
             string order = Constants.Configurations.DefaultOrder)
@@ -362,7 +364,7 @@ namespace Nop.Plugin.Api.Services
                 new ApiList<IGrouping<int, CustomerAttributeMappingDto>>(customerAttributesMappings, page - 1, limit);
 
             // Get the default language id for the current store.
-            var defaultLanguageId = GetDefaultStoreLangaugeId();
+            var defaultLanguageId = await GetDefaultStoreLangaugeIdAsync();
 
             foreach (var group in customerAttributeGroupsList)
             {
@@ -385,13 +387,13 @@ namespace Nop.Plugin.Api.Services
             var attributes = mappingsForMerge.Select(x => x.Attribute).ToList();
 
             // If there is no Language Id generic attribute create one with the default language id.
-            if (!attributes.Any(atr => atr != null && atr.Key.Equals(LanguageId, StringComparison.InvariantCultureIgnoreCase)))
+            if (!attributes.Any(atr => atr != null && atr.Key.Equals(LANGUAGE_ID, StringComparison.InvariantCultureIgnoreCase)))
             {
                 var languageId = new GenericAttribute
-                                 {
-                                     Key = LanguageId,
-                                     Value = defaultLanguageId.ToString()
-                                 };
+                {
+                    Key = LANGUAGE_ID,
+                    Value = defaultLanguageId.ToString()
+                };
 
                 attributes.Add(languageId);
             }
@@ -400,25 +402,25 @@ namespace Nop.Plugin.Api.Services
             {
                 if (attribute != null)
                 {
-                    if (attribute.Key.Equals(FirstName, StringComparison.InvariantCultureIgnoreCase))
+                    if (attribute.Key.Equals(FIRST_NAME, StringComparison.InvariantCultureIgnoreCase))
                     {
                         customerDto.FirstName = attribute.Value;
                     }
-                    else if (attribute.Key.Equals(LastName, StringComparison.InvariantCultureIgnoreCase))
+                    else if (attribute.Key.Equals(LAST_NAME, StringComparison.InvariantCultureIgnoreCase))
                     {
                         customerDto.LastName = attribute.Value;
                     }
-                    else if (attribute.Key.Equals(LanguageId, StringComparison.InvariantCultureIgnoreCase))
+                    else if (attribute.Key.Equals(LANGUAGE_ID, StringComparison.InvariantCultureIgnoreCase))
                     {
                         customerDto.LanguageId = attribute.Value;
                     }
-                    else if (attribute.Key.Equals(DateOfBirth, StringComparison.InvariantCultureIgnoreCase))
+                    else if (attribute.Key.Equals(DATE_OF_BIRTH, StringComparison.InvariantCultureIgnoreCase))
                     {
                         customerDto.DateOfBirth = string.IsNullOrEmpty(attribute.Value)
-                                                      ? (DateTime?) null
+                                                      ? (DateTime?)null
                                                       : DateTime.Parse(attribute.Value);
                     }
-                    else if (attribute.Key.Equals(Gender, StringComparison.InvariantCultureIgnoreCase))
+                    else if (attribute.Key.Equals(GENDER, StringComparison.InvariantCultureIgnoreCase))
                     {
                         customerDto.Gender = attribute.Value;
                     }
@@ -443,13 +445,16 @@ namespace Nop.Plugin.Api.Services
 
         private IQueryable<Customer> GetCustomersQuery(DateTime? createdAtMin = null, DateTime? createdAtMax = null, int sinceId = 0)
         {
-            var query = _customerRepository.Table //NoTracking
-                                           .Where(customer => !customer.Deleted && !customer.IsSystemAccount && customer.Active);
+            int currentStoreId = _storeContext.GetCurrentStore().Id;
 
-            query = query.Where(customer =>
-                                    !customer.CustomerCustomerRoleMappings.Any(ccrm => ccrm.CustomerRole.Active &&
-                                                                                       ccrm.CustomerRole.SystemName == NopCustomerDefaults.GuestsRoleName)
-                                    && (customer.RegisteredInStoreId == 0 || customer.RegisteredInStoreId == _storeContext.CurrentStore.Id));
+            var query = _customerRepository.Table.Where(customer => !customer.Deleted && !customer.IsSystemAccount && customer.Active);
+
+            //query = query.Where(customer =>
+            //                        !customer.CustomerCustomerRoleMappings.Any(ccrm => ccrm.CustomerRole.Active &&
+            //                                                                           ccrm.CustomerRole.SystemName == NopCustomerDefaults.GuestsRoleName)
+            //                        && (customer.RegisteredInStoreId == 0 || customer.RegisteredInStoreId == _storeContext.CurrentStore.Id));
+
+            query = query.Where(customer => (customer.RegisteredInStoreId == 0 || customer.RegisteredInStoreId == currentStoreId));
 
             if (createdAtMin != null)
             {
@@ -471,17 +476,18 @@ namespace Nop.Plugin.Api.Services
             return query;
         }
 
-        private int GetDefaultStoreLangaugeId()
+        private async Task<int> GetDefaultStoreLangaugeIdAsync()
         {
             // Get the default language id for the current store.
-            var defaultLanguageId = _storeContext.CurrentStore.DefaultLanguageId;
+            var defaultLanguageId = _storeContext.GetCurrentStore().DefaultLanguageId;
 
             if (defaultLanguageId == 0)
             {
-                var allLanguages = _languageService.GetAllLanguages();
+                var allLanguages = await _languageService.GetAllLanguagesAsync();
 
-                var storeLanguages = allLanguages.Where(l =>
-                                                            _storeMappingService.Authorize(l, _storeContext.CurrentStore.Id)).ToList();
+                int currentStoreId = _storeContext.GetCurrentStore().Id;
+
+                var storeLanguages = await allLanguages.WhereAwait(async l => await _storeMappingService.AuthorizeAsync(l, currentStoreId)).ToListAsync();
 
                 // If there is no language mapped to the current store, get all of the languages,
                 // and use the one with the first display order. This is a default nopCommerce workflow.
@@ -498,23 +504,22 @@ namespace Nop.Plugin.Api.Services
             return defaultLanguageId;
         }
 
-        [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
-        private void SetNewsletterSubscribtionStatus(IList<CustomerDto> customerDtos)
+        private async Task SetNewsletterSubscribtionStatusAsync(IList<CustomerDto> customerDtos)
         {
             if (customerDtos == null)
             {
                 return;
             }
 
-            var allNewsletterCustomerEmail = GetAllNewsletterCustomersEmails();
+            var allNewsletterCustomerEmail = await GetAllNewsletterCustomersEmailsAsync();
 
             foreach (var customerDto in customerDtos)
             {
-                SetNewsletterSubscribtionStatus(customerDto, allNewsletterCustomerEmail);
+                await SetNewsletterSubscribtionStatusAsync(customerDto, allNewsletterCustomerEmail);
             }
         }
 
-        private void SetNewsletterSubscribtionStatus(BaseCustomerDto customerDto, IEnumerable<string> allNewsletterCustomerEmail = null)
+        private async Task SetNewsletterSubscribtionStatusAsync(BaseCustomerDto customerDto, IEnumerable<string> allNewsletterCustomerEmail = null)
         {
             if (customerDto == null || string.IsNullOrEmpty(customerDto.Email))
             {
@@ -523,7 +528,7 @@ namespace Nop.Plugin.Api.Services
 
             if (allNewsletterCustomerEmail == null)
             {
-                allNewsletterCustomerEmail = GetAllNewsletterCustomersEmails();
+                allNewsletterCustomerEmail = await GetAllNewsletterCustomersEmailsAsync();
             }
 
             if (allNewsletterCustomerEmail != null && allNewsletterCustomerEmail.Contains(customerDto.Email.ToLowerInvariant()))
@@ -532,19 +537,15 @@ namespace Nop.Plugin.Api.Services
             }
         }
 
-        private IEnumerable<string> GetAllNewsletterCustomersEmails()
+        private Task<List<string>> GetAllNewsletterCustomersEmailsAsync()
         {
-            return _cacheManager.Get(Constants.Configurations.NEWSLETTER_SUBSCRIBERS_KEY, () =>
+            int currentStoreId = _storeContext.GetCurrentStore().Id;
+            return _cacheManager.GetAsync(Constants.Configurations.NEWSLETTER_SUBSCRIBERS_KEY, async () =>
             {
-                IEnumerable<string> subscriberEmails = (from nls in _subscriptionRepository.Table
-                                                        where nls.StoreId == _storeContext.CurrentStore.Id
-                                                              && nls.Active
-                                                        select nls.Email).ToList();
-
-
-                subscriberEmails = subscriberEmails.Where(e => !string.IsNullOrEmpty(e)).Select(e => e.ToLowerInvariant());
-
-                return subscriberEmails.Where(e => !string.IsNullOrEmpty(e)).Select(e => e.ToLowerInvariant());
+                var subscriberEmails = await (from nls in _subscriptionRepository.Table
+                                              where nls.StoreId == currentStoreId && nls.Active
+                                              select nls.Email).ToListAsync();
+                return subscriberEmails.Where(e => !string.IsNullOrEmpty(e)).Select(e => e.ToLowerInvariant()).ToList();
             });
         }
     }

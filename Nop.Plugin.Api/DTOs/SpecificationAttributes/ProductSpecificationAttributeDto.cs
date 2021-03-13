@@ -1,19 +1,14 @@
 ﻿using System;
 using Newtonsoft.Json;
 using Nop.Core.Domain.Catalog;
+using Nop.Plugin.Api.DTO.Base;
 
 namespace Nop.Plugin.Api.DTO.SpecificationAttributes
 {
     [JsonObject(Title = "product_specification_attribute")]
     //[Validator(typeof(ProductSpecificationAttributeDtoValidator))]
-    public class ProductSpecificationAttributeDto
+    public class ProductSpecificationAttributeDto : BaseDto
     {
-        /// <summary>
-        ///     Gets or sets the id
-        /// </summary>
-        [JsonProperty("id")]
-        public int Id { get; set; }
-
         /// <summary>
         ///     Gets or sets the product id
         /// </summary>

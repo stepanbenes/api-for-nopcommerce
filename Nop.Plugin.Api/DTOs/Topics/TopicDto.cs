@@ -1,8 +1,9 @@
-﻿using Newtonsoft.Json;
+﻿#nullable enable
+
+using Newtonsoft.Json;
 using Nop.Plugin.Api.DTO.Base;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Nop.Plugin.Api.DTOs.Topics
 {
@@ -13,7 +14,7 @@ namespace Nop.Plugin.Api.DTOs.Topics
         /// Gets or sets the name
         /// </summary>
         [JsonProperty("system_name")]
-        public string SystemName { get; set; }
+        public string SystemName { get; set; } = null!;
 
         /// <summary>
         /// Gets or sets the value indicating whether this topic should be included in sitemap
@@ -73,13 +74,13 @@ namespace Nop.Plugin.Api.DTOs.Topics
         /// Gets or sets the title
         /// </summary>
         [JsonProperty("title")]
-        public string Title { get; set; }
+        public string Title { get; set; } = null!;
 
         /// <summary>
         /// Gets or sets the body
         /// </summary>
         [JsonProperty("body")]
-        public string Body { get; set; }
+        public string Body { get; set; } = null!;
 
         /// <summary>
         /// Gets or sets a value indicating whether the entity is published

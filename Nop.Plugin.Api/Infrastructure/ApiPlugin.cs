@@ -121,6 +121,11 @@ namespace Nop.Plugin.Api.Infrastructure
             await base.UninstallAsync();
         }
 
+        public override string GetConfigurationPageUrl()
+        {
+            return $"{_webHelper.GetStoreLocation()}Admin/ApiAdmin/Settings";
+        }
+
         public async Task ManageSiteMapAsync(SiteMapNode rootNode)
         {
             var workingLanguage = await _workContext.GetWorkingLanguageAsync();

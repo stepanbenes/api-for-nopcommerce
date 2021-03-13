@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Nop.Core.Domain.Customers;
 using Nop.Plugin.Api.DTO.Customers;
 using Nop.Plugin.Api.Infrastructure;
@@ -8,21 +9,21 @@ namespace Nop.Plugin.Api.Services
 {
     public interface ICustomerApiService
     {
-        int GetCustomersCount();
+        Task<int> GetCustomersCountAsync();
 
-        CustomerDto GetCustomerById(int id, bool showDeleted = false);
+        Task<CustomerDto> GetCustomerByIdAsync(int id, bool showDeleted = false);
 
-        Customer GetCustomerEntityById(int id);
+        Task<Customer> GetCustomerEntityByIdAsync(int id);
 
-        IList<CustomerDto> GetCustomersDtos(
+        Task<IList<CustomerDto>> GetCustomersDtosAsync(
             DateTime? createdAtMin = null, DateTime? createdAtMax = null,
             int limit = Constants.Configurations.DefaultLimit, int page = Constants.Configurations.DefaultPageValue,
             int sinceId = Constants.Configurations.DefaultSinceId);
 
-        IList<CustomerDto> Search(
+        Task<IList<CustomerDto>> SearchAsync(
             string query = "", string order = Constants.Configurations.DefaultOrder,
             int page = Constants.Configurations.DefaultPageValue, int limit = Constants.Configurations.DefaultLimit);
 
-        Dictionary<string, string> GetFirstAndLastNameByCustomerId(int customerId);
+        Task<Dictionary<string, string>> GetFirstAndLastNameByCustomerIdAsync(int customerId);
     }
 }

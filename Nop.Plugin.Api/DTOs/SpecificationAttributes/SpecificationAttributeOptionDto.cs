@@ -1,17 +1,12 @@
 ﻿using Newtonsoft.Json;
+using Nop.Plugin.Api.DTO.Base;
 
 namespace Nop.Plugin.Api.DTO.SpecificationAttributes
 {
     [JsonObject(Title = "specification_attribute_option")]
     //[Validator(typeof(SpecificationAttributeOptionDtoValidator))]
-    public class SpecificationAttributeOptionDto
+    public class SpecificationAttributeOptionDto : BaseDto
     {
-        /// <summary>
-        ///     Gets or sets the id
-        /// </summary>
-        [JsonProperty("id")]
-        public int Id { get; set; }
-
         /// <summary>
         ///     Gets or sets the specification attribute identifier
         /// </summary>

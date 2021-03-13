@@ -98,48 +98,49 @@ namespace Nop.Plugin.Api.Validators
 
         private void SetRolesRule()
         {
-            System.Console.WriteLine();
-            //if (HttpMethod == HttpMethod.Post || RequestJsonDictionary.ContainsKey("role_ids"))
-            //{
-            //    IList<CustomerRole> customerRoles = null;
+            if (HttpMethod == HttpMethod.Post || RequestJsonDictionary.ContainsKey("role_ids"))
+            {
+                IList<CustomerRole> customerRoles = null;
 
-            //    RuleFor(x => x.RoleIds)
-            //        .NotNull()
-            //        .Must(roles => roles.Count > 0)
-            //        .WithMessage("role_ids required")
-            //        .DependentRules(() => RuleFor(dto => dto.RoleIds)
-            //                              .Must(roleIds =>
-            //                              {
-            //                                  if (customerRoles == null)
-            //                                  {
-            //                                      customerRoles = _customerRolesHelper.GetValidCustomerRoles(roleIds);
-            //                                  }
+                // async validation: https://docs.fluentvalidation.net/en/latest/async.html
 
-            //                                  var isInGuestAndRegisterRoles = _customerRolesHelper.IsInGuestsRole(customerRoles) &&
-            //                                                                  _customerRolesHelper.IsInRegisteredRole(customerRoles);
+                RuleFor(x => x.RoleIds)
+                    .NotNull()
+                    .Must(roles => roles.Count > 0)
+                    .WithMessage("role_ids required")
+                    .DependentRules(() => RuleFor(dto => dto.RoleIds)
+                                          .MustAsync(async (roleIds, cancellation) =>
+                                          {
+                                              if (customerRoles == null)
+                                              {
+                                                  customerRoles = await _customerRolesHelper.GetValidCustomerRolesAsync(roleIds);
+                                              }
 
-            //                                  // Customer can not be in guest and register roles simultaneously
-            //                                  return !isInGuestAndRegisterRoles;
-            //                              })
-            //                              .WithMessage("must not be in guest and register roles simultaneously")
-            //                              .DependentRules(() => RuleFor(dto => dto.RoleIds)
-            //                                                    .Must(roleIds =>
-            //                                                    {
-            //                                                        if (customerRoles == null)
-            //                                                        {
-            //                                                            customerRoles = _customerRolesHelper.GetValidCustomerRoles(roleIds);
-            //                                                        }
+                                              var isInGuestAndRegisterRoles = _customerRolesHelper.IsInGuestsRole(customerRoles) &&
+                                                                              _customerRolesHelper.IsInRegisteredRole(customerRoles);
 
-            //                                                        var isInGuestOrRegisterRoles = _customerRolesHelper.IsInGuestsRole(customerRoles) ||
-            //                                                                                       _customerRolesHelper.IsInRegisteredRole(customerRoles);
+                                              // Customer can not be in guest and register roles simultaneously
+                                              return !isInGuestAndRegisterRoles;
+                                          })
+                                          .WithMessage("must not be in guest and register roles simultaneously")
+                                          .DependentRules(() => RuleFor(dto => dto.RoleIds)
+                                                                .MustAsync(async (roleIds, cancellation) =>
+                                                                {
+                                                                    if (customerRoles == null)
+                                                                    {
+                                                                        customerRoles = await _customerRolesHelper.GetValidCustomerRolesAsync(roleIds);
+                                                                    }
 
-            //                                                        // Customer must be in either guest or register role.
-            //                                                        return isInGuestOrRegisterRoles;
-            //                                                    })
-            //                                                    .WithMessage("must be in guest or register role")
-            //                                             )
-            //                       );
-            //}
+                                                                    var isInGuestOrRegisterRoles = _customerRolesHelper.IsInGuestsRole(customerRoles) ||
+                                                                                                   _customerRolesHelper.IsInRegisteredRole(customerRoles);
+
+                                                                    // Customer must be in either guest or register role.
+                                                                    return isInGuestOrRegisterRoles;
+                                                                })
+                                                                .WithMessage("must be in guest or register role")
+                                                         )
+                                   );
+            }
         }
 
         private void SetShoppingCartItemsRule()

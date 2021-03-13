@@ -20,6 +20,17 @@ namespace Nop.Plugin.Api.Helpers
 {
     public interface IDTOHelper
     {
+        Task<ProductDto> PrepareProductDTOAsync(Product product);
         Task<CategoryDto> PrepareCategoryDTOAsync(Category category);
+        Task<OrderDto> PrepareOrderDTOAsync(Order order);
+        Task<ShoppingCartItemDto> PrepareShoppingCartItemDTOAsync(ShoppingCartItem shoppingCartItem);
+        Task<OrderItemDto> PrepareOrderItemDTOAsync(OrderItem orderItem);
+        Task<StoreDto> PrepareStoreDTOAsync(Store store);
+        Task<LanguageDto> PrepareLanguageDtoAsync(Language language);
+        ProductAttributeDto PrepareProductAttributeDTO(ProductAttribute productAttribute);
+        ProductSpecificationAttributeDto PrepareProductSpecificationAttributeDto(ProductSpecificationAttribute productSpecificationAttribute);
+        SpecificationAttributeDto PrepareSpecificationAttributeDto(SpecificationAttribute specificationAttribute);
+        Task<ManufacturerDto> PrepareManufacturerDtoAsync(Manufacturer manufacturer);
+        TopicDto PrepareTopicDTO(Topic topic);
     }
 }
