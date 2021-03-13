@@ -150,7 +150,7 @@ namespace Nop.Plugin.Api.Controllers
             {
                 return Error(HttpStatusCode.BadRequest, "id", "invalid id");
             }
-
+            
             var customer = await _customerApiService.GetCustomerByIdAsync(id);
 
             if (customer == null)
@@ -486,14 +486,18 @@ namespace Nop.Plugin.Api.Controllers
                     //new role
                     if (!await CustomerService.IsInCustomerRoleAsync(currentCustomer, customerRole.Name))
                     {
-                        await CustomerService.InsertCustomerRoleAsync(customerRole);
+                        await CustomerService.AddCustomerRoleMappingAsync(new CustomerCustomerRoleMapping
+                        {
+                            CustomerId = currentCustomer.Id,
+                            CustomerRoleId = customerRole.Id
+                        });
                     }
                 }
                 else
                 {
                     if (await CustomerService.IsInCustomerRoleAsync(currentCustomer, customerRole.Name))
                     {
-                        await CustomerService.DeleteCustomerRoleAsync(customerRole);
+                        await CustomerService.RemoveCustomerRoleMappingAsync(currentCustomer, customerRole);
                     }
                 }
             }
