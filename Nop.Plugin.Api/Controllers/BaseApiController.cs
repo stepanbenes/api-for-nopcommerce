@@ -58,8 +58,7 @@ namespace Nop.Plugin.Api.Controllers
             PictureService = pictureService;
         }
 
-        [Route("/api/error/{statusCode}/{errorMessage}")]
-        public IActionResult Error(HttpStatusCode statusCode = (HttpStatusCode)422, string propertyKey = "", string errorMessage = "")
+        protected IActionResult Error(HttpStatusCode statusCode = (HttpStatusCode)422, string propertyKey = "", string errorMessage = "")
         {
             var errors = new Dictionary<string, List<string>>();
 

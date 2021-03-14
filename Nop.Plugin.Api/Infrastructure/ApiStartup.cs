@@ -1,14 +1,19 @@
 ﻿using System;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Rewrite;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Nop.Core.Infrastructure;
 using Nop.Plugin.Api.Authorization.Policies;
 using Nop.Plugin.Api.Authorization.Requirements;
@@ -59,13 +64,37 @@ namespace Nop.Plugin.Api.Infrastructure
             {
                 options.AllowSynchronousIO = true;
             });
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Nop API", Version = "v1" });
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    In = ParameterLocation.Header,
+                    Description = "Please enter into field the word 'Bearer' following by space and JWT",
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.ApiKey
+                });
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        Array.Empty<string>()
+                    }
+                });
+            });
         }
 
         public void Configure(IApplicationBuilder app)
         {
-            var rewriteOptions = new RewriteOptions()
-                .AddRewrite("api/token", "/token", true);
 
+            var rewriteOptions = new RewriteOptions().AddRewrite("api/token", "/token", true);
             app.UseRewriter(rewriteOptions);
 
             app.UseCors(x => x
@@ -86,13 +115,13 @@ namespace Nop.Plugin.Api.Infrastructure
             //                });
             //            });
 
-            app.MapWhen(
-                context => (context.Request.Path
-                    .StartsWithSegments(new PathString("/api"))
-                ),
+            app.MapWhen(context => context.Request.Path.StartsWithSegments(new PathString("/api")),
                 a =>
                 {
-                    
+#if DEBUG
+                    a.UseDeveloperExceptionPage();
+#endif
+
                     a.Use(async (context, next) =>
                                 {
                                     // API Call
@@ -100,18 +129,32 @@ namespace Nop.Plugin.Api.Infrastructure
                                     await next();
                                 });
 
-                    a.UseExceptionHandler("/api/error/500/Error");
+                    a.UseExceptionHandler(a => a.Run(async context =>
+                    {
+                        var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
+                        var exception = exceptionHandlerPathFeature.Error;
+                        await context.Response.WriteAsJsonAsync(new { error = exception.Message });
+                    }));
 
                     a.UseRouting();
                     a.UseAuthentication();
                     a.UseAuthorization();
                     a.UseEndpoints(endpoints =>
                     {
-                        endpoints
-                            .MapControllers();
+                        endpoints.MapControllers();
                     });
-                    
-                    
+
+#if DEBUG
+                    // http://eatcodelive.com/2017/05/19/change-default-swagger-route-in-an-asp-net-core-web-api/
+
+                    a.UseSwagger(options => options.RouteTemplate = "api/swagger/{documentName}/swagger.json");
+                    a.UseSwaggerUI(c =>
+                    {
+                        c.RoutePrefix = "api/swagger";
+                        c.SwaggerEndpoint("/api/swagger/v1/swagger.json", "Nop.Plugin.Api v4.40");
+                        c.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.None);
+                    });
+#endif
                 }
             );
         }
