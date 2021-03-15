@@ -1,4 +1,4 @@
-# API plugin for nopCommerce 4.3
+# API plugin for nopCommerce 4.40
 
 This plugin provides a RESTful API for managing resources in nopCommerce.
 
@@ -18,7 +18,7 @@ In a HTTP request, you need to define the type of action that you want to perfor
 
 **DELETE** (Delete)
 
-A resource is a data object that can be accessed via an HTTP request. The API allows you to “access your nopCommerce site’s data (resources) through an easy-to-use HTTP REST API”. In the case of the most recent version of the API (nopCommerce version 4.30), the resources include the following 7 nopCommerce objects:
+A resource is a data object that can be accessed via an HTTP request. The API allows you to “access your nopCommerce site’s data (resources) through an easy-to-use HTTP REST API”. In the case of the most recent version of the API (nopCommerce version 4.40), the resources include the following 7 nopCommerce objects:
 
 [**Customers**](Customers.md)
 
