@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -43,8 +44,9 @@ namespace Nop.Plugin.Api.Controllers
             _apiConfiguration = apiConfiguration;
         }
 
-        [Route("/token")]
         [HttpGet]
+        [Route("/token")]
+        [ProducesResponseType(typeof(TokenResponse), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> Create(TokenRequest model)
         {
             if (string.IsNullOrEmpty(model.Username))
