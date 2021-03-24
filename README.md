@@ -1,41 +1,14 @@
 # API plugin for nopCommerce 4.40
 
-This plugin provides a RESTful API for managing resources in nopCommerce.
+This plugin provides a RESTful API for managing resources in nopCommerce 4.40 beta.
 
-## What is a RESTful API?
+## Installation
 
-
-HTTP requests are often the way that you interact with a RESTful API.
-A client makes an HTTP request to a server and the server responds with an HTTP response.
-
-In a HTTP request, you need to define the type of action that you want to perform against a resource. There are four primary actions associated with any HTTP request (commonly referred to as CRUD):
-
-**POST** (Create)
-
-**GET** (Retrieve)
-
-**PUT** (Update)
-
-**DELETE** (Delete)
-
-A resource is a data object that can be accessed via an HTTP request. The API allows you to “access your nopCommerce site’s data (resources) through an easy-to-use HTTP REST API”. In the case of the most recent version of the API (nopCommerce version 4.40), the resources include the following 7 nopCommerce objects:
-
-[**Customers**](Customers.md)
-
-[**Products**](Products.md)
-
-[**Categories**](Categories.md)
-
-[**ProductCategoryMappings**](ProductCategoryMappings.md)
-
-[**Orders**](Orders.md)
-
-[**OrderItems**](OrderItems.md)
-
-[**ShoppingCartItems**](ShoppingCartItems.md)
-
-With the nopCommerce API, you can perform any of the four CRUD actions against any of your nopCommerce site’s resources listed above. For example, you can use the API to create a product, retrieve a product, update a product or delete a product associated with your nopCommerce website.
-
-## What about security?
-
-## The API plugin currently supports only JWT Bearer Authentication. Will add support of OAuth 2.0 Authorization Code grant type flow later.
+1. clone the [NopCommerce](https://github.com/nopSolutions/nopCommerce) repository (`develop` branch) into folder called `nopCommerce`
+1. clone this repository into the same folder where the `nopCommerce` folder is located
+1. build the nopCommerce solution
+1. build the api-for-nopcommerce solution (the output will be placed inside the nopCommerce directory)
+1. run the Nop.Web project in the nopCommerce solution
+1. install the nopCommerce database, create the admin user (skip this step if already done)
+1. go to the administration page, Api plugin should be listed in local plugins configuration section.
+1. go to `/api/swagger` page and experiment with the api (use the Authorize button)
