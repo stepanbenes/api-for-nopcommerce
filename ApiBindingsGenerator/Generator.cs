@@ -225,7 +225,7 @@ namespace {BASE_NAMESPACE}.{apiName}
 
 			foreach (var apiEndpoint in apiEndpoints)
 			{
-				string operationName = apiEndpoint.Path.ToPascalCase(); // TODO:
+				string operationName = apiEndpoint.OperationId ?? (apiEndpoint.Method.ToString() + "_" + apiEndpoint.Path.Replace('/', '_')).ToPascalCase();
 				sourceCode.AppendLine($@"{____}{____}public void {operationName}() {{ }}
 ");
 			}
