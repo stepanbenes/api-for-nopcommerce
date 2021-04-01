@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 
 namespace ApiBindingsGenerator
@@ -15,7 +16,8 @@ namespace ApiBindingsGenerator
 	[Generator]
 	public class Generator : ISourceGenerator
 	{
-		private const string INDENT = "    ";
+		private const string BASE_NAMESPACE = "ApiBindings";
+		private const string ____ = "    ";
 		private const string TYPE_ACCESS_MODIFIER = "internal ";
 		private const string PROPERTY_ACCESS_MODIFIER = "public ";
 
@@ -27,10 +29,19 @@ namespace ApiBindingsGenerator
 		{
 			try
 			{
+				bool commonFilesGenerated = false;
 				foreach (var text in context.AdditionalFiles.Where(text => text.Path.EndsWith("swagger.json", ignoreCase: true, CultureInfo.InvariantCulture)))
 				{
-					(var name, var code) = GenerateSourceCodeFromTextFile(text.Path, text.GetText(context.CancellationToken)?.ToString());
-					context.AddSource(name, SourceText.From(code, Encoding.UTF8));
+					foreach (var (filename, code) in GenerateSourceCodeFromTextFile(text.Path, text.GetText(context.CancellationToken)?.ToString()))
+					{
+						if (!commonFilesGenerated)
+						{
+							foreach (var (commonFilename, commonFileCode) in GenerateCommonFiles())
+								context.AddSource(commonFilename, commonFileCode);
+							commonFilesGenerated = true;
+						}
+						context.AddSource(filename, SourceText.From(code, Encoding.UTF8));
+					}
 				}
 			}
 			catch (Exception ex)
@@ -39,38 +50,104 @@ namespace ApiBindingsGenerator
 			}
 		}
 
-		private (string name, string code) GenerateSourceCodeFromTextFile(string filePath, string? fileContent)
+		private static IEnumerable<(string filename, string code)> GenerateCommonFiles()
 		{
-			string apiName = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(filePath));
+			string code = $"namespace {BASE_NAMESPACE}" + @"
+{
+	using System;
+	using System.Net.Http;
+	using System.Net.Http.Json;
+	using System.Text.Json;
+	using System.Threading.Tasks;
+
+	" + $"{TYPE_ACCESS_MODIFIER}abstract class ApiClientBase" + @"
+	{
+		protected record Token(string AccessToken, string TokenType);
+
+		private readonly HttpClient httpClient;
+		protected Lazy<Task<Token?>> AccessToken { get; }
+
+		public ApiClientBase(HttpClient httpClient)
+		{
+			this.httpClient = httpClient;
+			this.AccessToken = new Lazy<Task<Token?>>(Authenticate);
+		}
+
+		protected abstract Task<Token?> Authenticate();
+
+		protected async Task<T?> Send<T>(HttpMethod httpMethod, string requestEndpoint, bool authenticate = true, HttpContent? content = null, JsonSerializerOptions? responseDeserializerOptions = null) where T : class
+		{
+			var response = await Send(httpMethod, requestEndpoint, authenticate, content);
+			if (!response.IsSuccessStatusCode)
+			{
+				return null;
+			}
+			return await response.Content.ReadFromJsonAsync<T>(responseDeserializerOptions);
+		}
+
+		protected async Task<HttpResponseMessage> Send(HttpMethod httpMethod, string requestEndpoint, bool authenticate = true, HttpContent? content = null)
+		{
+			var request = new HttpRequestMessage(httpMethod, requestEndpoint);
+			if (authenticate && await AccessToken.Value is { } accessToken)
+			{
+				request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(accessToken.TokenType, accessToken.AccessToken);
+			}
+			request.Content = content;
+			return await httpClient.SendAsync(request);
+		}
+	}
+}
+";
+			yield return (filename: "ApiClientBase", code);
+		}
+
+		private IEnumerable<(string filename, string code)> GenerateSourceCodeFromTextFile(string filePath, string? fileContent)
+		{
+			string fileName = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(filePath));
 			string json = fileContent?.ToString() ?? "";
+			string? openApiVersion = null;
+			ApiInfo? apiInfo = null;
 			var rootElement = JObject.Parse(json);
-			Dictionary<string, TypeDescriptor> schemaMap = new();
+			Dictionary<string, TypeDescriptor> schema = new();
+			Dictionary<string, SecuritySchemeDescriptor>? securitySchemes = null;
+			List<ApiEndpoint> apiEndpoints = new();
 			foreach (var property in rootElement.Properties())
 			{
 				switch (property.Name)
 				{
 					case "openapi":
-						// version of openapi standard
+						openApiVersion = property.Value.ToString();
 						break;
 					case "info":
-						// api title and version
+						apiInfo = property.Value.ToObject<ApiInfo>();
 						break;
 					case "paths":
 						// description of api endpoints
+						if (property.Value is JObject paths)
+						{
+							foreach (var pathProperty in paths.Properties())
+							{
+								apiEndpoints.AddRange(ParseApiEndpoints(pathProperty));
+							}
+						}
 						break;
 					case "components":
 						// schemas of dto objects
 						if (property.Value is JObject components)
 						{
-							if (components.Property("schemas") is { Value: JObject { HasValues: true } schemas })
+							if (components.Property("schemas") is { Value: JObject { HasValues: true } schemasObject })
 							{
-								foreach (var schemaProperty in schemas.Properties())
+								foreach (var schemaProperty in schemasObject.Properties())
 								{
 									if (schemaProperty.Value is JObject schemaObject && ParseTypeDescriptor(schemaObject) is { } typeDescriptor)
 									{
-										schemaMap[schemaProperty.Name] = typeDescriptor;
+										schema[schemaProperty.Name] = typeDescriptor;
 									}
 								}
+							}
+							if (components.Property("securitySchemes") is { Value: JObject securitySchemesObject })
+							{
+								securitySchemes = securitySchemesObject.ToObject<Dictionary<string, SecuritySchemeDescriptor>>();
 							}
 						}
 						break;
@@ -79,24 +156,34 @@ namespace ApiBindingsGenerator
 						break;
 				}
 			}
+
+			string apiName = apiInfo?.Title?.ToPascalCase() ?? fileName.ToPascalCase();
+
+			yield return (filename: $"{apiName}.DTOs", GenerateDTOs(apiName, schema));
+			yield return (filename: $"{apiName}.ApiClient", GenerateApiClientClass(apiName, apiEndpoints, securitySchemes));
+		}
+
+		private static string GenerateDTOs(string apiName, Dictionary<string, TypeDescriptor> schema)
+		{
 			var sourceCode = new StringBuilder($@"#nullable enable
-namespace {apiName.ToPascalCase()}.DTOs
+namespace {BASE_NAMESPACE}.{apiName}
 {{
-{INDENT}using System.Text.Json.Serialization;
+{____}using System.Text.Json.Serialization;
+
 ");
 
-			foreach (var (typeName, typeDescriptor) in schemaMap)
+			foreach (var (typeName, typeDescriptor) in schema)
 			{
 				switch (typeDescriptor.Type)
 				{
 					case "object":
-						sourceCode.AppendLine(GenerateRecord(typeName, typeDescriptor, INDENT));
+						sourceCode.AppendLine(GenerateRecord(typeName, typeDescriptor, ____));
 						break;
 					case "integer" when typeDescriptor.EnumValues is not null:
-						sourceCode.AppendLine(GenerateEnum(typeName, typeDescriptor, INDENT));
+						sourceCode.AppendLine(GenerateEnum(typeName, typeDescriptor, ____));
 						break;
 					case "array":
-						sourceCode.AppendLine(GenerateArray(typeName, typeDescriptor, INDENT));
+						sourceCode.AppendLine(GenerateArray(typeName, typeDescriptor, ____));
 						break;
 					default:
 						throw new FormatException($"Type '{typeDescriptor.Type}' is not supported as top level type. ({typeName})");
@@ -104,7 +191,48 @@ namespace {apiName.ToPascalCase()}.DTOs
 			}
 
 			sourceCode.Append(@"}");
-			return (apiName.ToPascalCase(), sourceCode.ToString());
+			return sourceCode.ToString();
+		}
+
+		private static string GenerateApiClientClass(string apiName, IReadOnlyList<ApiEndpoint> apiEndpoints, Dictionary<string, SecuritySchemeDescriptor>? securitySchemes)
+		{
+			string className = apiName + "Client";
+			var sourceCode = new StringBuilder($@"#nullable enable
+namespace {BASE_NAMESPACE}.{apiName}
+{{
+{____}using System;
+{____}using System.Net.Http;
+{____}using System.Net.Http.Json;
+{____}using System.Text.Json;
+{____}using System.Threading.Tasks;
+{____}using {BASE_NAMESPACE};
+
+{____}{TYPE_ACCESS_MODIFIER}class {className} : ApiClientBase
+{____}{{
+{____}{____}private readonly HttpClient httpClient;
+
+{____}{____}public {className}(HttpClient httpClient) : base(httpClient)
+{____}{____}{{
+{____}{____}{____}this.httpClient = httpClient;
+{____}{____}}}
+
+{____}{____}protected override async Task<Token?> Authenticate()
+{____}{____}{{
+{____}{____}{____}return null; // TODO: implement this
+{____}{____}}}
+
+");
+
+			foreach (var apiEndpoint in apiEndpoints)
+			{
+				string operationName = apiEndpoint.Path.ToPascalCase(); // TODO:
+				sourceCode.AppendLine($@"{____}{____}public void {operationName}() {{ }}
+");
+			}
+
+			sourceCode.Append($@"{____}}}
+}}");
+			return sourceCode.ToString();
 		}
 
 		private static TypeDescriptor? ParseTypeDescriptor(JObject schema)
@@ -170,7 +298,7 @@ namespace {apiName.ToPascalCase()}.DTOs
 					{
 						if (int.TryParse(value, out int number))
 						{
-							source.AppendLine($"{indent}{INDENT}{value.ToPascalCase()} = {number},");
+							source.AppendLine($"{indent}{____}{value.ToPascalCase()} = {number},");
 						}
 						else
 						{
@@ -183,7 +311,7 @@ namespace {apiName.ToPascalCase()}.DTOs
 						int index = 0;
 						foreach (string value in typeDescriptor.EnumValues)
 						{
-							source.AppendLine($"{indent}{INDENT}{value.ToPascalCase()} = {index + 1},");
+							source.AppendLine($"{indent}{____}{value.ToPascalCase()} = {index + 1},");
 							index += 1;
 						}
 					}
@@ -217,15 +345,15 @@ namespace {apiName.ToPascalCase()}.DTOs
 				}
 				string initExpression = (isReferenceType && propertyType.Nullable is not true) ? " = default!;" : "";
 				string propertyNamePascalCase = propertyName.ToPascalCase();
-				sourceCode.AppendLine($"{indent}{INDENT}[JsonPropertyName(\"{propertyName}\")]");
-				sourceCode.AppendLine($"{indent}{INDENT}{PROPERTY_ACCESS_MODIFIER}{typeName} {propertyNamePascalCase} {{ get; init; }}{initExpression}");
+				sourceCode.AppendLine($"{indent}{____}[JsonPropertyName(\"{propertyName}\")]");
+				sourceCode.AppendLine($"{indent}{____}{PROPERTY_ACCESS_MODIFIER}{typeName} {propertyNamePascalCase} {{ get; init; }}{initExpression}");
 			}
 
 			sourceCode.AppendLine($"{indent}}}");
 			return sourceCode.ToString();
 
 		}
-		static string GetPropertyCSharpType(TypeDescriptor typeDescriptor, out bool isReferenceType)
+		private static string GetPropertyCSharpType(TypeDescriptor typeDescriptor, out bool isReferenceType)
 		{
 			if (typeDescriptor.RefType is not null)
 			{
@@ -265,6 +393,25 @@ namespace {apiName.ToPascalCase()}.DTOs
 			var sourceCode = new StringBuilder($"{indent}{TYPE_ACCESS_MODIFIER}class {arrayName} : System.Collections.Generic.List<{GetPropertyCSharpType(typeDescriptor.Items, out _)}> {{ }}");
 			sourceCode.AppendLine();
 			return sourceCode.ToString();
+		}
+
+		private static IEnumerable<ApiEndpoint> ParseApiEndpoints(JProperty pathProperty)
+		{
+			if (pathProperty.Value is JObject pathObject)
+			{
+				foreach (var httpMethodProperty in pathObject.Properties())
+				{
+					if (httpMethodProperty.Value is JObject httpMethodObject)
+					{
+						// TODO: parse httpMethodObject
+						// httpMethodObject["operationId"] -> string
+						// httpMethodObject["tags"] -> array
+						// httpMethodObject["parameters"] -> array
+						// httpMethodObject["responses"] -> object (dictionary where keys are strings representing http status codes, e.g. "200")
+						yield return new ApiEndpoint(Method: new HttpMethod(httpMethodProperty.Name), Path: pathProperty.Name);
+					}
+				}
+			}
 		}
 	}
 }
