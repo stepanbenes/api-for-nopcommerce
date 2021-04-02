@@ -226,12 +226,14 @@ namespace {BASE_NAMESPACE}.{apiName}
 
 			foreach (var apiEndpoint in apiEndpoints)
 			{
-				string returnTypeName = "void"; // TODO: parse from OK response
+				TypeDescriptor? returnType = apiEndpoint.Responses.SingleOrDefault(r => r.StatusCode == HttpStatusCode.OK)?.Content?["application/json"];
+				string returnTypeName = GetPropertyCSharpType(returnType?.MakeNullable(), out _);
+				// TODO: add requestBody parameter
 				string operationName = apiEndpoint.OperationId ?? (apiEndpoint.Method.ToString() + "_" + apiEndpoint.Path.Replace('/', '_')).ToPascalCase();
 				sourceCode.AppendLine($"{____}{____}/// {apiEndpoint.Method.Method.ToUpperInvariant()} {apiEndpoint.Path}");
 				sourceCode.AppendLine($@"{____}{____}public {returnTypeName} {operationName}({string.Join(", ", apiEndpoint.Parameters.OrderByDescending(p => p.Required ?? false).Select(p => GenerateParameterSource(p)))})
 {____}{____}{{
-{____}{____}{____}
+{____}{____}{____}return {((returnType is not null) ? "default" : "")};
 {____}{____}}}
 ");
 			}
@@ -245,15 +247,9 @@ namespace {BASE_NAMESPACE}.{apiName}
 		{
 			try
 			{
-				string initExpression = (parameter.Required is not true) ? " = default" : "";
-				string attribute = parameter.In switch
-				{
-					ParameterLocation.Query => "[FromQuery] ",
-					ParameterLocation.Path => "[FromRoute] ",
-					ParameterLocation.Header => "[FromHeader] ",
-					_ => throw new FormatException($"Unsupported parameter location '{parameter.In}'")
-				};
-				return $"{attribute}{GetPropertyCSharpType(parameter.Schema, out _)} {parameter.Name}{initExpression}";
+				bool isOptional = parameter.Required is not true;
+				string initExpression = isOptional ? " = default" : "";
+				return $"{GetPropertyCSharpType(isOptional ? parameter.Schema.MakeNullable() : parameter.Schema, out _)} {parameter.Name}{initExpression}";
 			}
 			catch (NullReferenceException ex)
 			{
@@ -261,7 +257,7 @@ namespace {BASE_NAMESPACE}.{apiName}
 			}
 		}
 
-		private static TypeDescriptor? ParseTypeDescriptor(JObject schema)
+		private static TypeDescriptor ParseTypeDescriptor(JObject schema)
 		{
 			string? type = null;
 			string? format = null;
@@ -379,33 +375,41 @@ namespace {BASE_NAMESPACE}.{apiName}
 			return sourceCode.ToString();
 
 		}
-		private static string GetPropertyCSharpType(TypeDescriptor typeDescriptor, out bool isReferenceType)
+		private static string GetPropertyCSharpType(TypeDescriptor? typeDescriptor, out bool isReferenceType)
 		{
+			if (typeDescriptor is null) // null represents "unit" type
+			{
+				isReferenceType = false;
+				return "void";
+			}
+			string csTypeName;
 			if (typeDescriptor.RefType is not null)
 			{
 				isReferenceType = true; // TODO: I don't really know if it is reference type
-				return typeDescriptor.RefType.Substring("#/components/schemas/".Length);
+				csTypeName = typeDescriptor.RefType.Substring("#/components/schemas/".Length);
 			}
-			string csTypeName;
-			(csTypeName, isReferenceType) = (typeDescriptor.Type, typeDescriptor.Format) switch
+			else
 			{
-				("string", "date") => ("System.DateTime", false),
-				("string", "date-time") => ("System.DateTime", false),
-				("string", "uuid") => ("System.Guid", false),
-				("string", _) => ("string", true),
-				("number", "float") => ("float", false),
-				("number", "double") => ("double", false),
-				("number", "int32") => ("int", false),
-				("number", "int64") => ("long", false),
-				("number", _) => ("double", false),
-				("integer", "int32") => ("int", false),
-				("integer", "int64") => ("long", false),
-				("integer", _) => ("int", false),
-				("boolean", _) => ("bool", false),
-				("object", _) => ("object", true), // nested object definition is not supported
-				("array", _) => (GetPropertyCSharpType(typeDescriptor.Items ?? throw new FormatException($"array type requires to items type to be defined"), out _) + "[]", true),
-				_ => throw new FormatException($"Unrecognized type descriptor (type: {typeDescriptor.Type}, format: {typeDescriptor.Format})")
-			};
+				(csTypeName, isReferenceType) = (typeDescriptor.Type, typeDescriptor.Format) switch
+				{
+					("string", "date") => ("System.DateTime", false),
+					("string", "date-time") => ("System.DateTime", false),
+					("string", "uuid") => ("System.Guid", false),
+					("string", _) => ("string", true),
+					("number", "float") => ("float", false),
+					("number", "double") => ("double", false),
+					("number", "int32") => ("int", false),
+					("number", "int64") => ("long", false),
+					("number", _) => ("double", false),
+					("integer", "int32") => ("int", false),
+					("integer", "int64") => ("long", false),
+					("integer", _) => ("int", false),
+					("boolean", _) => ("bool", false),
+					("object", _) => ("object", true), // nested object definition is not supported
+					("array", _) => (GetPropertyCSharpType(typeDescriptor.Items ?? throw new FormatException($"array type requires to items type to be defined"), out _) + "[]", true),
+					_ => throw new FormatException($"Unrecognized type descriptor (type: {typeDescriptor.Type}, format: {typeDescriptor.Format})")
+				};
+			}
 			return (typeDescriptor.Nullable is true) ? csTypeName + "?" : csTypeName;
 		}
 
@@ -447,11 +451,58 @@ namespace {BASE_NAMESPACE}.{apiName}
 						}
 						string? operationId = httpMethodObject["operationId"]?.ToString();
 						string[]? tags = (httpMethodObject["tags"] as JArray)?.Select(token => token.ToString()).ToArray();
+						RequestBody? requestBody = null;
+						Response[]? responses = null;
 
-						// TODO: parse responses
-						// httpMethodObject["responses"] -> object (dictionary where keys are strings representing http status codes, e.g. "200")
+						// parse requestBody
+						if (httpMethodObject["requestBody"] is JObject requestBodyObject && requestBodyObject["content"] is JObject requestBodyContentObject)
+						{
+							requestBody = new RequestBody(parseContent(requestBodyContentObject));
+						}
+						// parse responses
+						if (httpMethodObject["responses"] is JObject responsesObject)
+						{
+							List<Response> responseList = new();
+							foreach (var property in responsesObject.Properties())
+							{
+								string statusCodeString = property.Name;
+								if (Enum.TryParse(statusCodeString, out HttpStatusCode statusCode) && property.Value is JObject responseObject)
+								{
+									string? description = null;
+									Dictionary<string, TypeDescriptor>? content = null;
+									if (responseObject["description"] is { Type: JTokenType.String } descriptionToken)
+										description = descriptionToken.ToString();
+									if (responseObject["content"] is JObject responseContentObject)
+										content = parseContent(responseContentObject);
+									responseList.Add(new Response(statusCode, content, description));
+								}
+							}
+							responses = responseList.ToArray();
+						}
 
-						yield return new ApiEndpoint(Method: new HttpMethod(httpMethodProperty.Name), Path: pathProperty.Name, parameters, operationId, tags);
+						yield return new ApiEndpoint(Method: new HttpMethod(httpMethodProperty.Name),
+							Path: pathProperty.Name,
+							parameters,
+							responses ?? throw new FormatException($"Responses for api endpoint '{httpMethodProperty.Name} {pathProperty.Name}' were not provided."),
+							requestBody, operationId, tags);
+
+						static Dictionary<string, TypeDescriptor> parseContent(JObject contentObject)
+						{
+							Dictionary<string, TypeDescriptor> content = new();
+							foreach (var property in contentObject.Properties())
+							{
+								string mediaType = property.Name;
+								if ((property.Value as JObject)?["schema"] is JObject schemaObject)
+								{
+									content[mediaType] = ParseTypeDescriptor(schemaObject);
+								}
+								else
+								{
+									throw new FormatException("Schema for content is not defined.");
+								}
+							}
+							return content;
+						}
 					}
 				}
 			}

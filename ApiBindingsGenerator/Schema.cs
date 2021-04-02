@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 
 namespace ApiBindingsGenerator
@@ -23,6 +24,8 @@ namespace ApiBindingsGenerator
 		public string[]? EnumValues { get; }
 		public string? RefType { get; }
 		public Dictionary<string, TypeDescriptor>? Properties { get; }
+
+		public TypeDescriptor MakeNullable() => new(this.Type, this.Format, nullable: true, this.Items, this.EnumValues, this.RefType, this.Properties);
 	}
 
 	record ApiInfo(string Title, string Version)
@@ -41,13 +44,15 @@ namespace ApiBindingsGenerator
 
 
 
-	record ApiEndpoint(HttpMethod Method, string Path, ApiEndpointParameter[] Parameters, string? OperationId = null, string[]? Tags = null)
+	record ApiEndpoint(HttpMethod Method, string Path, ApiEndpointParameter[] Parameters, Response[] Responses, RequestBody? RequestBody = null, string? OperationId = null, string[]? Tags = null)
 	{
 		public HttpMethod Method { get; } = Method;
 		public string Path { get; } = Path;
 		public string? OperationId { get; } = OperationId;
 		public string[]? Tags { get; } = Tags;
 		public ApiEndpointParameter[] Parameters { get; } = Parameters;
+		public RequestBody? RequestBody { get; } = RequestBody;
+		public Response[] Responses { get; } = Responses;
 	}
 
 	enum ParameterLocation
@@ -63,6 +68,18 @@ namespace ApiBindingsGenerator
 		public ParameterLocation In { get; } = In;
 		public TypeDescriptor Schema { get; } = Schema;
 		public bool? Required { get; } = Required;
+		public string? Description { get; } = Description;
+	}
+
+	record RequestBody(Dictionary<string, TypeDescriptor> Content)
+	{
+		public Dictionary<string, TypeDescriptor> Content { get; } = Content;
+	}
+
+	record Response(HttpStatusCode StatusCode, Dictionary<string, TypeDescriptor>? Content = null, string? Description = null)
+	{
+		public HttpStatusCode StatusCode { get; } = StatusCode;
+		public Dictionary<string, TypeDescriptor>? Content { get; } = Content;
 		public string? Description { get; } = Description;
 	}
 }
