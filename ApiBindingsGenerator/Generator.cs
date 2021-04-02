@@ -167,7 +167,7 @@ namespace ApiBindingsGenerator
 		private static string GenerateDTOs(string apiName, Dictionary<string, TypeDescriptor> schema)
 		{
 			var sourceCode = new StringBuilder($@"#nullable enable
-namespace {BASE_NAMESPACE}.{apiName}
+namespace {BASE_NAMESPACE}.{apiName}.DTOs
 {{
 {____}using System.Text.Json.Serialization;
 
@@ -207,6 +207,7 @@ namespace {BASE_NAMESPACE}.{apiName}
 {____}using System.Text.Json;
 {____}using System.Threading.Tasks;
 {____}using {BASE_NAMESPACE};
+{____}using {BASE_NAMESPACE}.{apiName}.DTOs;
 
 {____}{TYPE_ACCESS_MODIFIER}class {className} : ApiClientBase
 {____}{{
@@ -227,13 +228,14 @@ namespace {BASE_NAMESPACE}.{apiName}
 			foreach (var apiEndpoint in apiEndpoints)
 			{
 				TypeDescriptor? returnType = apiEndpoint.Responses.SingleOrDefault(r => r.StatusCode == HttpStatusCode.OK)?.Content?["application/json"];
-				string returnTypeName = GetPropertyCSharpType(returnType?.MakeNullable(), out _);
+				string returnTypeName = GetPropertyCSharpType(returnType, out _);
+				string taskReturnTypeName = returnType is null ? "Task" : $"Task<{GetPropertyCSharpType(returnType.MakeNullable(), out _)}>";
 				// TODO: add requestBody parameter
-				string operationName = apiEndpoint.OperationId ?? (apiEndpoint.Method.ToString() + "_" + apiEndpoint.Path.Replace('/', '_')).ToPascalCase();
+				string operationName = apiEndpoint.OperationId ?? (apiEndpoint.Method.Method + "_" + apiEndpoint.Path.Replace('/', '_')).ToPascalCase();
 				sourceCode.AppendLine($"{____}{____}/// {apiEndpoint.Method.Method.ToUpperInvariant()} {apiEndpoint.Path}");
-				sourceCode.AppendLine($@"{____}{____}public {returnTypeName} {operationName}({string.Join(", ", apiEndpoint.Parameters.OrderByDescending(p => p.Required ?? false).Select(p => GenerateParameterSource(p)))})
+				sourceCode.AppendLine($@"{____}{____}public async {taskReturnTypeName} {operationName}({string.Join(", ", apiEndpoint.Parameters.OrderByDescending(p => p.Required ?? false).Select(p => GenerateParameterSource(p)))})
 {____}{____}{{
-{____}{____}{____}return {((returnType is not null) ? "default" : "")};
+{____}{____}{____}{((returnType is not null) ? "return " : "")}await Send{(returnType is not null ? $"<{returnTypeName}>" : "")}(HttpMethod.{apiEndpoint.Method.Method.ToPascalCase()}, $""{apiEndpoint.Path}"");
 {____}{____}}}
 ");
 			}
