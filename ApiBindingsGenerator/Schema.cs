@@ -41,10 +41,28 @@ namespace ApiBindingsGenerator
 
 
 
-	record ApiEndpoint(HttpMethod Method, string Path, string? OperationId = null)
+	record ApiEndpoint(HttpMethod Method, string Path, ApiEndpointParameter[] Parameters, string? OperationId = null, string[]? Tags = null)
 	{
 		public HttpMethod Method { get; } = Method;
 		public string Path { get; } = Path;
 		public string? OperationId { get; } = OperationId;
+		public string[]? Tags { get; } = Tags;
+		public ApiEndpointParameter[] Parameters { get; } = Parameters;
+	}
+
+	enum ParameterLocation
+	{
+		Query,
+		Path,
+		Header
+	}
+
+	record ApiEndpointParameter(string Name, ParameterLocation In, TypeDescriptor Schema, bool? Required = null, string? Description = null)
+	{
+		public string Name { get; } = Name;
+		public ParameterLocation In { get; } = In;
+		public TypeDescriptor Schema { get; } = Schema;
+		public bool? Required { get; } = Required;
+		public string? Description { get; } = Description;
 	}
 }

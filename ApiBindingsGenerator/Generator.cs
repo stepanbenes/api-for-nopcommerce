@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 
@@ -225,14 +226,39 @@ namespace {BASE_NAMESPACE}.{apiName}
 
 			foreach (var apiEndpoint in apiEndpoints)
 			{
+				string returnTypeName = "void"; // TODO: parse from OK response
 				string operationName = apiEndpoint.OperationId ?? (apiEndpoint.Method.ToString() + "_" + apiEndpoint.Path.Replace('/', '_')).ToPascalCase();
-				sourceCode.AppendLine($@"{____}{____}public void {operationName}() {{ }}
+				sourceCode.AppendLine($"{____}{____}/// {apiEndpoint.Method.Method.ToUpperInvariant()} {apiEndpoint.Path}");
+				sourceCode.AppendLine($@"{____}{____}public {returnTypeName} {operationName}({string.Join(", ", apiEndpoint.Parameters.OrderByDescending(p => p.Required ?? false).Select(p => GenerateParameterSource(p)))})
+{____}{____}{{
+{____}{____}{____}
+{____}{____}}}
 ");
 			}
 
 			sourceCode.Append($@"{____}}}
 }}");
 			return sourceCode.ToString();
+		}
+
+		private static string GenerateParameterSource(ApiEndpointParameter parameter)
+		{
+			try
+			{
+				string initExpression = (parameter.Required is not true) ? " = default" : "";
+				string attribute = parameter.In switch
+				{
+					ParameterLocation.Query => "[FromQuery] ",
+					ParameterLocation.Path => "[FromRoute] ",
+					ParameterLocation.Header => "[FromHeader] ",
+					_ => throw new FormatException($"Unsupported parameter location '{parameter.In}'")
+				};
+				return $"{attribute}{GetPropertyCSharpType(parameter.Schema, out _)} {parameter.Name}{initExpression}";
+			}
+			catch (NullReferenceException ex)
+			{
+				throw new InvalidOperationException($"Parameter {parameter}; {ex.StackTrace}");
+			}
 		}
 
 		private static TypeDescriptor? ParseTypeDescriptor(JObject schema)
@@ -403,15 +429,64 @@ namespace {BASE_NAMESPACE}.{apiName}
 				{
 					if (httpMethodProperty.Value is JObject httpMethodObject)
 					{
-						// TODO: parse httpMethodObject
-						// httpMethodObject["operationId"] -> string
-						// httpMethodObject["tags"] -> array
-						// httpMethodObject["parameters"] -> array
+						ApiEndpointParameter[] parameters;
+						if (httpMethodObject["parameters"] is JArray paramsArray)
+						{
+							try
+							{
+								parameters = paramsArray.OfType<JObject>().Select(obj => ParseApiEndpointParameter(obj)).ToArray();
+							}
+							catch (FormatException ex)
+							{
+								throw new FormatException($"{ex.Message} ({httpMethodProperty.Name} {pathProperty.Name})");
+							}
+						}
+						else
+						{
+							parameters = Array.Empty<ApiEndpointParameter>();
+						}
+						string? operationId = httpMethodObject["operationId"]?.ToString();
+						string[]? tags = (httpMethodObject["tags"] as JArray)?.Select(token => token.ToString()).ToArray();
+
+						// TODO: parse responses
 						// httpMethodObject["responses"] -> object (dictionary where keys are strings representing http status codes, e.g. "200")
-						yield return new ApiEndpoint(Method: new HttpMethod(httpMethodProperty.Name), Path: pathProperty.Name);
+
+						yield return new ApiEndpoint(Method: new HttpMethod(httpMethodProperty.Name), Path: pathProperty.Name, parameters, operationId, tags);
 					}
 				}
 			}
+		}
+
+		private static ApiEndpointParameter ParseApiEndpointParameter(JObject jObject)
+		{
+			string? name = null;
+			ParameterLocation? paramLocation = null;
+			bool? required = null;
+			TypeDescriptor? schema = null;
+			string? description = null;
+
+			var nameToken = jObject["name"];
+			if (nameToken is { Type: JTokenType.String })
+				name = nameToken.ToString();
+			var inToken = jObject["in"];
+			if (inToken is { Type: JTokenType.String } && Enum.TryParse<ParameterLocation>(inToken.ToString(), ignoreCase: true, out var inParam))
+				paramLocation = inParam;
+			var requiredToken = jObject["required"];
+			if (requiredToken is { Type: JTokenType.Boolean })
+				required = (bool)requiredToken;
+			var descriptionToken = jObject["description"];
+			if (descriptionToken is { Type: JTokenType.String })
+				description = descriptionToken.ToString();
+			var schemaToken = jObject["schema"];
+			if (schemaToken is JObject schemaObject)
+				schema = ParseTypeDescriptor(schemaObject);
+
+			return new ApiEndpointParameter(
+				Name: name ?? throw new FormatException("'name' value not provided for api endpoint parameter."),
+				In: paramLocation ?? throw new FormatException("'in' value not provided for api endpoint parameter."),
+				Schema: schema ?? throw new FormatException("'schema' value not provided for api endpoint parameter."),
+				required,
+				description);
 		}
 	}
 }
