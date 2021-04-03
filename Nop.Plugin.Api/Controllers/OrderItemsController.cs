@@ -77,7 +77,7 @@ namespace Nop.Plugin.Api.Controllers
         }
 
         [HttpGet]
-        [Route("/api/orders/{orderId}/items")]
+        [Route("/api/orders/{orderId}/items", Name = "GetOrderItems")]
         [ProducesResponseType(typeof(OrderItemsRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
@@ -116,7 +116,7 @@ namespace Nop.Plugin.Api.Controllers
         }
 
         [HttpGet]
-        [Route("/api/orders/{orderId}/items/count")]
+        [Route("/api/orders/{orderId}/items/count", Name = "GetOrderItemsCount")]
         [ProducesResponseType(typeof(OrderItemsCountRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
@@ -142,7 +142,7 @@ namespace Nop.Plugin.Api.Controllers
         }
 
         [HttpGet]
-        [Route("/api/orders/{orderId}/items/{orderItemId}")]
+        [Route("/api/orders/{orderId}/items/{orderItemId}", Name = "GetOrderItemByIdForOrder")]
         [ProducesResponseType(typeof(OrderItemsRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
@@ -180,7 +180,7 @@ namespace Nop.Plugin.Api.Controllers
         }
 
         [HttpPost]
-        [Route("/api/orders/{orderId}/items")]
+        [Route("/api/orders/{orderId}/items", Name = "CreateOrderItem")]
         [ProducesResponseType(typeof(OrderItemsRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), 422)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -253,7 +253,7 @@ namespace Nop.Plugin.Api.Controllers
         }
 
         [HttpPut]
-        [Route("/api/orders/{orderId}/items/{orderItemId}")]
+        [Route("/api/orders/{orderId}/items/{orderItemId}", Name = "UpdateOrderItem")]
         [ProducesResponseType(typeof(OrderItemsRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), 422)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -309,7 +309,7 @@ namespace Nop.Plugin.Api.Controllers
         }
 
         [HttpDelete]
-        [Route("/api/orders/{orderId}/items/{orderItemId}")]
+        [Route("/api/orders/{orderId}/items/{orderItemId}", Name = "DeleteOrderItemById")]
         [ProducesResponseType(typeof(void), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
@@ -331,7 +331,7 @@ namespace Nop.Plugin.Api.Controllers
         }
 
         [HttpDelete]
-        [Route("/api/orders/{orderId}/items")]
+        [Route("/api/orders/{orderId}/items", Name = "DeleteAllOrderItemsForOrder")]
         [ProducesResponseType(typeof(void), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]

@@ -67,6 +67,7 @@
         "tags": [
           "Categories"
         ],
+        "operationId": "CreateCategory",
         "parameters": [
           {
             "name": "categoryDelta",
@@ -165,6 +166,7 @@
         "tags": [
           "Categories"
         ],
+        "operationId": "GetCategoriesCount",
         "parameters": [
           {
             "name": "parameters",
@@ -243,6 +245,7 @@
         "tags": [
           "Categories"
         ],
+        "operationId": "GetCategoryById",
         "parameters": [
           {
             "name": "id",
@@ -349,6 +352,7 @@
         "tags": [
           "Categories"
         ],
+        "operationId": "UpdateCategory",
         "parameters": [
           {
             "name": "categoryDelta",
@@ -473,6 +477,7 @@
         "tags": [
           "Categories"
         ],
+        "operationId": "DeleteCategory",
         "parameters": [
           {
             "name": "id",
@@ -556,6 +561,7 @@
         "tags": [
           "CustomerRoles"
         ],
+        "operationId": "GetAllCustomerRoles",
         "parameters": [
           {
             "name": "fields",
@@ -635,6 +641,7 @@
         "tags": [
           "Customers"
         ],
+        "operationId": "GetCustomers",
         "parameters": [
           {
             "name": "parameters",
@@ -711,6 +718,7 @@
         "tags": [
           "Customers"
         ],
+        "operationId": "CreateCustomer",
         "parameters": [
           {
             "name": "customerDelta",
@@ -789,6 +797,7 @@
         "tags": [
           "Customers"
         ],
+        "operationId": "GetCustomerById",
         "parameters": [
           {
             "name": "id",
@@ -895,6 +904,7 @@
         "tags": [
           "Customers"
         ],
+        "operationId": "UpdateCustomer",
         "parameters": [
           {
             "name": "customerDelta",
@@ -1019,6 +1029,7 @@
         "tags": [
           "Customers"
         ],
+        "operationId": "DeleteCustomer",
         "parameters": [
           {
             "name": "id",
@@ -1102,6 +1113,7 @@
         "tags": [
           "Customers"
         ],
+        "operationId": "GetCustomersCount",
         "responses": {
           "200": {
             "description": "Success",
@@ -1171,6 +1183,7 @@
         "tags": [
           "Customers"
         ],
+        "operationId": "SearchCustomers",
         "parameters": [
           {
             "name": "parameters",
@@ -1249,6 +1262,7 @@
         "tags": [
           "Languages"
         ],
+        "operationId": "GetAllLanguages",
         "parameters": [
           {
             "name": "fields",
@@ -1328,6 +1342,7 @@
         "tags": [
           "Manufacturers"
         ],
+        "operationId": "GetManufacturers",
         "parameters": [
           {
             "name": "parameters",
@@ -1384,6 +1399,7 @@
         "tags": [
           "Manufacturers"
         ],
+        "operationId": "CreateManufacturer",
         "parameters": [
           {
             "name": "manufacturerDelta",
@@ -1482,6 +1498,7 @@
         "tags": [
           "Manufacturers"
         ],
+        "operationId": "GetManufacturersCount",
         "parameters": [
           {
             "name": "parameters",
@@ -1560,6 +1577,7 @@
         "tags": [
           "Manufacturers"
         ],
+        "operationId": "GetManufacturerById",
         "parameters": [
           {
             "name": "id",
@@ -1646,6 +1664,7 @@
         "tags": [
           "Manufacturers"
         ],
+        "operationId": "UpdateManufacturer",
         "parameters": [
           {
             "name": "manufacturerDelta",
@@ -1770,6 +1789,7 @@
         "tags": [
           "Manufacturers"
         ],
+        "operationId": "DeleteManufacturer",
         "parameters": [
           {
             "name": "id",
@@ -1853,6 +1873,7 @@
         "tags": [
           "NewsLetterSubscription"
         ],
+        "operationId": "GetNewsLetterSubscriptions",
         "parameters": [
           {
             "name": "parameters",
@@ -1911,6 +1932,7 @@
         "tags": [
           "NewsLetterSubscription"
         ],
+        "operationId": "DeactivateNewsLetterSubscription",
         "parameters": [
           {
             "name": "email",
@@ -1990,6 +2012,7 @@
         "tags": [
           "OrderItems"
         ],
+        "operationId": "GetOrderItems",
         "parameters": [
           {
             "name": "orderId",
@@ -2095,6 +2118,7 @@
         "tags": [
           "OrderItems"
         ],
+        "operationId": "CreateOrderItem",
         "parameters": [
           {
             "name": "orderId",
@@ -2220,6 +2244,7 @@
         "tags": [
           "OrderItems"
         ],
+        "operationId": "DeleteAllOrderItemsForOrder",
         "parameters": [
           {
             "name": "orderId",
@@ -2303,6 +2328,7 @@
         "tags": [
           "OrderItems"
         ],
+        "operationId": "GetOrderItemsCount",
         "parameters": [
           {
             "name": "orderId",
@@ -2403,6 +2429,7 @@
         "tags": [
           "OrderItems"
         ],
+        "operationId": "GetOrderItemByIdForOrder",
         "parameters": [
           {
             "name": "orderId",
@@ -2518,6 +2545,7 @@
         "tags": [
           "OrderItems"
         ],
+        "operationId": "UpdateOrderItem",
         "parameters": [
           {
             "name": "orderId",
@@ -2652,6 +2680,7 @@
         "tags": [
           "OrderItems"
         ],
+        "operationId": "DeleteOrderItemById",
         "parameters": [
           {
             "name": "orderId",
@@ -2744,6 +2773,7 @@
         "tags": [
           "Orders"
         ],
+        "operationId": "GetOrders",
         "parameters": [
           {
             "name": "parameters",
@@ -2820,6 +2850,7 @@
         "tags": [
           "Orders"
         ],
+        "operationId": "CreateOrder",
         "parameters": [
           {
             "name": "orderDelta",
@@ -2938,6 +2969,7 @@
         "tags": [
           "Orders"
         ],
+        "operationId": "GetOrdersCount",
         "parameters": [
           {
             "name": "parameters",
@@ -3016,6 +3048,7 @@
         "tags": [
           "Orders"
         ],
+        "operationId": "GetOrderById",
         "parameters": [
           {
             "name": "id",
@@ -3122,6 +3155,7 @@
         "tags": [
           "Orders"
         ],
+        "operationId": "DeleteOrder",
         "parameters": [
           {
             "name": "id",
@@ -3223,6 +3257,7 @@
         "tags": [
           "Orders"
         ],
+        "operationId": "UpdateOrder",
         "parameters": [
           {
             "name": "orderDelta",
@@ -3349,6 +3384,7 @@
         "tags": [
           "Orders"
         ],
+        "operationId": "GetOrdersByCustomerId",
         "parameters": [
           {
             "name": "customerId",
@@ -3416,6 +3452,7 @@
         "tags": [
           "ProductAttributes"
         ],
+        "operationId": "GetProductAttributes",
         "parameters": [
           {
             "name": "parameters",
@@ -3492,6 +3529,7 @@
         "tags": [
           "ProductAttributes"
         ],
+        "operationId": "CreateProductAttribute",
         "parameters": [
           {
             "name": "productAttributeDelta",
@@ -3610,6 +3648,7 @@
         "tags": [
           "ProductAttributes"
         ],
+        "operationId": "GetProductAttributesCount",
         "responses": {
           "200": {
             "description": "Success",
@@ -3659,6 +3698,7 @@
         "tags": [
           "ProductAttributes"
         ],
+        "operationId": "GetProductAttributeById",
         "parameters": [
           {
             "name": "id",
@@ -3745,6 +3785,7 @@
         "tags": [
           "ProductAttributes"
         ],
+        "operationId": "UpdateProductAttribute",
         "parameters": [
           {
             "name": "productAttributeDelta",
@@ -3869,6 +3910,7 @@
         "tags": [
           "ProductAttributes"
         ],
+        "operationId": "DeleteProductAttribute",
         "parameters": [
           {
             "name": "id",
@@ -3972,6 +4014,7 @@
         "tags": [
           "ProductCategoryMappings"
         ],
+        "operationId": "GetProductCategoryMappings",
         "parameters": [
           {
             "name": "parameters",
@@ -4048,6 +4091,7 @@
         "tags": [
           "ProductCategoryMappings"
         ],
+        "operationId": "CreateProductCategoryMapping",
         "parameters": [
           {
             "name": "productCategoryDelta",
@@ -4166,6 +4210,7 @@
         "tags": [
           "ProductCategoryMappings"
         ],
+        "operationId": "GetProductCategoryMappingsCount",
         "parameters": [
           {
             "name": "parameters",
@@ -4244,6 +4289,7 @@
         "tags": [
           "ProductCategoryMappings"
         ],
+        "operationId": "GetProductCategoryMappingById",
         "parameters": [
           {
             "name": "id",
@@ -4350,6 +4396,7 @@
         "tags": [
           "ProductCategoryMappings"
         ],
+        "operationId": "UpdateProductCategoryMapping",
         "parameters": [
           {
             "name": "productCategoryDelta",
@@ -4474,6 +4521,7 @@
         "tags": [
           "ProductCategoryMappings"
         ],
+        "operationId": "DeleteProductCategoryMapping",
         "parameters": [
           {
             "name": "id",
@@ -4557,6 +4605,7 @@
         "tags": [
           "ProductManufacturerMappings"
         ],
+        "operationId": "GetProductManufacturerMappings",
         "parameters": [
           {
             "name": "parameters",
@@ -4633,6 +4682,7 @@
         "tags": [
           "ProductManufacturerMappings"
         ],
+        "operationId": "CreateProductManufacturerMapping",
         "parameters": [
           {
             "name": "productManufacturerDelta",
@@ -4751,6 +4801,7 @@
         "tags": [
           "ProductManufacturerMappings"
         ],
+        "operationId": "GetProductManufacturerMappingsCount",
         "parameters": [
           {
             "name": "parameters",
@@ -4829,6 +4880,7 @@
         "tags": [
           "ProductManufacturerMappings"
         ],
+        "operationId": "GetProductManufacturerMappingById",
         "parameters": [
           {
             "name": "id",
@@ -4935,6 +4987,7 @@
         "tags": [
           "ProductManufacturerMappings"
         ],
+        "operationId": "UpdateProductManufacturerMapping",
         "parameters": [
           {
             "name": "productManufacturerDelta",
@@ -5059,6 +5112,7 @@
         "tags": [
           "ProductManufacturerMappings"
         ],
+        "operationId": "DeleteProductManufacturerMapping",
         "parameters": [
           {
             "name": "id",
@@ -5142,6 +5196,7 @@
         "tags": [
           "Products"
         ],
+        "operationId": "GetProducts",
         "parameters": [
           {
             "name": "parameters",
@@ -5218,6 +5273,7 @@
         "tags": [
           "Products"
         ],
+        "operationId": "CreateProduct",
         "parameters": [
           {
             "name": "productDelta",
@@ -5296,6 +5352,7 @@
         "tags": [
           "Products"
         ],
+        "operationId": "GetProductsCount",
         "parameters": [
           {
             "name": "parameters",
@@ -5374,6 +5431,7 @@
         "tags": [
           "Products"
         ],
+        "operationId": "GetProductById",
         "parameters": [
           {
             "name": "id",
@@ -5480,6 +5538,7 @@
         "tags": [
           "Products"
         ],
+        "operationId": "UpdateProduct",
         "parameters": [
           {
             "name": "productDelta",
@@ -5604,6 +5663,7 @@
         "tags": [
           "Products"
         ],
+        "operationId": "DeleteProduct",
         "parameters": [
           {
             "name": "id",
@@ -5687,6 +5747,7 @@
         "tags": [
           "ProductSpecificationAttributes"
         ],
+        "operationId": "GetProductSpecificationAttributes",
         "parameters": [
           {
             "name": "parameters",
@@ -5763,6 +5824,7 @@
         "tags": [
           "ProductSpecificationAttributes"
         ],
+        "operationId": "CreateProductSpecificationAttribute",
         "parameters": [
           {
             "name": "productSpecificaitonAttributeDelta",
@@ -5881,6 +5943,7 @@
         "tags": [
           "ProductSpecificationAttributes"
         ],
+        "operationId": "GetProductSpecificationAttributesCount",
         "parameters": [
           {
             "name": "parameters",
@@ -5959,6 +6022,7 @@
         "tags": [
           "ProductSpecificationAttributes"
         ],
+        "operationId": "GetProductSpecificationAttributeById",
         "parameters": [
           {
             "name": "id",
@@ -6065,6 +6129,7 @@
         "tags": [
           "ProductSpecificationAttributes"
         ],
+        "operationId": "UpdateProductSpecificationAttribute",
         "parameters": [
           {
             "name": "productSpecificationAttributeDelta",
@@ -6189,6 +6254,7 @@
         "tags": [
           "ProductSpecificationAttributes"
         ],
+        "operationId": "DeleteProductSpecificationAttribute",
         "parameters": [
           {
             "name": "id",
@@ -6292,6 +6358,7 @@
         "tags": [
           "ShoppingCartItems"
         ],
+        "operationId": "GetShoppingCartItems",
         "parameters": [
           {
             "name": "parameters",
@@ -6368,6 +6435,7 @@
         "tags": [
           "ShoppingCartItems"
         ],
+        "operationId": "CreateShoppingCartItem",
         "parameters": [
           {
             "name": "shoppingCartItemDelta",
@@ -6486,6 +6554,7 @@
         "tags": [
           "ShoppingCartItems"
         ],
+        "operationId": "GetShoppingCartItemsByCustomerId",
         "parameters": [
           {
             "name": "customerId",
@@ -6593,6 +6662,7 @@
         "tags": [
           "ShoppingCartItems"
         ],
+        "operationId": "UpdateShoppingCartItem",
         "parameters": [
           {
             "name": "shoppingCartItemDelta",
@@ -6717,6 +6787,7 @@
         "tags": [
           "ShoppingCartItems"
         ],
+        "operationId": "DeleteShoppingCartItem",
         "parameters": [
           {
             "name": "id",
@@ -6800,6 +6871,7 @@
         "tags": [
           "SpecificationAttributes"
         ],
+        "operationId": "GetSpecificationAttributes",
         "parameters": [
           {
             "name": "parameters",
@@ -6876,6 +6948,7 @@
         "tags": [
           "SpecificationAttributes"
         ],
+        "operationId": "CreateSpecificationAttribute",
         "parameters": [
           {
             "name": "specificaitonAttributeDelta",
@@ -6994,6 +7067,7 @@
         "tags": [
           "SpecificationAttributes"
         ],
+        "operationId": "GetSpecificationAttributesCount",
         "parameters": [
           {
             "name": "parameters",
@@ -7072,6 +7146,7 @@
         "tags": [
           "SpecificationAttributes"
         ],
+        "operationId": "GetSpecificationAttributeById",
         "parameters": [
           {
             "name": "id",
@@ -7178,6 +7253,7 @@
         "tags": [
           "SpecificationAttributes"
         ],
+        "operationId": "UpdateSpecificationAttribute",
         "parameters": [
           {
             "name": "specificationAttributeDelta",
@@ -7302,6 +7378,7 @@
         "tags": [
           "SpecificationAttributes"
         ],
+        "operationId": "DeleteSpecificationAttribute",
         "parameters": [
           {
             "name": "id",
@@ -7405,6 +7482,7 @@
         "tags": [
           "Store"
         ],
+        "operationId": "GetCurrentStore",
         "parameters": [
           {
             "name": "fields",
@@ -7504,6 +7582,7 @@
         "tags": [
           "Store"
         ],
+        "operationId": "GetAllStores",
         "parameters": [
           {
             "name": "fields",
@@ -7583,6 +7662,7 @@
         "tags": [
           "Token"
         ],
+        "operationId": "RequestToken",
         "parameters": [
           {
             "name": "Username",
@@ -7628,6 +7708,7 @@
         "tags": [
           "Topics"
         ],
+        "operationId": "GetTopics",
         "requestBody": {
           "content": {
             "application/json-patch+json": {
@@ -7719,6 +7800,7 @@
         "tags": [
           "Topics"
         ],
+        "operationId": "CreateTopic",
         "parameters": [
           {
             "name": "topicDelta",
@@ -7837,6 +7919,7 @@
         "tags": [
           "Topics"
         ],
+        "operationId": "GetTopicById",
         "parameters": [
           {
             "name": "id",
@@ -7939,24 +8022,48 @@
           }
         }
       },
-      "delete": {
+      "put": {
         "tags": [
           "Topics"
         ],
+        "operationId": "UpdateTopic",
         "parameters": [
+          {
+            "name": "topicDelta",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/TopicDtoDelta"
+            }
+          },
           {
             "name": "id",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int32"
+              "type": "string"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "Success"
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrdersRootObject"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrdersRootObject"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrdersRootObject"
+                }
+              }
+            }
           },
           "401": {
             "description": "Unauthorized",
@@ -8040,47 +8147,25 @@
           }
         }
       },
-      "put": {
+      "delete": {
         "tags": [
           "Topics"
         ],
+        "operationId": "DeleteTopic",
         "parameters": [
-          {
-            "name": "topicDelta",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/TopicDtoDelta"
-            }
-          },
           {
             "name": "id",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "integer",
+              "format": "int32"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "Success",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/OrdersRootObject"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OrdersRootObject"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OrdersRootObject"
-                }
-              }
-            }
+            "description": "Success"
           },
           "401": {
             "description": "Unauthorized",

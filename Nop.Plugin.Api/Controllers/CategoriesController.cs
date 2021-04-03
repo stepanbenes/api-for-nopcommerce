@@ -71,7 +71,7 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="400">Bad Request</response>
         /// <response code="401">Unauthorized</response>
         [HttpGet]
-        [Route("/api/categories")]
+        [Route("/api/categories", Name = "GetCategories")]
         [ProducesResponseType(typeof(CategoriesRootObject), (int) HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int) HttpStatusCode.BadRequest)]
         [GetRequestsErrorInterceptorActionFilter]
@@ -111,7 +111,7 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="200">OK</response>
         /// <response code="401">Unauthorized</response>
         [HttpGet]
-        [Route("/api/categories/count")]
+        [Route("/api/categories/count", Name = "GetCategoriesCount")]
         [ProducesResponseType(typeof(CategoriesCountRootObject), (int) HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int) HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int) HttpStatusCode.BadRequest)]
@@ -139,9 +139,10 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="404">Not Found</response>
         /// <response code="401">Unauthorized</response>
         [HttpGet]
-        [Route("/api/categories/{id}")]
+        [Route("/api/categories/{id}", Name = "GetCategoryById")]
         [ProducesResponseType(typeof(CategoriesRootObject), (int) HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int) HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(ErrorsRootObject), (int) HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(string), (int) HttpStatusCode.Unauthorized)]
         [GetRequestsErrorInterceptorActionFilter]
         public async Task<IActionResult> GetCategoryById(int id, string fields = "")
@@ -170,7 +171,7 @@ namespace Nop.Plugin.Api.Controllers
         }
 
         [HttpPost]
-        [Route("/api/categories")]
+        [Route("/api/categories", Name = "CreateCategory")]
         [ProducesResponseType(typeof(CategoriesRootObject), (int) HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), 422)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int) HttpStatusCode.BadRequest)]
@@ -236,7 +237,7 @@ namespace Nop.Plugin.Api.Controllers
         }
 
         [HttpPut]
-        [Route("/api/categories/{id}")]
+        [Route("/api/categories/{id}", Name = "UpdateCategory")]
         [ProducesResponseType(typeof(CategoriesRootObject), (int) HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), 422)]
         [ProducesResponseType(typeof(string), (int) HttpStatusCode.NotFound)]
@@ -297,7 +298,7 @@ namespace Nop.Plugin.Api.Controllers
         }
 
         [HttpDelete]
-        [Route("/api/categories/{id}")]
+        [Route("/api/categories/{id}", Name = "DeleteCategory")]
         [ProducesResponseType(typeof(void), (int) HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int) HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int) HttpStatusCode.NotFound)]

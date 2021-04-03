@@ -45,7 +45,7 @@ namespace Nop.Plugin.Api.Controllers
         }
 
         [HttpGet]
-        [Route("/token")]
+        [Route("/token", Name = "RequestToken")]
         [ProducesResponseType(typeof(TokenResponse), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> Create(TokenRequest model)
         {

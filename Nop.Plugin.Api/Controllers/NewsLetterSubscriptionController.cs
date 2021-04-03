@@ -57,7 +57,7 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="400">Bad Request</response>
         /// <response code="401">Unauthorized</response>
         [HttpGet]
-        [Route("/api/news_letter_subscriptions")]
+        [Route("/api/news_letter_subscriptions", Name = "GetNewsLetterSubscriptions")]
         [ProducesResponseType(typeof(NewsLetterSubscriptionsRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [GetRequestsErrorInterceptorActionFilter]
@@ -96,7 +96,7 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="400">Bad Request</response>
         /// <response code="401">Unauthorized</response>
         [HttpPost]
-        [Route("/api/news_letter_subscriptions/{email}/deactivate")]
+        [Route("/api/news_letter_subscriptions/{email}/deactivate", Name = "DeactivateNewsLetterSubscription")]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), 422)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]

@@ -67,7 +67,7 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="400">Bad Request</response>
         /// <response code="401">Unauthorized</response>
         [HttpGet]
-        [Route("/api/topics")]
+        [Route("/api/topics", Name = "GetTopics")]
         [ProducesResponseType(typeof(OrdersRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
@@ -91,7 +91,7 @@ namespace Nop.Plugin.Api.Controllers
         }
 
         /// <summary>
-        ///     Retrieve topic by spcified id
+        ///     Retrieve topic by specified id
         /// </summary>
         /// ///
         /// <param name="id">Id of the topic</param>
@@ -100,13 +100,13 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="404">Not Found</response>
         /// <response code="401">Unauthorized</response>
         [HttpGet]
-        [Route("/api/topics/{id}")]
+        [Route("/api/topics/{id}", Name = "GetTopicById")]
         [ProducesResponseType(typeof(TopicsRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
         [GetRequestsErrorInterceptorActionFilter]
-        public async Task<IActionResult> GetOrderById(int id, string fields = "")
+        public async Task<IActionResult> GetTopicById(int id, string fields = "")
         {
             if (id <= 0)
             {
@@ -131,7 +131,7 @@ namespace Nop.Plugin.Api.Controllers
         }
 
         [HttpPost]
-        [Route("/api/topics")]
+        [Route("/api/topics", Name = "CreateTopic")]
         [ProducesResponseType(typeof(TopicsRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -165,39 +165,8 @@ namespace Nop.Plugin.Api.Controllers
             return new RawJsonActionResult(json);
         }
 
-
-        [HttpDelete]
-        [Route("/api/topics/{id}")]
-        [ProducesResponseType(typeof(void), (int)HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
-        [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(ErrorsRootObject), 422)]
-        [GetRequestsErrorInterceptorActionFilter]
-        public async Task<IActionResult> DeleteTopic(int id)
-        {
-            if (id <= 0)
-            {
-                return Error(HttpStatusCode.BadRequest, "id", "invalid id");
-            }
-
-            var topicToDelete = await _topicService.GetTopicByIdAsync(id);
-
-            if (topicToDelete == null)
-            {
-                return Error(HttpStatusCode.NotFound, "topic", "not found");
-            }
-
-            await _topicService.DeleteTopicAsync(topicToDelete);
-
-            //activity log
-            await CustomerActivityService.InsertActivityAsync("DeleteTopic", await LocalizationService.GetResourceAsync("ActivityLog.DeleteTopic"), topicToDelete);
-
-            return Json(new { status = "ok" });
-        }
-
         [HttpPut]
-        [Route("/api/topics/{id}")]
+        [Route("/api/topics/{id}", Name = "UpdateTopic")]
         [ProducesResponseType(typeof(OrdersRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -233,6 +202,36 @@ namespace Nop.Plugin.Api.Controllers
             var json = JsonFieldsSerializer.Serialize(topicsRootObject, string.Empty);
 
             return new RawJsonActionResult(json);
+        }
+
+        [HttpDelete]
+        [Route("/api/topics/{id}", Name = "DeleteTopic")]
+        [ProducesResponseType(typeof(void), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(ErrorsRootObject), 422)]
+        [GetRequestsErrorInterceptorActionFilter]
+        public async Task<IActionResult> DeleteTopic(int id)
+        {
+            if (id <= 0)
+            {
+                return Error(HttpStatusCode.BadRequest, "id", "invalid id");
+            }
+
+            var topicToDelete = await _topicService.GetTopicByIdAsync(id);
+
+            if (topicToDelete == null)
+            {
+                return Error(HttpStatusCode.NotFound, "topic", "not found");
+            }
+
+            await _topicService.DeleteTopicAsync(topicToDelete);
+
+            //activity log
+            await CustomerActivityService.InsertActivityAsync("DeleteTopic", await LocalizationService.GetResourceAsync("ActivityLog.DeleteTopic"), topicToDelete);
+
+            return Json(new { status = "ok" });
         }
     }
 }
