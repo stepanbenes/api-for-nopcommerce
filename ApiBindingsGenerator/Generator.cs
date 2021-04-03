@@ -68,20 +68,17 @@ namespace ApiBindingsGenerator
         protected record Token(string AccessToken, string TokenType);
 
         private readonly HttpClient httpClient;
-        protected Lazy<Task<Token?>> AccessToken { get; }
+        protected Token? AccessToken { get; set; }
 
         public ApiClientBase(HttpClient httpClient)
         {
             this.httpClient = httpClient;
-            this.AccessToken = new Lazy<Task<Token?>>(Authenticate);
         }
-
-        protected abstract Task<Token?> Authenticate();
 
         protected async Task<HttpResponseMessage> Send(HttpMethod httpMethod, string requestEndpoint, bool authenticate = true, HttpContent? content = null)
         {
             var request = new HttpRequestMessage(httpMethod, requestEndpoint);
-            if (authenticate && await AccessToken.Value is { } accessToken)
+            if (authenticate && AccessToken is { } accessToken)
             {
                 request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(accessToken.TokenType, accessToken.AccessToken);
             }
@@ -222,11 +219,6 @@ namespace {BASE_NAMESPACE}.{apiName}
             this.httpClient = httpClient;
         }}
 
-        protected override async Task<Token?> Authenticate()
-        {{
-            return null; // TODO: implement this
-        }}
-
 ");
 
 			foreach (var apiEndpoint in apiEndpoints)
@@ -241,6 +233,8 @@ namespace {BASE_NAMESPACE}.{apiName}
 				string? requestBodyTypeName = null;
 				const string REQUEST_BODY_PARAMETER_NAME = "requestBody";
 
+				// TODO: add support for multi-form media type (and other media types?)
+
 				if (apiEndpoint.RequestBody is not null && apiEndpoint.RequestBody.Content.TryGetValue(JSON_MEDIA_TYPE, out TypeDescriptor requestBodyTypeDescriptor))
 				{
 					requestBodyTypeName = GenerateCSharpType(requestBodyTypeDescriptor, out _);
@@ -254,7 +248,10 @@ namespace {BASE_NAMESPACE}.{apiName}
 
 
 				string operationName = apiEndpoint.OperationId ?? (apiEndpoint.Method.Method + "_" + apiEndpoint.Path.Replace('/', '_')).ToPascalCase();
+				string returnNothingToken = $"return{(returnType is not null ? " null" : "")};";
+				sourceCode.AppendLine($"{____}{____}/// <summary>");
 				sourceCode.AppendLine($"{____}{____}/// {endpointLabel}");
+				sourceCode.AppendLine($"{____}{____}/// </summary>");
 				sourceCode.AppendLine($@"{____}{____}public async {taskReturnTypeName} {operationName}({string.Join(", ", parameters)})
         {{
             HttpContent? content = {(requestBodyTypeName is not null ? $"JsonContent.Create({REQUEST_BODY_PARAMETER_NAME})" : "null")};
@@ -270,9 +267,11 @@ namespace {BASE_NAMESPACE}.{apiName}
 						sourceCode.AppendLine($@"                    return await response.Content.ReadFromJsonAsync<{returnTypeName}>();");
 				}
 				else
+				{
 					sourceCode.AppendLine($@"                    return;");
+				}
 				sourceCode.AppendLine($@"                case 404: // NOT FOUND
-                    return{(returnType is not null ? " null" : "")};");
+                    {returnNothingToken}");
 
 				foreach (var key in apiEndpoint.Responses.Keys.Except(new[] { (HttpStatusCode)200, (HttpStatusCode)404 }))
 				{
@@ -300,7 +299,7 @@ namespace {BASE_NAMESPACE}.{apiName}
 				}
 
 				sourceCode.AppendLine($@"                case > 200 and <= 299: // no content
-                    return{(returnType is not null ? " null" : "")};
+                    {returnNothingToken}
                 case >= 400 and <= 499: // request error
                     throw new ApiException(response.StatusCode, $""{{(int)response.StatusCode}} ({{response.StatusCode}}) Request error. "" + await response.Content.ReadAsStringAsync());
                 case >= 500 and <= 599: // server error

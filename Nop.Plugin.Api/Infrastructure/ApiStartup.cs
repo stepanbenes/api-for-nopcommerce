@@ -89,6 +89,7 @@ namespace Nop.Plugin.Api.Infrastructure
                     }
                 });
             });
+            services.AddSwaggerGenNewtonsoftSupport();
         }
 
         public void Configure(IApplicationBuilder app)

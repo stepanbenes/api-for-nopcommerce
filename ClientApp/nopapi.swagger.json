@@ -10,6 +10,7 @@
         "tags": [
           "Categories"
         ],
+        "operationId": "GetCategories",
         "parameters": [
           {
             "name": "parameters",
@@ -284,6 +285,26 @@
           },
           "400": {
             "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorsRootObject"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorsRootObject"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorsRootObject"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
             "content": {
               "text/plain": {
                 "schema": {
@@ -8150,15 +8171,11 @@
       "AddressDto": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "firstName": {
+          "first_name": {
             "type": "string",
             "nullable": true
           },
-          "lastName": {
+          "last_name": {
             "type": "string",
             "nullable": true
           },
@@ -8170,16 +8187,16 @@
             "type": "string",
             "nullable": true
           },
-          "countryId": {
+          "country_id": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "countryName": {
+          "country": {
             "type": "string",
             "nullable": true
           },
-          "stateProvinceId": {
+          "state_province_id": {
             "type": "integer",
             "format": "int32",
             "nullable": true
@@ -8196,30 +8213,34 @@
             "type": "string",
             "nullable": true
           },
-          "zipPostalCode": {
+          "zip_postal_code": {
             "type": "string",
             "nullable": true
           },
-          "phoneNumber": {
+          "phone_number": {
             "type": "string",
             "nullable": true
           },
-          "faxNumber": {
+          "fax_number": {
             "type": "string",
             "nullable": true
           },
-          "customAttributes": {
+          "customer_attributes": {
             "type": "string",
             "nullable": true
           },
-          "createdOnUtc": {
+          "created_on_utc": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "stateProvinceName": {
+          "province": {
             "type": "string",
             "nullable": true
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -8227,31 +8248,31 @@
       "CategoriesCountParametersModel": {
         "type": "object",
         "properties": {
-          "createdAtMin": {
+          "created_at_min": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "createdAtMax": {
+          "created_at_max": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "updatedAtMin": {
+          "updated_at_min": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "updatedAtMax": {
+          "updated_at_max": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "publishedStatus": {
+          "published_status": {
             "type": "boolean",
             "nullable": true
           },
-          "productId": {
+          "product_id": {
             "type": "integer",
             "format": "int32",
             "nullable": true
@@ -8272,35 +8293,6 @@
       "CategoriesParametersModel": {
         "type": "object",
         "properties": {
-          "createdAtMin": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "createdAtMax": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "updatedAtMin": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "updatedAtMax": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "publishedStatus": {
-            "type": "boolean",
-            "nullable": true
-          },
-          "productId": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
           "ids": {
             "type": "array",
             "items": {
@@ -8317,12 +8309,41 @@
             "type": "integer",
             "format": "int32"
           },
-          "sinceId": {
+          "since_id": {
             "type": "integer",
             "format": "int32"
           },
           "fields": {
             "type": "string",
+            "nullable": true
+          },
+          "created_at_min": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "created_at_max": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "updated_at_min": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "updated_at_max": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "published_status": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "product_id": {
+            "type": "integer",
+            "format": "int32",
             "nullable": true
           }
         },
@@ -8344,15 +8365,11 @@
       "CategoryDto": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
           "name": {
             "type": "string",
             "nullable": true
           },
-          "localizedNames": {
+          "localized_names": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/LocalizedNameDto"
@@ -8363,50 +8380,50 @@
             "type": "string",
             "nullable": true
           },
-          "categoryTemplateId": {
+          "category_template_id": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "metaKeywords": {
+          "meta_keywords": {
             "type": "string",
             "nullable": true
           },
-          "metaDescription": {
+          "meta_description": {
             "type": "string",
             "nullable": true
           },
-          "metaTitle": {
+          "meta_title": {
             "type": "string",
             "nullable": true
           },
-          "parentCategoryId": {
+          "parent_category_id": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "pageSize": {
+          "page_size": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "pageSizeOptions": {
+          "page_size_options": {
             "type": "string",
             "nullable": true
           },
-          "priceRanges": {
+          "price_ranges": {
             "type": "string",
             "nullable": true
           },
-          "showOnHomePage": {
+          "show_on_home_page": {
             "type": "boolean",
             "nullable": true
           },
-          "includeInTopMenu": {
+          "include_in_top_menu": {
             "type": "boolean",
             "nullable": true
           },
-          "hasDiscountsApplied": {
+          "has_discounts_applied": {
             "type": "boolean",
             "nullable": true
           },
@@ -8418,22 +8435,22 @@
             "type": "boolean",
             "nullable": true
           },
-          "displayOrder": {
+          "display_order": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "createdOnUtc": {
+          "created_on_utc": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "updatedOnUtc": {
+          "updated_on_utc": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "roleIds": {
+          "role_ids": {
             "type": "array",
             "items": {
               "type": "integer",
@@ -8441,7 +8458,7 @@
             },
             "nullable": true
           },
-          "discountIds": {
+          "discount_ids": {
             "type": "array",
             "items": {
               "type": "integer",
@@ -8449,7 +8466,7 @@
             },
             "nullable": true
           },
-          "storeIds": {
+          "store_ids": {
             "type": "array",
             "items": {
               "type": "integer",
@@ -8460,9 +8477,13 @@
           "image": {
             "$ref": "#/components/schemas/ImageDto"
           },
-          "seName": {
+          "se_name": {
             "type": "string",
             "nullable": true
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -8470,7 +8491,12 @@
       "CategoryDtoDelta": {
         "type": "object",
         "properties": {
-          "dto": {
+          "ObjectPropertyNameValuePairs": {
+            "type": "object",
+            "additionalProperties": {},
+            "nullable": true
+          },
+          "Dto": {
             "$ref": "#/components/schemas/CategoryDto"
           }
         },
@@ -8479,11 +8505,27 @@
       "CustomerDto": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
+          "shopping_cart_items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShoppingCartItemDto"
+            },
+            "nullable": true
           },
-          "customerGuid": {
+          "billing_address": {
+            "$ref": "#/components/schemas/AddressDto"
+          },
+          "shipping_address": {
+            "$ref": "#/components/schemas/AddressDto"
+          },
+          "addresses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AddressDto"
+            },
+            "nullable": true
+          },
+          "customer_guid": {
             "type": "string",
             "format": "uuid"
           },
@@ -8495,19 +8537,19 @@
             "type": "string",
             "nullable": true
           },
-          "firstName": {
+          "first_name": {
             "type": "string",
             "nullable": true
           },
-          "lastName": {
+          "last_name": {
             "type": "string",
             "nullable": true
           },
-          "languageId": {
+          "language_id": {
             "type": "string",
             "nullable": true
           },
-          "dateOfBirth": {
+          "date_of_birth": {
             "type": "string",
             "format": "date-time",
             "nullable": true
@@ -8516,15 +8558,15 @@
             "type": "string",
             "nullable": true
           },
-          "adminComment": {
+          "admin_comment": {
             "type": "string",
             "nullable": true
           },
-          "isTaxExempt": {
+          "is_tax_exempt": {
             "type": "boolean",
             "nullable": true
           },
-          "hasShoppingCartItems": {
+          "has_shopping_cart_items": {
             "type": "boolean",
             "nullable": true
           },
@@ -8536,42 +8578,42 @@
             "type": "boolean",
             "nullable": true
           },
-          "isSystemAccount": {
+          "is_system_account": {
             "type": "boolean",
             "nullable": true
           },
-          "systemName": {
+          "system_name": {
             "type": "string",
             "nullable": true
           },
-          "lastIpAddress": {
+          "last_ip_address": {
             "type": "string",
             "nullable": true
           },
-          "createdOnUtc": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "lastLoginDateUtc": {
+          "created_on_utc": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "lastActivityDateUtc": {
+          "last_login_date_utc": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "registeredInStoreId": {
+          "last_activity_date_utc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "registered_in_store_id": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "subscribedToNewsletter": {
+          "subscribed_to_newsletter": {
             "type": "boolean"
           },
-          "roleIds": {
+          "role_ids": {
             "type": "array",
             "items": {
               "type": "integer",
@@ -8579,29 +8621,9 @@
             },
             "nullable": true
           },
-          "password": {
-            "type": "string",
-            "nullable": true
-          },
-          "shoppingCartItems": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ShoppingCartItemDto"
-            },
-            "nullable": true
-          },
-          "billingAddress": {
-            "$ref": "#/components/schemas/AddressDto"
-          },
-          "shippingAddress": {
-            "$ref": "#/components/schemas/AddressDto"
-          },
-          "addresses": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/AddressDto"
-            },
-            "nullable": true
+          "id": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -8609,7 +8631,12 @@
       "CustomerDtoDelta": {
         "type": "object",
         "properties": {
-          "dto": {
+          "ObjectPropertyNameValuePairs": {
+            "type": "object",
+            "additionalProperties": {},
+            "nullable": true
+          },
+          "Dto": {
             "$ref": "#/components/schemas/CustomerDto"
           }
         },
@@ -8618,11 +8645,20 @@
       "CustomerForShoppingCartItemDto": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
+          "billing_address": {
+            "$ref": "#/components/schemas/AddressDto"
           },
-          "customerGuid": {
+          "shipping_address": {
+            "$ref": "#/components/schemas/AddressDto"
+          },
+          "addresses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AddressDto"
+            },
+            "nullable": true
+          },
+          "customer_guid": {
             "type": "string",
             "format": "uuid"
           },
@@ -8634,19 +8670,19 @@
             "type": "string",
             "nullable": true
           },
-          "firstName": {
+          "first_name": {
             "type": "string",
             "nullable": true
           },
-          "lastName": {
+          "last_name": {
             "type": "string",
             "nullable": true
           },
-          "languageId": {
+          "language_id": {
             "type": "string",
             "nullable": true
           },
-          "dateOfBirth": {
+          "date_of_birth": {
             "type": "string",
             "format": "date-time",
             "nullable": true
@@ -8655,15 +8691,15 @@
             "type": "string",
             "nullable": true
           },
-          "adminComment": {
+          "admin_comment": {
             "type": "string",
             "nullable": true
           },
-          "isTaxExempt": {
+          "is_tax_exempt": {
             "type": "boolean",
             "nullable": true
           },
-          "hasShoppingCartItems": {
+          "has_shopping_cart_items": {
             "type": "boolean",
             "nullable": true
           },
@@ -8675,42 +8711,42 @@
             "type": "boolean",
             "nullable": true
           },
-          "isSystemAccount": {
+          "is_system_account": {
             "type": "boolean",
             "nullable": true
           },
-          "systemName": {
+          "system_name": {
             "type": "string",
             "nullable": true
           },
-          "lastIpAddress": {
+          "last_ip_address": {
             "type": "string",
             "nullable": true
           },
-          "createdOnUtc": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "lastLoginDateUtc": {
+          "created_on_utc": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "lastActivityDateUtc": {
+          "last_login_date_utc": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "registeredInStoreId": {
+          "last_activity_date_utc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "registered_in_store_id": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "subscribedToNewsletter": {
+          "subscribed_to_newsletter": {
             "type": "boolean"
           },
-          "roleIds": {
+          "role_ids": {
             "type": "array",
             "items": {
               "type": "integer",
@@ -8718,18 +8754,9 @@
             },
             "nullable": true
           },
-          "billingAddress": {
-            "$ref": "#/components/schemas/AddressDto"
-          },
-          "shippingAddress": {
-            "$ref": "#/components/schemas/AddressDto"
-          },
-          "addresses": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/AddressDto"
-            },
-            "nullable": true
+          "id": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -8737,19 +8764,15 @@
       "CustomerRoleDto": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
           "name": {
             "type": "string",
             "nullable": true
           },
-          "freeShipping": {
+          "free_shipping": {
             "type": "boolean",
             "nullable": true
           },
-          "taxExempt": {
+          "tax_exempt": {
             "type": "boolean",
             "nullable": true
           },
@@ -8757,22 +8780,26 @@
             "type": "boolean",
             "nullable": true
           },
-          "isSystemRole": {
+          "is_system_role": {
             "type": "boolean",
             "nullable": true
           },
-          "systemName": {
+          "system_name": {
             "type": "string",
             "nullable": true
           },
-          "enablePasswordLifetime": {
+          "enable_password_lifetime": {
             "type": "boolean",
             "nullable": true
           },
-          "purchasedWithProductId": {
+          "purchased_with_product_id": {
             "type": "integer",
             "format": "int32",
             "nullable": true
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -8780,7 +8807,7 @@
       "CustomerRolesRootObject": {
         "type": "object",
         "properties": {
-          "customerRoles": {
+          "customer_roles": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/CustomerRoleDto"
@@ -8811,7 +8838,7 @@
             "type": "integer",
             "format": "int32"
           },
-          "sinceId": {
+          "since_id": {
             "type": "integer",
             "format": "int32"
           },
@@ -8819,12 +8846,12 @@
             "type": "string",
             "nullable": true
           },
-          "createdAtMin": {
+          "created_at_min": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "createdAtMax": {
+          "created_at_max": {
             "type": "string",
             "format": "date-time",
             "nullable": true
@@ -8897,15 +8924,6 @@
           "attachment": {
             "type": "string",
             "nullable": true
-          },
-          "binary": {
-            "type": "string",
-            "format": "byte",
-            "nullable": true
-          },
-          "mimeType": {
-            "type": "string",
-            "nullable": true
           }
         },
         "additionalProperties": false
@@ -8913,6 +8931,18 @@
       "ImageMappingDto": {
         "type": "object",
         "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "picture_id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "position": {
+            "type": "integer",
+            "format": "int32"
+          },
           "src": {
             "type": "string",
             "nullable": true
@@ -8920,27 +8950,6 @@
           "attachment": {
             "type": "string",
             "nullable": true
-          },
-          "binary": {
-            "type": "string",
-            "format": "byte",
-            "nullable": true
-          },
-          "mimeType": {
-            "type": "string",
-            "nullable": true
-          },
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "pictureId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "position": {
-            "type": "integer",
-            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -8948,23 +8957,19 @@
       "LanguageDto": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
           "name": {
             "type": "string",
             "nullable": true
           },
-          "languageCulture": {
+          "language_culture": {
             "type": "string",
             "nullable": true
           },
-          "uniqueSeoCode": {
+          "unique_seo_code": {
             "type": "string",
             "nullable": true
           },
-          "flagImageFileName": {
+          "flag_image_file_name": {
             "type": "string",
             "nullable": true
           },
@@ -8972,11 +8977,11 @@
             "type": "boolean",
             "nullable": true
           },
-          "limitedToStores": {
+          "limited_to_stores": {
             "type": "boolean",
             "nullable": true
           },
-          "defaultCurrencyId": {
+          "default_currency_id": {
             "type": "integer",
             "format": "int32",
             "nullable": true
@@ -8985,18 +8990,22 @@
             "type": "boolean",
             "nullable": true
           },
-          "displayOrder": {
+          "display_order": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "storeIds": {
+          "store_ids": {
             "type": "array",
             "items": {
               "type": "integer",
               "format": "int32"
             },
             "nullable": true
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -9017,12 +9026,12 @@
       "LocalizedNameDto": {
         "type": "object",
         "properties": {
-          "languageId": {
+          "language_id": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "localizedName": {
+          "localized_name": {
             "type": "string",
             "nullable": true
           }
@@ -9032,15 +9041,11 @@
       "ManufacturerDto": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
           "name": {
             "type": "string",
             "nullable": true
           },
-          "localizedNames": {
+          "localized_names": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/LocalizedNameDto"
@@ -9051,45 +9056,45 @@
             "type": "string",
             "nullable": true
           },
-          "manufacturerTemplateId": {
+          "manufacturer_template_id": {
             "type": "integer",
             "format": "int32"
           },
-          "metaKeywords": {
+          "meta_keywords": {
             "type": "string",
             "nullable": true
           },
-          "metaDescription": {
+          "meta_description": {
             "type": "string",
             "nullable": true
           },
-          "metaTitle": {
+          "meta_title": {
             "type": "string",
             "nullable": true
           },
-          "pictureId": {
+          "picture_id": {
             "type": "integer",
             "format": "int32"
           },
-          "pageSize": {
+          "page_size": {
             "type": "integer",
             "format": "int32"
           },
-          "allowCustomersToSelectPageSize": {
+          "allow_customers_to_select_page_size": {
             "type": "boolean"
           },
-          "pageSizeOptions": {
+          "page_size_options": {
             "type": "string",
             "nullable": true
           },
-          "priceRanges": {
+          "price_ranges": {
             "type": "string",
             "nullable": true
           },
-          "subjectToAcl": {
+          "subject_to_acl": {
             "type": "boolean"
           },
-          "limitedToStores": {
+          "limited_to_stores": {
             "type": "boolean"
           },
           "published": {
@@ -9098,19 +9103,19 @@
           "deleted": {
             "type": "boolean"
           },
-          "displayOrder": {
+          "display_order": {
             "type": "integer",
             "format": "int32"
           },
-          "createdOnUtc": {
+          "created_on_utc": {
             "type": "string",
             "format": "date-time"
           },
-          "updatedOnUtc": {
+          "updated_on_utc": {
             "type": "string",
             "format": "date-time"
           },
-          "roleIds": {
+          "role_ids": {
             "type": "array",
             "items": {
               "type": "integer",
@@ -9118,7 +9123,7 @@
             },
             "nullable": true
           },
-          "discountIds": {
+          "discount_ids": {
             "type": "array",
             "items": {
               "type": "integer",
@@ -9126,7 +9131,7 @@
             },
             "nullable": true
           },
-          "storeIds": {
+          "store_ids": {
             "type": "array",
             "items": {
               "type": "integer",
@@ -9137,9 +9142,13 @@
           "image": {
             "$ref": "#/components/schemas/ImageDto"
           },
-          "seName": {
+          "se_name": {
             "type": "string",
             "nullable": true
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -9147,7 +9156,12 @@
       "ManufacturerDtoDelta": {
         "type": "object",
         "properties": {
-          "dto": {
+          "ObjectPropertyNameValuePairs": {
+            "type": "object",
+            "additionalProperties": {},
+            "nullable": true
+          },
+          "Dto": {
             "$ref": "#/components/schemas/ManufacturerDto"
           }
         },
@@ -9156,31 +9170,31 @@
       "ManufacturersCountParametersModel": {
         "type": "object",
         "properties": {
-          "createdAtMin": {
+          "created_at_min": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "createdAtMax": {
+          "created_at_max": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "updatedAtMin": {
+          "updated_at_min": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "updatedAtMax": {
+          "updated_at_max": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "publishedStatus": {
+          "published_status": {
             "type": "boolean",
             "nullable": true
           },
-          "productId": {
+          "product_id": {
             "type": "integer",
             "format": "int32",
             "nullable": true
@@ -9201,35 +9215,6 @@
       "ManufacturersParametersModel": {
         "type": "object",
         "properties": {
-          "createdAtMin": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "createdAtMax": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "updatedAtMin": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "updatedAtMax": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "publishedStatus": {
-            "type": "boolean",
-            "nullable": true
-          },
-          "productId": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
           "ids": {
             "type": "array",
             "items": {
@@ -9246,7 +9231,7 @@
             "type": "integer",
             "format": "int32"
           },
-          "sinceId": {
+          "since_id": {
             "type": "integer",
             "format": "int32"
           },
@@ -9254,7 +9239,36 @@
             "type": "string",
             "nullable": true
           },
-          "languageId": {
+          "languageid": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "created_at_min": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "created_at_max": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "updated_at_min": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "updated_at_max": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "published_status": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "product_id": {
             "type": "integer",
             "format": "int32",
             "nullable": true
@@ -9278,10 +9292,6 @@
       "NewsLetterSubscriptionDto": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
           "email": {
             "type": "string",
             "nullable": true
@@ -9289,14 +9299,18 @@
           "active": {
             "type": "boolean"
           },
-          "storeId": {
+          "store_id": {
             "type": "integer",
             "format": "int32"
           },
-          "createdOnUtc": {
+          "created_on_utc": {
             "type": "string",
             "format": "date-time",
             "nullable": true
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -9312,7 +9326,7 @@
             "type": "integer",
             "format": "int32"
           },
-          "sinceId": {
+          "since_id": {
             "type": "integer",
             "format": "int32"
           },
@@ -9320,17 +9334,17 @@
             "type": "string",
             "nullable": true
           },
-          "createdAtMin": {
+          "created_at_min": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "createdAtMax": {
+          "created_at_max": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "onlyActive": {
+          "only_active": {
             "type": "boolean",
             "nullable": true
           }
@@ -9340,7 +9354,7 @@
       "NewsLetterSubscriptionsRootObject": {
         "type": "object",
         "properties": {
-          "newsLetterSubscriptions": {
+          "news_letter_subscriptions": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/NewsLetterSubscriptionDto"
@@ -9353,11 +9367,7 @@
       "OrderCustomerDto": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "customerGuid": {
+          "customer_guid": {
             "type": "string",
             "format": "uuid"
           },
@@ -9369,19 +9379,19 @@
             "type": "string",
             "nullable": true
           },
-          "firstName": {
+          "first_name": {
             "type": "string",
             "nullable": true
           },
-          "lastName": {
+          "last_name": {
             "type": "string",
             "nullable": true
           },
-          "languageId": {
+          "language_id": {
             "type": "string",
             "nullable": true
           },
-          "dateOfBirth": {
+          "date_of_birth": {
             "type": "string",
             "format": "date-time",
             "nullable": true
@@ -9390,15 +9400,15 @@
             "type": "string",
             "nullable": true
           },
-          "adminComment": {
+          "admin_comment": {
             "type": "string",
             "nullable": true
           },
-          "isTaxExempt": {
+          "is_tax_exempt": {
             "type": "boolean",
             "nullable": true
           },
-          "hasShoppingCartItems": {
+          "has_shopping_cart_items": {
             "type": "boolean",
             "nullable": true
           },
@@ -9410,48 +9420,52 @@
             "type": "boolean",
             "nullable": true
           },
-          "isSystemAccount": {
+          "is_system_account": {
             "type": "boolean",
             "nullable": true
           },
-          "systemName": {
+          "system_name": {
             "type": "string",
             "nullable": true
           },
-          "lastIpAddress": {
+          "last_ip_address": {
             "type": "string",
             "nullable": true
           },
-          "createdOnUtc": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "lastLoginDateUtc": {
+          "created_on_utc": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "lastActivityDateUtc": {
+          "last_login_date_utc": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "registeredInStoreId": {
+          "last_activity_date_utc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "registered_in_store_id": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "subscribedToNewsletter": {
+          "subscribed_to_newsletter": {
             "type": "boolean"
           },
-          "roleIds": {
+          "role_ids": {
             "type": "array",
             "items": {
               "type": "integer",
               "format": "int32"
             },
             "nullable": true
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -9459,165 +9473,161 @@
       "OrderDto": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "storeId": {
+          "store_id": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "pickUpInStore": {
+          "pick_up_in_store": {
             "type": "boolean",
             "nullable": true
           },
-          "paymentMethodSystemName": {
+          "payment_method_system_name": {
             "type": "string",
             "nullable": true
           },
-          "customerCurrencyCode": {
+          "customer_currency_code": {
             "type": "string",
             "nullable": true
           },
-          "currencyRate": {
+          "currency_rate": {
             "type": "number",
             "format": "double",
             "nullable": true
           },
-          "customerTaxDisplayTypeId": {
+          "customer_tax_display_type_id": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "vatNumber": {
+          "vat_number": {
             "type": "string",
             "nullable": true
           },
-          "orderSubtotalInclTax": {
+          "order_subtotal_incl_tax": {
             "type": "number",
             "format": "double",
             "nullable": true
           },
-          "orderSubtotalExclTax": {
+          "order_subtotal_excl_tax": {
             "type": "number",
             "format": "double",
             "nullable": true
           },
-          "orderSubTotalDiscountInclTax": {
+          "order_sub_total_discount_incl_tax": {
             "type": "number",
             "format": "double",
             "nullable": true
           },
-          "orderSubTotalDiscountExclTax": {
+          "order_sub_total_discount_excl_tax": {
             "type": "number",
             "format": "double",
             "nullable": true
           },
-          "orderShippingInclTax": {
+          "order_shipping_incl_tax": {
             "type": "number",
             "format": "double",
             "nullable": true
           },
-          "orderShippingExclTax": {
+          "order_shipping_excl_tax": {
             "type": "number",
             "format": "double",
             "nullable": true
           },
-          "paymentMethodAdditionalFeeInclTax": {
+          "payment_method_additional_fee_incl_tax": {
             "type": "number",
             "format": "double",
             "nullable": true
           },
-          "paymentMethodAdditionalFeeExclTax": {
+          "payment_method_additional_fee_excl_tax": {
             "type": "number",
             "format": "double",
             "nullable": true
           },
-          "taxRates": {
+          "tax_rates": {
             "type": "string",
             "nullable": true
           },
-          "orderTax": {
+          "order_tax": {
             "type": "number",
             "format": "double",
             "nullable": true
           },
-          "orderDiscount": {
+          "order_discount": {
             "type": "number",
             "format": "double",
             "nullable": true
           },
-          "orderTotal": {
+          "order_total": {
             "type": "number",
             "format": "double",
             "nullable": true
           },
-          "refundedAmount": {
+          "refunded_amount": {
             "type": "number",
             "format": "double",
             "nullable": true
           },
-          "rewardPointsWereAdded": {
+          "reward_points_were_added": {
             "type": "boolean",
             "nullable": true
           },
-          "checkoutAttributeDescription": {
+          "checkout_attribute_description": {
             "type": "string",
             "nullable": true
           },
-          "customerLanguageId": {
+          "customer_language_id": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "affiliateId": {
+          "affiliate_id": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "customerIp": {
+          "customer_ip": {
             "type": "string",
             "nullable": true
           },
-          "authorizationTransactionId": {
+          "authorization_transaction_id": {
             "type": "string",
             "nullable": true
           },
-          "authorizationTransactionCode": {
+          "authorization_transaction_code": {
             "type": "string",
             "nullable": true
           },
-          "authorizationTransactionResult": {
+          "authorization_transaction_result": {
             "type": "string",
             "nullable": true
           },
-          "captureTransactionId": {
+          "capture_transaction_id": {
             "type": "string",
             "nullable": true
           },
-          "captureTransactionResult": {
+          "capture_transaction_result": {
             "type": "string",
             "nullable": true
           },
-          "subscriptionTransactionId": {
+          "subscription_transaction_id": {
             "type": "string",
             "nullable": true
           },
-          "paidDateUtc": {
+          "paid_date_utc": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "shippingMethod": {
+          "shipping_method": {
             "type": "string",
             "nullable": true
           },
-          "shippingRateComputationMethodSystemName": {
+          "shipping_rate_computation_method_system_name": {
             "type": "string",
             "nullable": true
           },
-          "customValuesXml": {
+          "custom_values_xml": {
             "type": "string",
             "nullable": true
           },
@@ -9625,7 +9635,7 @@
             "type": "boolean",
             "nullable": true
           },
-          "createdOnUtc": {
+          "created_on_utc": {
             "type": "string",
             "format": "date-time",
             "nullable": true
@@ -9633,39 +9643,43 @@
           "customer": {
             "$ref": "#/components/schemas/OrderCustomerDto"
           },
-          "customerId": {
+          "customer_id": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "billingAddress": {
+          "billing_address": {
             "$ref": "#/components/schemas/AddressDto"
           },
-          "shippingAddress": {
+          "shipping_address": {
             "$ref": "#/components/schemas/AddressDto"
           },
-          "orderItems": {
+          "order_items": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/OrderItemDto"
             },
             "nullable": true
           },
-          "orderStatus": {
+          "order_status": {
             "type": "string",
             "nullable": true
           },
-          "paymentStatus": {
+          "payment_status": {
             "type": "string",
             "nullable": true
           },
-          "shippingStatus": {
+          "shipping_status": {
             "type": "string",
             "nullable": true
           },
-          "customerTaxDisplayType": {
+          "customer_tax_display_type": {
             "type": "string",
             "nullable": true
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -9673,7 +9687,12 @@
       "OrderDtoDelta": {
         "type": "object",
         "properties": {
-          "dto": {
+          "ObjectPropertyNameValuePairs": {
+            "type": "object",
+            "additionalProperties": {},
+            "nullable": true
+          },
+          "Dto": {
             "$ref": "#/components/schemas/OrderDto"
           }
         },
@@ -9682,11 +9701,7 @@
       "OrderItemDto": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "attributes": {
+          "product_attributes": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ProductItemAttributeDto"
@@ -9698,70 +9713,70 @@
             "format": "int32",
             "nullable": true
           },
-          "unitPriceInclTax": {
+          "unit_price_incl_tax": {
             "type": "number",
             "format": "double",
             "nullable": true
           },
-          "unitPriceExclTax": {
+          "unit_price_excl_tax": {
             "type": "number",
             "format": "double",
             "nullable": true
           },
-          "priceInclTax": {
+          "price_incl_tax": {
             "type": "number",
             "format": "double",
             "nullable": true
           },
-          "priceExclTax": {
+          "price_excl_tax": {
             "type": "number",
             "format": "double",
             "nullable": true
           },
-          "discountAmountInclTax": {
+          "discount_amount_incl_tax": {
             "type": "number",
             "format": "double",
             "nullable": true
           },
-          "discountAmountExclTax": {
+          "discount_amount_excl_tax": {
             "type": "number",
             "format": "double",
             "nullable": true
           },
-          "originalProductCost": {
+          "original_product_cost": {
             "type": "number",
             "format": "double",
             "nullable": true
           },
-          "attributeDescription": {
+          "attribute_description": {
             "type": "string",
             "nullable": true
           },
-          "downloadCount": {
+          "download_count": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "isDownloadActivated": {
+          "isDownload_activated": {
             "type": "boolean",
             "nullable": true
           },
-          "licenseDownloadId": {
+          "license_download_id": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "itemWeight": {
+          "item_weight": {
             "type": "number",
             "format": "double",
             "nullable": true
           },
-          "rentalStartDateUtc": {
+          "rental_start_date_utc": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "rentalEndDateUtc": {
+          "rental_end_date_utc": {
             "type": "string",
             "format": "date-time",
             "nullable": true
@@ -9769,10 +9784,14 @@
           "product": {
             "$ref": "#/components/schemas/ProductDto"
           },
-          "productId": {
+          "product_id": {
             "type": "integer",
             "format": "int32",
             "nullable": true
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -9780,7 +9799,12 @@
       "OrderItemDtoDelta": {
         "type": "object",
         "properties": {
-          "dto": {
+          "ObjectPropertyNameValuePairs": {
+            "type": "object",
+            "additionalProperties": {},
+            "nullable": true
+          },
+          "Dto": {
             "$ref": "#/components/schemas/OrderItemDto"
           }
         },
@@ -9807,7 +9831,7 @@
             "type": "integer",
             "format": "int32"
           },
-          "sinceId": {
+          "since_id": {
             "type": "integer",
             "format": "int32"
           },
@@ -9821,7 +9845,7 @@
       "OrderItemsRootObject": {
         "type": "object",
         "properties": {
-          "orderItems": {
+          "order_items": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/OrderItemDto"
@@ -9834,12 +9858,12 @@
       "OrdersCountParametersModel": {
         "type": "object",
         "properties": {
-          "createdAtMin": {
+          "created_at_min": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "createdAtMax": {
+          "created_at_max": {
             "type": "string",
             "format": "date-time",
             "nullable": true
@@ -9847,13 +9871,13 @@
           "status": {
             "$ref": "#/components/schemas/OrderStatus"
           },
-          "paymentStatus": {
+          "payment_status": {
             "$ref": "#/components/schemas/PaymentStatus"
           },
-          "shippingStatus": {
+          "shipping_status": {
             "$ref": "#/components/schemas/ShippingStatus"
           },
-          "customerId": {
+          "customer_id": {
             "type": "integer",
             "format": "int32",
             "nullable": true
@@ -9874,30 +9898,6 @@
       "OrdersParametersModel": {
         "type": "object",
         "properties": {
-          "createdAtMin": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "createdAtMax": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "status": {
-            "$ref": "#/components/schemas/OrderStatus"
-          },
-          "paymentStatus": {
-            "$ref": "#/components/schemas/PaymentStatus"
-          },
-          "shippingStatus": {
-            "$ref": "#/components/schemas/ShippingStatus"
-          },
-          "customerId": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
           "ids": {
             "type": "array",
             "items": {
@@ -9914,12 +9914,36 @@
             "type": "integer",
             "format": "int32"
           },
-          "sinceId": {
+          "since_id": {
             "type": "integer",
             "format": "int32"
           },
           "fields": {
             "type": "string",
+            "nullable": true
+          },
+          "created_at_min": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "created_at_max": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "status": {
+            "$ref": "#/components/schemas/OrderStatus"
+          },
+          "payment_status": {
+            "$ref": "#/components/schemas/PaymentStatus"
+          },
+          "shipping_status": {
+            "$ref": "#/components/schemas/ShippingStatus"
+          },
+          "customer_id": {
+            "type": "integer",
+            "format": "int32",
             "nullable": true
           }
         },
@@ -9963,19 +9987,15 @@
       "ProductAttributeCombinationDto": {
         "type": "object",
         "properties": {
-          "id": {
+          "product_id": {
             "type": "integer",
             "format": "int32"
           },
-          "productId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "attributesXml": {
+          "attributes_xml": {
             "type": "string",
             "nullable": true
           },
-          "stockQuantity": {
+          "stock_quantity": {
             "type": "integer",
             "format": "int32"
           },
@@ -9983,7 +10003,7 @@
             "type": "string",
             "nullable": true
           },
-          "manufacturerPartNumber": {
+          "manufacturer_part_number": {
             "type": "string",
             "nullable": true
           },
@@ -9991,12 +10011,16 @@
             "type": "string",
             "nullable": true
           },
-          "overriddenPrice": {
+          "overridden_price": {
             "type": "number",
             "format": "double",
             "nullable": true
           },
-          "pictureId": {
+          "picture_id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "id": {
             "type": "integer",
             "format": "int32"
           }
@@ -10006,10 +10030,6 @@
       "ProductAttributeDto": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
           "name": {
             "type": "string",
             "nullable": true
@@ -10017,6 +10037,10 @@
           "description": {
             "type": "string",
             "nullable": true
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -10024,7 +10048,12 @@
       "ProductAttributeDtoDelta": {
         "type": "object",
         "properties": {
-          "dto": {
+          "ObjectPropertyNameValuePairs": {
+            "type": "object",
+            "additionalProperties": {},
+            "nullable": true
+          },
+          "Dto": {
             "$ref": "#/components/schemas/ProductAttributeDto"
           }
         },
@@ -10033,47 +10062,47 @@
       "ProductAttributeMappingDto": {
         "type": "object",
         "properties": {
-          "id": {
+          "product_attribute_id": {
             "type": "integer",
             "format": "int32"
           },
-          "productAttributeId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "productAttributeName": {
+          "product_attribute_name": {
             "type": "string",
             "nullable": true
           },
-          "textPrompt": {
+          "text_prompt": {
             "type": "string",
             "nullable": true
           },
-          "isRequired": {
+          "is_required": {
             "type": "boolean"
           },
-          "attributeControlTypeId": {
+          "attribute_control_type_id": {
             "type": "integer",
             "format": "int32"
           },
-          "displayOrder": {
+          "display_order": {
             "type": "integer",
             "format": "int32"
           },
-          "defaultValue": {
+          "default_value": {
             "type": "string",
             "nullable": true
           },
-          "attributeControlType": {
+          "attribute_control_type_name": {
             "type": "string",
             "nullable": true
           },
-          "productAttributeValues": {
+          "attribute_values": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ProductAttributeValueDto"
             },
             "nullable": true
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -10107,7 +10136,7 @@
             "type": "integer",
             "format": "int32"
           },
-          "sinceId": {
+          "since_id": {
             "type": "integer",
             "format": "int32"
           },
@@ -10121,7 +10150,7 @@
       "ProductAttributesRootObjectDto": {
         "type": "object",
         "properties": {
-          "productAttributes": {
+          "product_attributes": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ProductAttributeDto"
@@ -10134,16 +10163,12 @@
       "ProductAttributeValueDto": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "attributeValueTypeId": {
+          "type_id": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "associatedProductId": {
+          "associated_product_id": {
             "type": "integer",
             "format": "int32",
             "nullable": true
@@ -10152,19 +10177,19 @@
             "type": "string",
             "nullable": true
           },
-          "colorSquaresRgb": {
+          "color_squares_rgb": {
             "type": "string",
             "nullable": true
           },
-          "imageSquaresImage": {
+          "image_squares_image": {
             "$ref": "#/components/schemas/ImageDto"
           },
-          "priceAdjustment": {
+          "price_adjustment": {
             "type": "number",
             "format": "double",
             "nullable": true
           },
-          "weightAdjustment": {
+          "weight_adjustment": {
             "type": "number",
             "format": "double",
             "nullable": true
@@ -10179,28 +10204,27 @@
             "format": "int32",
             "nullable": true
           },
-          "isPreSelected": {
+          "is_pre_selected": {
             "type": "boolean",
             "nullable": true
           },
-          "displayOrder": {
+          "display_order": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "pictureId": {
+          "product_image_id": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "productPictureId": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "attributeValueType": {
+          "type": {
             "type": "string",
             "nullable": true
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -10208,28 +10232,28 @@
       "ProductCategoryMappingDto": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "productId": {
+          "product_id": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "categoryId": {
+          "category_id": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "isFeaturedProduct": {
+          "is_featured_product": {
             "type": "boolean",
             "nullable": true
           },
-          "displayOrder": {
+          "display_order": {
             "type": "integer",
             "format": "int32",
             "nullable": true
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -10237,7 +10261,12 @@
       "ProductCategoryMappingDtoDelta": {
         "type": "object",
         "properties": {
-          "dto": {
+          "ObjectPropertyNameValuePairs": {
+            "type": "object",
+            "additionalProperties": {},
+            "nullable": true
+          },
+          "Dto": {
             "$ref": "#/components/schemas/ProductCategoryMappingDto"
           }
         },
@@ -10246,12 +10275,12 @@
       "ProductCategoryMappingsCountParametersModel": {
         "type": "object",
         "properties": {
-          "productId": {
+          "product_id": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "categoryId": {
+          "category_id": {
             "type": "integer",
             "format": "int32",
             "nullable": true
@@ -10272,17 +10301,7 @@
       "ProductCategoryMappingsParametersModel": {
         "type": "object",
         "properties": {
-          "productId": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "categoryId": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "sinceId": {
+          "since_id": {
             "type": "integer",
             "format": "int32"
           },
@@ -10297,6 +10316,16 @@
           "fields": {
             "type": "string",
             "nullable": true
+          },
+          "product_id": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "category_id": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -10304,7 +10333,7 @@
       "ProductCategoryMappingsRootObject": {
         "type": "object",
         "properties": {
-          "productCategoryMappingDtos": {
+          "product_category_mappings": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ProductCategoryMappingDto"
@@ -10317,11 +10346,7 @@
       "ProductDto": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "visibleIndividually": {
+          "visible_individually": {
             "type": "boolean",
             "nullable": true
           },
@@ -10329,57 +10354,57 @@
             "type": "string",
             "nullable": true
           },
-          "localizedNames": {
+          "localized_names": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/LocalizedNameDto"
             },
             "nullable": true
           },
-          "shortDescription": {
+          "short_description": {
             "type": "string",
             "nullable": true
           },
-          "fullDescription": {
+          "full_description": {
             "type": "string",
             "nullable": true
           },
-          "showOnHomePage": {
+          "show_on_home_page": {
             "type": "boolean",
             "nullable": true
           },
-          "metaKeywords": {
+          "meta_keywords": {
             "type": "string",
             "nullable": true
           },
-          "metaDescription": {
+          "meta_description": {
             "type": "string",
             "nullable": true
           },
-          "metaTitle": {
+          "meta_title": {
             "type": "string",
             "nullable": true
           },
-          "allowCustomerReviews": {
+          "allow_customer_reviews": {
             "type": "boolean",
             "nullable": true
           },
-          "approvedRatingSum": {
+          "approved_rating_sum": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "notApprovedRatingSum": {
+          "not_approved_rating_sum": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "approvedTotalReviews": {
+          "approved_total_reviews": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "notApprovedTotalReviews": {
+          "not_approved_total_reviews": {
             "type": "integer",
             "format": "int32",
             "nullable": true
@@ -10388,7 +10413,7 @@
             "type": "string",
             "nullable": true
           },
-          "manufacturerPartNumber": {
+          "manufacturer_part_number": {
             "type": "string",
             "nullable": true
           },
@@ -10396,164 +10421,164 @@
             "type": "string",
             "nullable": true
           },
-          "isGiftCard": {
+          "is_gift_card": {
             "type": "boolean",
             "nullable": true
           },
-          "requireOtherProducts": {
+          "require_other_products": {
             "type": "boolean",
             "nullable": true
           },
-          "automaticallyAddRequiredProducts": {
+          "automatically_add_required_products": {
             "type": "boolean",
             "nullable": true
           },
-          "isDownload": {
+          "is_download": {
             "type": "boolean",
             "nullable": true
           },
-          "unlimitedDownloads": {
+          "unlimited_downloads": {
             "type": "boolean",
             "nullable": true
           },
-          "maxNumberOfDownloads": {
+          "max_number_of_downloads": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "downloadExpirationDays": {
+          "download_expiration_days": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "hasSampleDownload": {
+          "has_sample_download": {
             "type": "boolean",
             "nullable": true
           },
-          "hasUserAgreement": {
+          "has_user_agreement": {
             "type": "boolean",
             "nullable": true
           },
-          "isRecurring": {
+          "is_recurring": {
             "type": "boolean",
             "nullable": true
           },
-          "recurringCycleLength": {
+          "recurring_cycle_length": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "recurringTotalCycles": {
+          "recurring_total_cycles": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "isRental": {
+          "is_rental": {
             "type": "boolean",
             "nullable": true
           },
-          "rentalPriceLength": {
+          "rental_price_length": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "isShipEnabled": {
+          "is_ship_enabled": {
             "type": "boolean",
             "nullable": true
           },
-          "isFreeShipping": {
+          "is_free_shipping": {
             "type": "boolean",
             "nullable": true
           },
-          "shipSeparately": {
+          "ship_separately": {
             "type": "boolean",
             "nullable": true
           },
-          "additionalShippingCharge": {
+          "additional_shipping_charge": {
             "type": "number",
             "format": "double",
             "nullable": true
           },
-          "isTaxExempt": {
+          "is_tax_exempt": {
             "type": "boolean",
             "nullable": true
           },
-          "isTelecommunicationsOrBroadcastingOrElectronicServices": {
+          "is_telecommunications_or_broadcasting_or_electronic_services": {
             "type": "boolean",
             "nullable": true
           },
-          "useMultipleWarehouses": {
+          "use_multiple_warehouses": {
             "type": "boolean",
             "nullable": true
           },
-          "manageInventoryMethodId": {
+          "manage_inventory_method_id": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "stockQuantity": {
+          "stock_quantity": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "displayStockAvailability": {
+          "display_stock_availability": {
             "type": "boolean",
             "nullable": true
           },
-          "displayStockQuantity": {
+          "display_stock_quantity": {
             "type": "boolean",
             "nullable": true
           },
-          "minStockQuantity": {
+          "min_stock_quantity": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "notifyAdminForQuantityBelow": {
+          "notify_admin_for_quantity_below": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "allowBackInStockSubscriptions": {
+          "allow_back_in_stock_subscriptions": {
             "type": "boolean",
             "nullable": true
           },
-          "orderMinimumQuantity": {
+          "order_minimum_quantity": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "orderMaximumQuantity": {
+          "order_maximum_quantity": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "allowedQuantities": {
+          "allowed_quantities": {
             "type": "string",
             "nullable": true
           },
-          "allowAddingOnlyExistingAttributeCombinations": {
+          "allow_adding_only_existing_attribute_combinations": {
             "type": "boolean",
             "nullable": true
           },
-          "disableBuyButton": {
+          "disable_buy_button": {
             "type": "boolean",
             "nullable": true
           },
-          "disableWishlistButton": {
+          "disable_wishlist_button": {
             "type": "boolean",
             "nullable": true
           },
-          "availableForPreOrder": {
+          "available_for_pre_order": {
             "type": "boolean",
             "nullable": true
           },
-          "preOrderAvailabilityStartDateTimeUtc": {
+          "pre_order_availability_start_date_time_utc": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "callForPrice": {
+          "call_for_price": {
             "type": "boolean",
             "nullable": true
           },
@@ -10562,64 +10587,64 @@
             "format": "double",
             "nullable": true
           },
-          "oldPrice": {
+          "old_price": {
             "type": "number",
             "format": "double",
             "nullable": true
           },
-          "productCost": {
+          "product_cost": {
             "type": "number",
             "format": "double",
             "nullable": true
           },
-          "specialPrice": {
+          "special_price": {
             "type": "number",
             "format": "double",
             "nullable": true
           },
-          "specialPriceStartDateTimeUtc": {
+          "special_price_start_date_time_utc": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "specialPriceEndDateTimeUtc": {
+          "special_price_end_date_time_utc": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "customerEntersPrice": {
+          "customer_enters_price": {
             "type": "boolean",
             "nullable": true
           },
-          "minimumCustomerEnteredPrice": {
+          "minimum_customer_entered_price": {
             "type": "number",
             "format": "double",
             "nullable": true
           },
-          "maximumCustomerEnteredPrice": {
+          "maximum_customer_entered_price": {
             "type": "number",
             "format": "double",
             "nullable": true
           },
-          "basepriceEnabled": {
+          "baseprice_enabled": {
             "type": "boolean",
             "nullable": true
           },
-          "basepriceAmount": {
+          "baseprice_amount": {
             "type": "number",
             "format": "double",
             "nullable": true
           },
-          "basepriceBaseAmount": {
+          "baseprice_base_amount": {
             "type": "number",
             "format": "double",
             "nullable": true
           },
-          "hasTierPrices": {
+          "has_tier_prices": {
             "type": "boolean",
             "nullable": true
           },
-          "hasDiscountsApplied": {
+          "has_discounts_applied": {
             "type": "boolean",
             "nullable": true
           },
@@ -10643,17 +10668,17 @@
             "format": "double",
             "nullable": true
           },
-          "availableStartDateTimeUtc": {
+          "available_start_date_time_utc": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "availableEndDateTimeUtc": {
+          "available_end_date_time_utc": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "displayOrder": {
+          "display_order": {
             "type": "integer",
             "format": "int32",
             "nullable": true
@@ -10666,26 +10691,26 @@
             "type": "boolean",
             "nullable": true
           },
-          "createdOnUtc": {
+          "created_on_utc": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "updatedOnUtc": {
+          "updated_on_utc": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "productType": {
+          "product_type": {
             "type": "string",
             "nullable": true
           },
-          "parentGroupedProductId": {
+          "parent_grouped_product_id": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "roleIds": {
+          "role_ids": {
             "type": "array",
             "items": {
               "type": "integer",
@@ -10693,7 +10718,7 @@
             },
             "nullable": true
           },
-          "discountIds": {
+          "discount_ids": {
             "type": "array",
             "items": {
               "type": "integer",
@@ -10701,7 +10726,7 @@
             },
             "nullable": true
           },
-          "storeIds": {
+          "store_ids": {
             "type": "array",
             "items": {
               "type": "integer",
@@ -10709,7 +10734,7 @@
             },
             "nullable": true
           },
-          "manufacturerIds": {
+          "manufacturer_ids": {
             "type": "array",
             "items": {
               "type": "integer",
@@ -10724,28 +10749,28 @@
             },
             "nullable": true
           },
-          "productAttributeMappings": {
+          "attributes": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ProductAttributeMappingDto"
             },
             "nullable": true
           },
-          "productAttributeCombinations": {
+          "product_attribute_combinations": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ProductAttributeCombinationDto"
             },
             "nullable": true
           },
-          "productSpecificationAttributes": {
+          "product_specification_attributes": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ProductSpecificationAttributeDto"
             },
             "nullable": true
           },
-          "associatedProductIds": {
+          "associated_product_ids": {
             "type": "array",
             "items": {
               "type": "integer",
@@ -10760,14 +10785,18 @@
             },
             "nullable": true
           },
-          "vendorId": {
+          "vendor_id": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "seName": {
+          "se_name": {
             "type": "string",
             "nullable": true
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -10775,7 +10804,12 @@
       "ProductDtoDelta": {
         "type": "object",
         "properties": {
-          "dto": {
+          "ObjectPropertyNameValuePairs": {
+            "type": "object",
+            "additionalProperties": {},
+            "nullable": true
+          },
+          "Dto": {
             "$ref": "#/components/schemas/ProductDto"
           }
         },
@@ -10784,13 +10818,13 @@
       "ProductItemAttributeDto": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
           "value": {
             "type": "string",
             "nullable": true
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -10798,12 +10832,12 @@
       "ProductManufacturerMappingsCountParametersModel": {
         "type": "object",
         "properties": {
-          "productId": {
+          "product_id": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "manufacturerId": {
+          "manufacturer_id": {
             "type": "integer",
             "format": "int32",
             "nullable": true
@@ -10824,28 +10858,28 @@
       "ProductManufacturerMappingsDto": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "productId": {
+          "product_id": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "manufacturerId": {
+          "manufacturer_id": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "isFeaturedProduct": {
+          "is_featured_product": {
             "type": "boolean",
             "nullable": true
           },
-          "displayOrder": {
+          "display_order": {
             "type": "integer",
             "format": "int32",
             "nullable": true
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -10853,7 +10887,12 @@
       "ProductManufacturerMappingsDtoDelta": {
         "type": "object",
         "properties": {
-          "dto": {
+          "ObjectPropertyNameValuePairs": {
+            "type": "object",
+            "additionalProperties": {},
+            "nullable": true
+          },
+          "Dto": {
             "$ref": "#/components/schemas/ProductManufacturerMappingsDto"
           }
         },
@@ -10862,17 +10901,7 @@
       "ProductManufacturerMappingsParametersModel": {
         "type": "object",
         "properties": {
-          "productId": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "manufacturerId": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "sinceId": {
+          "since_id": {
             "type": "integer",
             "format": "int32"
           },
@@ -10887,6 +10916,16 @@
           "fields": {
             "type": "string",
             "nullable": true
+          },
+          "product_id": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "manufacturer_id": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -10894,7 +10933,7 @@
       "ProductManufacturerMappingsRootObject": {
         "type": "object",
         "properties": {
-          "productManufacturerMappingsDtos": {
+          "product_manufacturer_mappings": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ProductManufacturerMappingsDto"
@@ -10907,35 +10946,35 @@
       "ProductsCountParametersModel": {
         "type": "object",
         "properties": {
-          "createdAtMin": {
+          "created_at_min": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "createdAtMax": {
+          "created_at_max": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "updatedAtMin": {
+          "updated_at_min": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "updatedAtMax": {
+          "updated_at_max": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "publishedStatus": {
+          "published_status": {
             "type": "boolean",
             "nullable": true
           },
-          "vendorName": {
+          "vendor_name": {
             "type": "string",
             "nullable": true
           },
-          "categoryId": {
+          "category_id": {
             "type": "integer",
             "format": "int32",
             "nullable": true
@@ -10956,39 +10995,6 @@
       "ProductsParametersModel": {
         "type": "object",
         "properties": {
-          "createdAtMin": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "createdAtMax": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "updatedAtMin": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "updatedAtMax": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "publishedStatus": {
-            "type": "boolean",
-            "nullable": true
-          },
-          "vendorName": {
-            "type": "string",
-            "nullable": true
-          },
-          "categoryId": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
           "ids": {
             "type": "array",
             "items": {
@@ -11005,12 +11011,45 @@
             "type": "integer",
             "format": "int32"
           },
-          "sinceId": {
+          "since_id": {
             "type": "integer",
             "format": "int32"
           },
           "fields": {
             "type": "string",
+            "nullable": true
+          },
+          "created_at_min": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "created_at_max": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "updated_at_min": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "updated_at_max": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "published_status": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "vendor_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "category_id": {
+            "type": "integer",
+            "format": "int32",
             "nullable": true
           }
         },
@@ -11019,42 +11058,42 @@
       "ProductSpecificationAttributeDto": {
         "type": "object",
         "properties": {
+          "product_id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "attribute_type_id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "specification_attribute_option_id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "custom_value": {
+            "type": "string",
+            "nullable": true
+          },
+          "allow_filtering": {
+            "type": "boolean"
+          },
+          "show_on_product_page": {
+            "type": "boolean"
+          },
+          "display_order": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "attribute_type": {
+            "type": "string",
+            "nullable": true
+          },
+          "specification_attribute_option": {
+            "$ref": "#/components/schemas/SpecificationAttributeOptionDto"
+          },
           "id": {
             "type": "integer",
             "format": "int32"
-          },
-          "productId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "attributeTypeId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "specificationAttributeOptionId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "customValue": {
-            "type": "string",
-            "nullable": true
-          },
-          "allowFiltering": {
-            "type": "boolean"
-          },
-          "showOnProductPage": {
-            "type": "boolean"
-          },
-          "displayOrder": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "attributeType": {
-            "type": "string",
-            "nullable": true
-          },
-          "specificationAttributeOption": {
-            "$ref": "#/components/schemas/SpecificationAttributeOptionDto"
           }
         },
         "additionalProperties": false
@@ -11062,7 +11101,12 @@
       "ProductSpecificationAttributeDtoDelta": {
         "type": "object",
         "properties": {
-          "dto": {
+          "ObjectPropertyNameValuePairs": {
+            "type": "object",
+            "additionalProperties": {},
+            "nullable": true
+          },
+          "Dto": {
             "$ref": "#/components/schemas/ProductSpecificationAttributeDto"
           }
         },
@@ -11071,11 +11115,11 @@
       "ProductSpecificationAttributesCountParametersModel": {
         "type": "object",
         "properties": {
-          "productId": {
+          "product_id": {
             "type": "integer",
             "format": "int32"
           },
-          "specificationAttributeOptionId": {
+          "specification_attribute_option_id": {
             "type": "integer",
             "format": "int32"
           }
@@ -11095,19 +11139,19 @@
       "ProductSpecificationAttributesParametersModel": {
         "type": "object",
         "properties": {
-          "productId": {
+          "product_id": {
             "type": "integer",
             "format": "int32"
           },
-          "specificationAttributeOptionId": {
+          "specification_attribute_option_id": {
             "type": "integer",
             "format": "int32"
           },
-          "allowFiltering": {
+          "allow_filtering": {
             "type": "boolean",
             "nullable": true
           },
-          "showOnProductPage": {
+          "show_on_product_page": {
             "type": "boolean",
             "nullable": true
           },
@@ -11119,7 +11163,7 @@
             "type": "integer",
             "format": "int32"
           },
-          "sinceId": {
+          "since_id": {
             "type": "integer",
             "format": "int32"
           },
@@ -11133,7 +11177,7 @@
       "ProductSpecificationAttributesRootObjectDto": {
         "type": "object",
         "properties": {
-          "productSpecificationAttributes": {
+          "product_specification_attributes": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ProductSpecificationAttributeDto"
@@ -11170,18 +11214,14 @@
       "ShoppingCartItemDto": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "attributes": {
+          "product_attributes": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ProductItemAttributeDto"
             },
             "nullable": true
           },
-          "customerEnteredPrice": {
+          "customer_entered_price": {
             "type": "number",
             "format": "double",
             "nullable": true
@@ -11191,45 +11231,49 @@
             "format": "int32",
             "nullable": true
           },
-          "rentalStartDateUtc": {
+          "rental_start_date_utc": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "rentalEndDateUtc": {
+          "rental_end_date_utc": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "createdOnUtc": {
+          "created_on_utc": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "updatedOnUtc": {
+          "updated_on_utc": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "shoppingCartType": {
+          "shopping_cart_type": {
             "type": "string",
             "nullable": true
           },
-          "productId": {
+          "product_id": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "productDto": {
+          "product": {
             "$ref": "#/components/schemas/ProductDto"
           },
-          "customerId": {
+          "customer_id": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "customerDto": {
+          "customer": {
             "$ref": "#/components/schemas/CustomerForShoppingCartItemDto"
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -11237,7 +11281,12 @@
       "ShoppingCartItemDtoDelta": {
         "type": "object",
         "properties": {
-          "dto": {
+          "ObjectPropertyNameValuePairs": {
+            "type": "object",
+            "additionalProperties": {},
+            "nullable": true
+          },
+          "Dto": {
             "$ref": "#/components/schemas/ShoppingCartItemDto"
           }
         },
@@ -11246,22 +11295,22 @@
       "ShoppingCartItemsForCustomerParametersModel": {
         "type": "object",
         "properties": {
-          "createdAtMin": {
+          "created_at_min": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "createdAtMax": {
+          "created_at_max": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "updatedAtMin": {
+          "updated_at_min": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "updatedAtMax": {
+          "updated_at_max": {
             "type": "string",
             "format": "date-time",
             "nullable": true
@@ -11284,22 +11333,22 @@
       "ShoppingCartItemsParametersModel": {
         "type": "object",
         "properties": {
-          "createdAtMin": {
+          "created_at_min": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "createdAtMax": {
+          "created_at_max": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "updatedAtMin": {
+          "updated_at_min": {
             "type": "string",
             "format": "date-time",
             "nullable": true
           },
-          "updatedAtMax": {
+          "updated_at_max": {
             "type": "string",
             "format": "date-time",
             "nullable": true
@@ -11322,7 +11371,7 @@
       "ShoppingCartItemsRootObject": {
         "type": "object",
         "properties": {
-          "shoppingCartItems": {
+          "shopping_carts": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ShoppingCartItemDto"
@@ -11335,24 +11384,24 @@
       "SpecificationAttributeDto": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
           "name": {
             "type": "string",
             "nullable": true
           },
-          "displayOrder": {
+          "display_order": {
             "type": "integer",
             "format": "int32"
           },
-          "specificationAttributeOptions": {
+          "specification_attribute_options": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/SpecificationAttributeOptionDto"
             },
             "nullable": true
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -11360,7 +11409,12 @@
       "SpecificationAttributeDtoDelta": {
         "type": "object",
         "properties": {
-          "dto": {
+          "ObjectPropertyNameValuePairs": {
+            "type": "object",
+            "additionalProperties": {},
+            "nullable": true
+          },
+          "Dto": {
             "$ref": "#/components/schemas/SpecificationAttributeDto"
           }
         },
@@ -11369,11 +11423,7 @@
       "SpecificationAttributeOptionDto": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "specificationAttributeId": {
+          "specification_attribute_id": {
             "type": "integer",
             "format": "int32"
           },
@@ -11381,11 +11431,15 @@
             "type": "string",
             "nullable": true
           },
-          "colorSquaresRgb": {
+          "color_squares_rgb": {
             "type": "string",
             "nullable": true
           },
-          "displayOrder": {
+          "display_order": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "id": {
             "type": "integer",
             "format": "int32"
           }
@@ -11421,7 +11475,7 @@
             "type": "string",
             "nullable": true
           },
-          "sinceId": {
+          "since_id": {
             "type": "integer",
             "format": "int32"
           }
@@ -11431,7 +11485,7 @@
       "SpecificationAttributesRootObjectDto": {
         "type": "object",
         "properties": {
-          "specificationAttributes": {
+          "specification_attributes": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/SpecificationAttributeDto"
@@ -11444,10 +11498,6 @@
       "StoreDto": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
           "name": {
             "type": "string",
             "nullable": true
@@ -11456,11 +11506,11 @@
             "type": "string",
             "nullable": true
           },
-          "sslEnabled": {
+          "ssl_enabled": {
             "type": "boolean",
             "nullable": true
           },
-          "secureUrl": {
+          "secure_url": {
             "type": "string",
             "nullable": true
           },
@@ -11468,12 +11518,12 @@
             "type": "string",
             "nullable": true
           },
-          "defaultLanguageId": {
+          "default_language_id": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "languageIds": {
+          "language_ids": {
             "type": "array",
             "items": {
               "type": "integer",
@@ -11481,30 +11531,34 @@
             },
             "nullable": true
           },
-          "displayOrder": {
+          "display_order": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "companyName": {
+          "company_name": {
             "type": "string",
             "nullable": true
           },
-          "companyAddress": {
+          "company_address": {
             "type": "string",
             "nullable": true
           },
-          "companyPhoneNumber": {
+          "company_phone_number": {
             "type": "string",
             "nullable": true
           },
-          "companyVat": {
+          "company_vat": {
             "type": "string",
             "nullable": true
           },
-          "primaryCurrencyDisplayLocale": {
+          "primary_currency_display_locale": {
             "type": "string",
             "nullable": true
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -11525,19 +11579,19 @@
       "TokenResponse": {
         "type": "object",
         "properties": {
-          "accessToken": {
+          "access_token": {
             "type": "string",
             "nullable": true
           },
-          "tokenType": {
+          "token_type": {
             "type": "string",
             "nullable": true
           },
-          "expiresInSeconds": {
+          "expires_in": {
             "type": "integer",
             "format": "int64"
           },
-          "errorDescription": {
+          "error_description": {
             "type": "string",
             "nullable": true
           }
@@ -11547,43 +11601,39 @@
       "TopicDto": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "systemName": {
+          "system_name": {
             "type": "string",
             "nullable": true
           },
-          "includeInSitemap": {
+          "include_in_sitemap": {
             "type": "boolean"
           },
-          "includeInTopMenu": {
+          "include_in_top_menu": {
             "type": "boolean",
             "nullable": true
           },
-          "includeInFooterColumn1": {
+          "include_in_footer_column1": {
             "type": "boolean",
             "nullable": true
           },
-          "includeInFooterColumn2": {
+          "include_in_footer_column2": {
             "type": "boolean",
             "nullable": true
           },
-          "includeInFooterColumn3": {
+          "include_in_footer_column3": {
             "type": "boolean",
             "nullable": true
           },
-          "displayOrder": {
+          "display_order": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "accessibleWhenStoreClosed": {
+          "accessible_when_store_closed": {
             "type": "boolean",
             "nullable": true
           },
-          "isPasswordProtected": {
+          "is_password_protected": {
             "type": "boolean",
             "nullable": true
           },
@@ -11602,30 +11652,34 @@
           "published": {
             "type": "boolean"
           },
-          "topicTemplateId": {
+          "topic_template_id": {
             "type": "integer",
             "format": "int32",
             "nullable": true
           },
-          "metaKeywords": {
+          "meta_keywords": {
             "type": "string",
             "nullable": true
           },
-          "metaDescription": {
+          "meta_description": {
             "type": "string",
             "nullable": true
           },
-          "metaTitle": {
+          "meta_title": {
             "type": "string",
             "nullable": true
           },
-          "subjectToAcl": {
+          "subject_to_acl": {
             "type": "boolean",
             "nullable": true
           },
-          "limitedToStores": {
+          "limited_to_stores": {
             "type": "boolean",
             "nullable": true
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -11633,7 +11687,12 @@
       "TopicDtoDelta": {
         "type": "object",
         "properties": {
-          "dto": {
+          "ObjectPropertyNameValuePairs": {
+            "type": "object",
+            "additionalProperties": {},
+            "nullable": true
+          },
+          "Dto": {
             "$ref": "#/components/schemas/TopicDto"
           }
         },
@@ -11658,7 +11717,7 @@
             "type": "integer",
             "format": "int32"
           },
-          "sinceId": {
+          "since_id": {
             "type": "integer",
             "format": "int32"
           },
