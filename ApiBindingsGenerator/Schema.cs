@@ -42,9 +42,7 @@ namespace ApiBindingsGenerator
 		public string In { get; } = In;
 	}
 
-
-
-	record ApiEndpoint(HttpMethod Method, string Path, ApiEndpointParameter[] Parameters, Response[] Responses, RequestBody? RequestBody = null, string? OperationId = null, string[]? Tags = null)
+	record ApiEndpoint(HttpMethod Method, string Path, ApiEndpointParameter[] Parameters, Dictionary<HttpStatusCode, Response> Responses, RequestBody? RequestBody = null, string? OperationId = null, string[]? Tags = null)
 	{
 		public HttpMethod Method { get; } = Method;
 		public string Path { get; } = Path;
@@ -52,7 +50,7 @@ namespace ApiBindingsGenerator
 		public string[]? Tags { get; } = Tags;
 		public ApiEndpointParameter[] Parameters { get; } = Parameters;
 		public RequestBody? RequestBody { get; } = RequestBody;
-		public Response[] Responses { get; } = Responses;
+		public Dictionary<HttpStatusCode, Response> Responses { get; } = Responses;
 	}
 
 	enum ParameterLocation

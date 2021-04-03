@@ -21,6 +21,7 @@ namespace ApiBindingsGenerator
 		private const string ____ = "    ";
 		private const string TYPE_ACCESS_MODIFIER = "internal ";
 		private const string PROPERTY_ACCESS_MODIFIER = "public ";
+		private const string JSON_MEDIA_TYPE = "application/json";
 
 		public void Initialize(GeneratorInitializationContext context)
 		{
@@ -55,48 +56,51 @@ namespace ApiBindingsGenerator
 		{
 			string code = $"namespace {BASE_NAMESPACE}" + @"
 {
-	using System;
-	using System.Net.Http;
-	using System.Net.Http.Json;
-	using System.Text.Json;
-	using System.Threading.Tasks;
+    using System;
+    using System.Net;
+    using System.Net.Http;
+    using System.Net.Http.Json;
+    using System.Text.Json;
+    using System.Threading.Tasks;
 
-	" + $"{TYPE_ACCESS_MODIFIER}abstract class ApiClientBase" + @"
-	{
-		protected record Token(string AccessToken, string TokenType);
+    " + $"{TYPE_ACCESS_MODIFIER}abstract class ApiClientBase" + @"
+    {
+        protected record Token(string AccessToken, string TokenType);
 
-		private readonly HttpClient httpClient;
-		protected Lazy<Task<Token?>> AccessToken { get; }
+        private readonly HttpClient httpClient;
+        protected Lazy<Task<Token?>> AccessToken { get; }
 
-		public ApiClientBase(HttpClient httpClient)
-		{
-			this.httpClient = httpClient;
-			this.AccessToken = new Lazy<Task<Token?>>(Authenticate);
-		}
+        public ApiClientBase(HttpClient httpClient)
+        {
+            this.httpClient = httpClient;
+            this.AccessToken = new Lazy<Task<Token?>>(Authenticate);
+        }
 
-		protected abstract Task<Token?> Authenticate();
+        protected abstract Task<Token?> Authenticate();
 
-		protected async Task<T?> Send<T>(HttpMethod httpMethod, string requestEndpoint, bool authenticate = true, HttpContent? content = null, JsonSerializerOptions? responseDeserializerOptions = null) where T : class
-		{
-			var response = await Send(httpMethod, requestEndpoint, authenticate, content);
-			if (!response.IsSuccessStatusCode)
-			{
-				return null;
-			}
-			return await response.Content.ReadFromJsonAsync<T>(responseDeserializerOptions);
-		}
+        protected async Task<HttpResponseMessage> Send(HttpMethod httpMethod, string requestEndpoint, bool authenticate = true, HttpContent? content = null)
+        {
+            var request = new HttpRequestMessage(httpMethod, requestEndpoint);
+            if (authenticate && await AccessToken.Value is { } accessToken)
+            {
+                request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(accessToken.TokenType, accessToken.AccessToken);
+            }
+            request.Content = content;
+            return await httpClient.SendAsync(request);
+        }
+    }
 
-		protected async Task<HttpResponseMessage> Send(HttpMethod httpMethod, string requestEndpoint, bool authenticate = true, HttpContent? content = null)
-		{
-			var request = new HttpRequestMessage(httpMethod, requestEndpoint);
-			if (authenticate && await AccessToken.Value is { } accessToken)
-			{
-				request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(accessToken.TokenType, accessToken.AccessToken);
-			}
-			request.Content = content;
-			return await httpClient.SendAsync(request);
-		}
-	}
+    public class ApiException : Exception
+    {
+        public HttpStatusCode StatusCode { get; }
+        public ApiException(HttpStatusCode statusCode, string message) : base(message) => StatusCode = statusCode;
+    }
+
+    public class ApiException<TError> : ApiException
+    {
+        public TError? Error { get; }
+        public ApiException(HttpStatusCode statusCode, string message, TError? error) : base(statusCode, message) => Error = error;
+    }
 }
 ";
 			yield return (filename: "ApiClientBase", code);
@@ -201,48 +205,131 @@ namespace {BASE_NAMESPACE}.{apiName}.DTOs
 			var sourceCode = new StringBuilder($@"#nullable enable
 namespace {BASE_NAMESPACE}.{apiName}
 {{
-{____}using System;
-{____}using System.Net.Http;
-{____}using System.Net.Http.Json;
-{____}using System.Text.Json;
-{____}using System.Threading.Tasks;
-{____}using {BASE_NAMESPACE};
-{____}using {BASE_NAMESPACE}.{apiName}.DTOs;
+    using System;
+    using System.Net.Http;
+    using System.Net.Http.Json;
+    using System.Text.Json;
+    using System.Threading.Tasks;
+    using {BASE_NAMESPACE};
+    using {BASE_NAMESPACE}.{apiName}.DTOs;
 
-{____}{TYPE_ACCESS_MODIFIER}class {className} : ApiClientBase
-{____}{{
-{____}{____}private readonly HttpClient httpClient;
+    {TYPE_ACCESS_MODIFIER}class {className} : ApiClientBase
+    {{
+        private readonly HttpClient httpClient;
 
-{____}{____}public {className}(HttpClient httpClient) : base(httpClient)
-{____}{____}{{
-{____}{____}{____}this.httpClient = httpClient;
-{____}{____}}}
+        public {className}(HttpClient httpClient) : base(httpClient)
+        {{
+            this.httpClient = httpClient;
+        }}
 
-{____}{____}protected override async Task<Token?> Authenticate()
-{____}{____}{{
-{____}{____}{____}return null; // TODO: implement this
-{____}{____}}}
+        protected override async Task<Token?> Authenticate()
+        {{
+            return null; // TODO: implement this
+        }}
 
 ");
 
 			foreach (var apiEndpoint in apiEndpoints)
 			{
-				TypeDescriptor? returnType = apiEndpoint.Responses.SingleOrDefault(r => r.StatusCode == HttpStatusCode.OK)?.Content?["application/json"];
-				string returnTypeName = GetPropertyCSharpType(returnType, out _);
-				string taskReturnTypeName = returnType is null ? "Task" : $"Task<{GetPropertyCSharpType(returnType.MakeNullable(), out _)}>";
-				// TODO: add requestBody parameter
+				string endpointLabel = $"{apiEndpoint.Method.Method.ToUpperInvariant()} {apiEndpoint.Path}";
+				TypeDescriptor? returnType = apiEndpoint.Responses.TryGetValue(HttpStatusCode.OK, out var okResponse)
+					? getTypeDescriptorForResponse(okResponse, JSON_MEDIA_TYPE)
+					: null;
+				string returnTypeName = GenerateCSharpType(returnType, out _);
+				string taskReturnTypeName = returnType is null ? "Task" : $"Task<{GenerateCSharpType(returnType.MakeNullable(), out _)}>";
+
+				string? requestBodyTypeName = null;
+				const string REQUEST_BODY_PARAMETER_NAME = "requestBody";
+
+				if (apiEndpoint.RequestBody is not null && apiEndpoint.RequestBody.Content.TryGetValue(JSON_MEDIA_TYPE, out TypeDescriptor requestBodyTypeDescriptor))
+				{
+					requestBodyTypeName = GenerateCSharpType(requestBodyTypeDescriptor, out _);
+				}
+
+				var parameters = apiEndpoint.Parameters.OrderByDescending(p => p.Required ?? false).Select(p => GenerateParameterSource(p));
+				if (requestBodyTypeName is not null)
+				{
+					parameters = parameters.Prepend($"{requestBodyTypeName} {REQUEST_BODY_PARAMETER_NAME}");
+				}
+
+
 				string operationName = apiEndpoint.OperationId ?? (apiEndpoint.Method.Method + "_" + apiEndpoint.Path.Replace('/', '_')).ToPascalCase();
-				sourceCode.AppendLine($"{____}{____}/// {apiEndpoint.Method.Method.ToUpperInvariant()} {apiEndpoint.Path}");
-				sourceCode.AppendLine($@"{____}{____}public async {taskReturnTypeName} {operationName}({string.Join(", ", apiEndpoint.Parameters.OrderByDescending(p => p.Required ?? false).Select(p => GenerateParameterSource(p)))})
-{____}{____}{{
-{____}{____}{____}{((returnType is not null) ? "return " : "")}await Send{(returnType is not null ? $"<{returnTypeName}>" : "")}(HttpMethod.{apiEndpoint.Method.Method.ToPascalCase()}, $""{apiEndpoint.Path}"");
-{____}{____}}}
+				sourceCode.AppendLine($"{____}{____}/// {endpointLabel}");
+				sourceCode.AppendLine($@"{____}{____}public async {taskReturnTypeName} {operationName}({string.Join(", ", parameters)})
+        {{
+            HttpContent? content = {(requestBodyTypeName is not null ? $"JsonContent.Create({REQUEST_BODY_PARAMETER_NAME})" : "null")};
+            var response = await Send(HttpMethod.{apiEndpoint.Method.Method.ToPascalCase()}, requestEndpoint: {generateEndpointUri(apiEndpoint)}, authenticate: {(securitySchemes is { Count: > 0 } ? "true" : "false")}, content);
+            switch ((int)response.StatusCode)
+            {{
+                case 200: // OK");
+				if (returnType is not null)
+				{
+					if (returnTypeName is "string")
+						sourceCode.AppendLine($@"                    return await response.Content.ReadAsStringAsync();");
+					else
+						sourceCode.AppendLine($@"                    return await response.Content.ReadFromJsonAsync<{returnTypeName}>();");
+				}
+				else
+					sourceCode.AppendLine($@"                    return;");
+				sourceCode.AppendLine($@"                case 404: // NOT FOUND
+                    return{(returnType is not null ? " null" : "")};");
+
+				foreach (var key in apiEndpoint.Responses.Keys.Except(new[] { (HttpStatusCode)200, (HttpStatusCode)404 }))
+				{
+					var response = apiEndpoint.Responses[key];
+					sourceCode.AppendLine($"{____}{____}{____}{____}case {(int)response.StatusCode}:");
+					if ((int)response.StatusCode is > 200 and <= 299)
+					{
+						sourceCode.AppendLine($"{____}{____}{____}{____}{____}return{(returnType is not null ? " null" : "")};");
+					}
+					else
+					{
+						if (getTypeDescriptorForResponse(response, JSON_MEDIA_TYPE) is { } responseTypeDescriptor)
+						{
+							string errorTypeName = GenerateCSharpType(responseTypeDescriptor, out _);
+							if (errorTypeName is "string")
+								sourceCode.AppendLine($"{____}{____}{____}{____}{____}throw new ApiException<{errorTypeName}>(response.StatusCode, \"{response.Description ?? ""}\", await response.Content.ReadAsStringAsync());");
+							else
+								sourceCode.AppendLine($"{____}{____}{____}{____}{____}throw new ApiException<{errorTypeName}>(response.StatusCode, \"{response.Description ?? ""}\", await response.Content.ReadFromJsonAsync<{errorTypeName}>());");
+						}
+						else
+						{
+							sourceCode.AppendLine($"{____}{____}{____}{____}{____}throw new ApiException(response.StatusCode, \"{response.Description ?? ""}\");");
+						}
+					}
+				}
+
+				sourceCode.AppendLine($@"                case > 200 and <= 299: // no content
+                    return{(returnType is not null ? " null" : "")};
+                case >= 400 and <= 499: // request error
+                    throw new ApiException(response.StatusCode, $""{{(int)response.StatusCode}} ({{response.StatusCode}}) Request error. "" + await response.Content.ReadAsStringAsync());
+                case >= 500 and <= 599: // server error
+                    throw new ApiException(response.StatusCode, ""Server error. "" + await response.Content.ReadAsStringAsync());
+                default: // unexpected error
+                    throw new ApiException(response.StatusCode, ""Unexpected status code. "" + await response.Content.ReadAsStringAsync());
+            }}
+        }}
 ");
-			}
+			} // end of foreach
 
 			sourceCode.Append($@"{____}}}
 }}");
 			return sourceCode.ToString();
+
+			static TypeDescriptor? getTypeDescriptorForResponse(Response response, string mediaType)
+			{
+				if (response.Content is null || !response.Content.TryGetValue(mediaType, out var typeDescriptor))
+					return null;
+				return typeDescriptor;
+			}
+
+			static string generateEndpointUri(ApiEndpoint endpoint)
+			{
+				string query = string.Join("&", endpoint.Parameters.Where(p => p.In == ParameterLocation.Query).Select(p => $"{p.Name}={{{p.Name}}}"));
+				if (!string.IsNullOrWhiteSpace(query))
+					query = "?" + query;
+				return @$"$""{endpoint.Path}{query}""";
+			}
 		}
 
 		private static string GenerateParameterSource(ApiEndpointParameter parameter)
@@ -251,7 +338,7 @@ namespace {BASE_NAMESPACE}.{apiName}
 			{
 				bool isOptional = parameter.Required is not true;
 				string initExpression = isOptional ? " = default" : "";
-				return $"{GetPropertyCSharpType(isOptional ? parameter.Schema.MakeNullable() : parameter.Schema, out _)} {parameter.Name}{initExpression}";
+				return $"{GenerateCSharpType(isOptional ? parameter.Schema.MakeNullable() : parameter.Schema, out _)} {parameter.Name}{initExpression}";
 			}
 			catch (NullReferenceException ex)
 			{
@@ -361,7 +448,7 @@ namespace {BASE_NAMESPACE}.{apiName}
 				bool isReferenceType;
 				try
 				{
-					typeName = GetPropertyCSharpType(propertyType, out isReferenceType);
+					typeName = GenerateCSharpType(propertyType, out isReferenceType);
 				}
 				catch (FormatException ex)
 				{
@@ -377,7 +464,7 @@ namespace {BASE_NAMESPACE}.{apiName}
 			return sourceCode.ToString();
 
 		}
-		private static string GetPropertyCSharpType(TypeDescriptor? typeDescriptor, out bool isReferenceType)
+		private static string GenerateCSharpType(TypeDescriptor? typeDescriptor, out bool isReferenceType)
 		{
 			if (typeDescriptor is null) // null represents "unit" type
 			{
@@ -408,7 +495,7 @@ namespace {BASE_NAMESPACE}.{apiName}
 					("integer", _) => ("int", false),
 					("boolean", _) => ("bool", false),
 					("object", _) => ("object", true), // nested object definition is not supported
-					("array", _) => (GetPropertyCSharpType(typeDescriptor.Items ?? throw new FormatException($"array type requires to items type to be defined"), out _) + "[]", true),
+					("array", _) => (GenerateCSharpType(typeDescriptor.Items ?? throw new FormatException($"array type requires to items type to be defined"), out _) + "[]", true),
 					_ => throw new FormatException($"Unrecognized type descriptor (type: {typeDescriptor.Type}, format: {typeDescriptor.Format})")
 				};
 			}
@@ -422,7 +509,7 @@ namespace {BASE_NAMESPACE}.{apiName}
 			if (typeDescriptor.Items is null)
 				throw new FormatException($"array type requires to items type to be defined ({arrayName})");
 
-			var sourceCode = new StringBuilder($"{indent}{TYPE_ACCESS_MODIFIER}class {arrayName} : System.Collections.Generic.List<{GetPropertyCSharpType(typeDescriptor.Items, out _)}> {{ }}");
+			var sourceCode = new StringBuilder($"{indent}{TYPE_ACCESS_MODIFIER}class {arrayName} : System.Collections.Generic.List<{GenerateCSharpType(typeDescriptor.Items, out _)}> {{ }}");
 			sourceCode.AppendLine();
 			return sourceCode.ToString();
 		}
@@ -454,7 +541,7 @@ namespace {BASE_NAMESPACE}.{apiName}
 						string? operationId = httpMethodObject["operationId"]?.ToString();
 						string[]? tags = (httpMethodObject["tags"] as JArray)?.Select(token => token.ToString()).ToArray();
 						RequestBody? requestBody = null;
-						Response[]? responses = null;
+						Dictionary<HttpStatusCode, Response>? responses = null;
 
 						// parse requestBody
 						if (httpMethodObject["requestBody"] is JObject requestBodyObject && requestBodyObject["content"] is JObject requestBodyContentObject)
@@ -464,7 +551,7 @@ namespace {BASE_NAMESPACE}.{apiName}
 						// parse responses
 						if (httpMethodObject["responses"] is JObject responsesObject)
 						{
-							List<Response> responseList = new();
+							responses = new();
 							foreach (var property in responsesObject.Properties())
 							{
 								string statusCodeString = property.Name;
@@ -476,10 +563,9 @@ namespace {BASE_NAMESPACE}.{apiName}
 										description = descriptionToken.ToString();
 									if (responseObject["content"] is JObject responseContentObject)
 										content = parseContent(responseContentObject);
-									responseList.Add(new Response(statusCode, content, description));
+									responses[statusCode] = new Response(statusCode, content, description);
 								}
 							}
-							responses = responseList.ToArray();
 						}
 
 						yield return new ApiEndpoint(Method: new HttpMethod(httpMethodProperty.Name),
