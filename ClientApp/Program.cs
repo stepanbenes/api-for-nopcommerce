@@ -5,22 +5,6 @@ using System.Threading.Tasks;
 
 namespace ClientApp
 {
-	class MyNopApiClient : ApiBindings.NopApi.NopApiClient
-	{
-		public MyNopApiClient(string uri)
-			: base(new HttpClient { BaseAddress = new Uri(uri) })
-		{ }
-
-		public async Task Authenticate(string username, string password)
-		{
-			var tokenResponse = await RequestToken(username, password);
-			if (tokenResponse is { AccessToken: string token, TokenType: var type })
-				AccessToken = new Token(token, type ?? "Bearer");
-			else
-				AccessToken = null;
-		}
-	}
-
 	class Program
 	{
 		static async Task Main(string[] args)
@@ -31,11 +15,18 @@ namespace ClientApp
 				Console.WriteLine(t.FullName);
 			}
 
-			Console.WriteLine("Requesting categories...");
+			// Create api client
+			var httpClient = new HttpClient { BaseAddress = new Uri(args[0]) };
+			var nopApiClient = new ApiBindings.NopApi.NopApiClient(httpClient);
 
-			var nopApiClient = new MyNopApiClient(uri: args[0]);
-			await nopApiClient.Authenticate(username: args[1], password: args[2]);
+			Console.WriteLine("Authenticating...");
+			var tokenResponse = await nopApiClient.RequestToken(Username: args[1], Password: args[2]);
+			if (tokenResponse is { AccessToken: string token, TokenType: var type })
+				httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(type ?? "Bearer", token);
+			
+			Console.WriteLine("Requesting categories...");
 			var categories = await nopApiClient.GetCategories();
+
 			if (categories?.Categories is not null)
 			{
 				foreach (var category in categories.Categories)

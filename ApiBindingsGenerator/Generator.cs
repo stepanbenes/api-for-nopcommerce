@@ -65,23 +65,16 @@ namespace ApiBindingsGenerator
 
     " + $"{TYPE_ACCESS_MODIFIER}abstract class ApiClientBase" + @"
     {
-        protected record Token(string AccessToken, string TokenType);
-
         private readonly HttpClient httpClient;
-        protected Token? AccessToken { get; set; }
 
         public ApiClientBase(HttpClient httpClient)
         {
             this.httpClient = httpClient;
         }
 
-        protected async Task<HttpResponseMessage> Send(HttpMethod httpMethod, string requestEndpoint, bool authenticate = true, HttpContent? content = null)
+        protected async Task<HttpResponseMessage> Send(HttpMethod httpMethod, string requestEndpoint, HttpContent? content = null)
         {
             var request = new HttpRequestMessage(httpMethod, requestEndpoint);
-            if (authenticate && AccessToken is { } accessToken)
-            {
-                request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(accessToken.TokenType, accessToken.AccessToken);
-            }
             request.Content = content;
             return await httpClient.SendAsync(request);
         }
@@ -255,7 +248,7 @@ namespace {BASE_NAMESPACE}.{apiName}
 				sourceCode.AppendLine($@"{____}{____}public async {taskReturnTypeName} {operationName}({string.Join(", ", parameters)})
         {{
             HttpContent? content = {(requestBodyTypeName is not null ? $"JsonContent.Create({REQUEST_BODY_PARAMETER_NAME})" : "null")};
-            var response = await Send(HttpMethod.{apiEndpoint.Method.Method.ToPascalCase()}, requestEndpoint: {generateEndpointUri(apiEndpoint)}, authenticate: {(securitySchemes is { Count: > 0 } ? "true" : "false")}, content);
+            var response = await Send(HttpMethod.{apiEndpoint.Method.Method.ToPascalCase()}, requestEndpoint: {generateEndpointUri(apiEndpoint)}, content);
             switch ((int)response.StatusCode)
             {{
                 case 200: // OK");
