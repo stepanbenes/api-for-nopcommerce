@@ -13,7 +13,7 @@ namespace ClientApp
 
 		public async Task Authenticate(string username, string password)
 		{
-			var tokenResponse = await GetToken(username, password);
+			var tokenResponse = await RequestToken(username, password);
 			if (tokenResponse is { AccessToken: string token, TokenType: var type })
 				AccessToken = new Token(token, type ?? "Bearer");
 			else
