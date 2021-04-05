@@ -19,7 +19,7 @@ namespace ApiBindingsGenerator
 	{
 		private const string BASE_NAMESPACE = "ApiBindings";
 		private const string ____ = "    ";
-		private const string TYPE_ACCESS_MODIFIER = "internal ";
+		private const string TYPE_ACCESS_MODIFIER = "public ";
 		private const string PROPERTY_ACCESS_MODIFIER = "public ";
 		private const string JSON_MEDIA_TYPE = "application/json";
 
