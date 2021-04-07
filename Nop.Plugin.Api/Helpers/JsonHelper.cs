@@ -35,13 +35,13 @@ namespace Nop.Plugin.Api.Helpers
                 throw new InvalidOperationException("No Json provided");
             }
 
-            var requestBodyDictioanry = DeserializeToDictionary(json);
-            if (requestBodyDictioanry == null || requestBodyDictioanry.Count == 0)
+            var requestBodyDictionary = DeserializeToDictionary(json);
+            if (requestBodyDictionary == null || requestBodyDictionary.Count == 0)
             {
                 throw new InvalidOperationException("Json format is invalid");
             }
 
-            return requestBodyDictioanry;
+            return requestBodyDictionary;
         }
 
         public string GetRootPropertyName<T>() where T : class, new()
