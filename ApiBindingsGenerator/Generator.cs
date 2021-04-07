@@ -66,12 +66,15 @@ namespace ApiBindingsGenerator
     " + $"{TYPE_ACCESS_MODIFIER}abstract class ApiClientBase" + @"
     {
         private readonly HttpClient httpClient;
+        private JsonSerializerOptions? ignoreNullValuesJsonSerializerOptions = null;
 
         public ApiClientBase(HttpClient httpClient)
         {
             this.httpClient = httpClient;
         }
 
+        protected JsonSerializerOptions IgnoreNullValuesJsonSerializerOptions => ignoreNullValuesJsonSerializerOptions ?? (ignoreNullValuesJsonSerializerOptions = new JsonSerializerOptions { IgnoreNullValues = true });
+        
         protected async Task<HttpResponseMessage> Send(HttpMethod httpMethod, string requestEndpoint, HttpContent? content = null)
         {
             var request = new HttpRequestMessage(httpMethod, requestEndpoint);
@@ -83,13 +86,18 @@ namespace ApiBindingsGenerator
     public class ApiException : Exception
     {
         public HttpStatusCode StatusCode { get; }
-        public ApiException(HttpStatusCode statusCode, string message) : base(message) => StatusCode = statusCode;
+        public virtual object? Error { get; }
+        public ApiException(HttpStatusCode statusCode, string message, object? error) : base(message)
+        {
+            StatusCode = statusCode;
+            Error = error;
+        }
     }
 
-    public class ApiException<TError> : ApiException
+    public class ApiException<TError> : ApiException where TError : class
     {
-        public TError? Error { get; }
-        public ApiException(HttpStatusCode statusCode, string message, TError? error) : base(statusCode, message) => Error = error;
+        public override TError? Error { get; }
+        public ApiException(HttpStatusCode statusCode, string message, TError? error) : base(statusCode, message, error) { }
     }
 }
 ";
@@ -247,7 +255,7 @@ namespace {BASE_NAMESPACE}.{apiName}
 				sourceCode.AppendLine($"{____}{____}/// </summary>");
 				sourceCode.AppendLine($@"{____}{____}public async {taskReturnTypeName} {operationName}({string.Join(", ", parameters)})
         {{
-            HttpContent? content = {(requestBodyTypeName is not null ? $"JsonContent.Create({REQUEST_BODY_PARAMETER_NAME})" : "null")};
+            HttpContent? content = {(requestBodyTypeName is not null ? $"JsonContent.Create({REQUEST_BODY_PARAMETER_NAME}, options: IgnoreNullValuesJsonSerializerOptions)" : "null")};
             var response = await Send(HttpMethod.{apiEndpoint.Method.Method.ToPascalCase()}, requestEndpoint: {generateEndpointUri(apiEndpoint)}, content);
             switch ((int)response.StatusCode)
             {{
@@ -286,7 +294,7 @@ namespace {BASE_NAMESPACE}.{apiName}
 						}
 						else
 						{
-							sourceCode.AppendLine($"{____}{____}{____}{____}{____}throw new ApiException(response.StatusCode, \"{response.Description ?? ""}\");");
+							sourceCode.AppendLine($"{____}{____}{____}{____}{____}throw new ApiException(response.StatusCode, \"{response.Description ?? ""}\", await response.Content.ReadAsStringAsync());");
 						}
 					}
 				}
@@ -294,11 +302,11 @@ namespace {BASE_NAMESPACE}.{apiName}
 				sourceCode.AppendLine($@"                case > 200 and <= 299: // no content
                     {returnNothingToken}
                 case >= 400 and <= 499: // request error
-                    throw new ApiException(response.StatusCode, $""{{(int)response.StatusCode}} ({{response.StatusCode}}) Request error. "" + await response.Content.ReadAsStringAsync());
+                    throw new ApiException(response.StatusCode, $""{{(int)response.StatusCode}} ({{response.StatusCode}}) Request error"",  await response.Content.ReadAsStringAsync());
                 case >= 500 and <= 599: // server error
-                    throw new ApiException(response.StatusCode, ""Server error. "" + await response.Content.ReadAsStringAsync());
+                    throw new ApiException(response.StatusCode, ""Server error"", await response.Content.ReadAsStringAsync());
                 default: // unexpected error
-                    throw new ApiException(response.StatusCode, ""Unexpected status code. "" + await response.Content.ReadAsStringAsync());
+                    throw new ApiException(response.StatusCode, ""Unexpected status code"", await response.Content.ReadAsStringAsync());
             }}
         }}
 ");
@@ -317,6 +325,7 @@ namespace {BASE_NAMESPACE}.{apiName}
 
 			static string generateEndpointUri(ApiEndpoint endpoint)
 			{
+				// TODO: fix serialization of complex types into query parameters
 				string query = string.Join("&", endpoint.Parameters.Where(p => p.In == ParameterLocation.Query).Select(p => $"{p.Name}={{{p.Name}}}"));
 				if (!string.IsNullOrWhiteSpace(query))
 					query = "?" + query;
