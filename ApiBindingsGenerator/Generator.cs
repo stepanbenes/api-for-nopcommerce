@@ -390,6 +390,8 @@ namespace {BASE_NAMESPACE}.{apiName}
 				enumValues = jArray.Select(jToken => jToken.ToString()).ToArray();
 			}
 
+			// TODO: parse "required" array -> these should be mapped to dto object constructor parameters
+
 			return new TypeDescriptor(type, format, nullable, items, enumValues, refType, properties);
 		}
 
@@ -437,6 +439,8 @@ namespace {BASE_NAMESPACE}.{apiName}
 		{
 			if (typeDescriptor.Type != "object")
 				throw new FormatException($"Cannot generate record '{recordName}' with non-object schema ({typeDescriptor.Type}).");
+
+			// TODO: generate primary constructor parameters from typeDescriptor.Required list
 
 			var sourceCode = new StringBuilder($@"{indent}{TYPE_ACCESS_MODIFIER}record {recordName}
 {indent}{{
@@ -490,6 +494,7 @@ namespace {BASE_NAMESPACE}.{apiName}
 					("number", "double") => ("double", false),
 					("number", "int32") => ("int", false),
 					("number", "int64") => ("long", false),
+					("number", "decimal") => ("decimal", false), // currency type
 					("number", _) => ("double", false),
 					("integer", "int32") => ("int", false),
 					("integer", "int64") => ("long", false),

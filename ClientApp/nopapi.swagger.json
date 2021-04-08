@@ -6436,15 +6436,30 @@
           "ShoppingCartItems"
         ],
         "operationId": "CreateShoppingCartItem",
-        "parameters": [
-          {
-            "name": "shoppingCartItemDelta",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/ShoppingCartItemDtoDelta"
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShoppingCartItemDtoDelta"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShoppingCartItemDtoDelta"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShoppingCartItemDtoDelta"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShoppingCartItemDtoDelta"
+              }
             }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "Success",
@@ -9577,7 +9592,7 @@
           },
           "currency_rate": {
             "type": "number",
-            "format": "double",
+            "format": "decimal",
             "nullable": true
           },
           "customer_tax_display_type_id": {
@@ -9591,42 +9606,42 @@
           },
           "order_subtotal_incl_tax": {
             "type": "number",
-            "format": "double",
+            "format": "decimal",
             "nullable": true
           },
           "order_subtotal_excl_tax": {
             "type": "number",
-            "format": "double",
+            "format": "decimal",
             "nullable": true
           },
           "order_sub_total_discount_incl_tax": {
             "type": "number",
-            "format": "double",
+            "format": "decimal",
             "nullable": true
           },
           "order_sub_total_discount_excl_tax": {
             "type": "number",
-            "format": "double",
+            "format": "decimal",
             "nullable": true
           },
           "order_shipping_incl_tax": {
             "type": "number",
-            "format": "double",
+            "format": "decimal",
             "nullable": true
           },
           "order_shipping_excl_tax": {
             "type": "number",
-            "format": "double",
+            "format": "decimal",
             "nullable": true
           },
           "payment_method_additional_fee_incl_tax": {
             "type": "number",
-            "format": "double",
+            "format": "decimal",
             "nullable": true
           },
           "payment_method_additional_fee_excl_tax": {
             "type": "number",
-            "format": "double",
+            "format": "decimal",
             "nullable": true
           },
           "tax_rates": {
@@ -9635,22 +9650,22 @@
           },
           "order_tax": {
             "type": "number",
-            "format": "double",
+            "format": "decimal",
             "nullable": true
           },
           "order_discount": {
             "type": "number",
-            "format": "double",
+            "format": "decimal",
             "nullable": true
           },
           "order_total": {
             "type": "number",
-            "format": "double",
+            "format": "decimal",
             "nullable": true
           },
           "refunded_amount": {
             "type": "number",
-            "format": "double",
+            "format": "decimal",
             "nullable": true
           },
           "reward_points_were_added": {
@@ -9800,37 +9815,37 @@
           },
           "unit_price_incl_tax": {
             "type": "number",
-            "format": "double",
+            "format": "decimal",
             "nullable": true
           },
           "unit_price_excl_tax": {
             "type": "number",
-            "format": "double",
+            "format": "decimal",
             "nullable": true
           },
           "price_incl_tax": {
             "type": "number",
-            "format": "double",
+            "format": "decimal",
             "nullable": true
           },
           "price_excl_tax": {
             "type": "number",
-            "format": "double",
+            "format": "decimal",
             "nullable": true
           },
           "discount_amount_incl_tax": {
             "type": "number",
-            "format": "double",
+            "format": "decimal",
             "nullable": true
           },
           "discount_amount_excl_tax": {
             "type": "number",
-            "format": "double",
+            "format": "decimal",
             "nullable": true
           },
           "original_product_cost": {
             "type": "number",
-            "format": "double",
+            "format": "decimal",
             "nullable": true
           },
           "attribute_description": {
@@ -9853,7 +9868,7 @@
           },
           "item_weight": {
             "type": "number",
-            "format": "double",
+            "format": "decimal",
             "nullable": true
           },
           "rental_start_date_utc": {
@@ -10098,7 +10113,7 @@
           },
           "overridden_price": {
             "type": "number",
-            "format": "double",
+            "format": "decimal",
             "nullable": true
           },
           "picture_id": {
@@ -10271,17 +10286,17 @@
           },
           "price_adjustment": {
             "type": "number",
-            "format": "double",
+            "format": "decimal",
             "nullable": true
           },
           "weight_adjustment": {
             "type": "number",
-            "format": "double",
+            "format": "decimal",
             "nullable": true
           },
           "cost": {
             "type": "number",
-            "format": "double",
+            "format": "decimal",
             "nullable": true
           },
           "quantity": {
@@ -10581,7 +10596,7 @@
           },
           "additional_shipping_charge": {
             "type": "number",
-            "format": "double",
+            "format": "decimal",
             "nullable": true
           },
           "is_tax_exempt": {
@@ -10669,22 +10684,22 @@
           },
           "price": {
             "type": "number",
-            "format": "double",
+            "format": "decimal",
             "nullable": true
           },
           "old_price": {
             "type": "number",
-            "format": "double",
+            "format": "decimal",
             "nullable": true
           },
           "product_cost": {
             "type": "number",
-            "format": "double",
+            "format": "decimal",
             "nullable": true
           },
           "special_price": {
             "type": "number",
-            "format": "double",
+            "format": "decimal",
             "nullable": true
           },
           "special_price_start_date_time_utc": {
@@ -10703,12 +10718,12 @@
           },
           "minimum_customer_entered_price": {
             "type": "number",
-            "format": "double",
+            "format": "decimal",
             "nullable": true
           },
           "maximum_customer_entered_price": {
             "type": "number",
-            "format": "double",
+            "format": "decimal",
             "nullable": true
           },
           "baseprice_enabled": {
@@ -10717,12 +10732,12 @@
           },
           "baseprice_amount": {
             "type": "number",
-            "format": "double",
+            "format": "decimal",
             "nullable": true
           },
           "baseprice_base_amount": {
             "type": "number",
-            "format": "double",
+            "format": "decimal",
             "nullable": true
           },
           "has_tier_prices": {
@@ -10735,22 +10750,22 @@
           },
           "weight": {
             "type": "number",
-            "format": "double",
+            "format": "decimal",
             "nullable": true
           },
           "length": {
             "type": "number",
-            "format": "double",
+            "format": "decimal",
             "nullable": true
           },
           "width": {
             "type": "number",
-            "format": "double",
+            "format": "decimal",
             "nullable": true
           },
           "height": {
             "type": "number",
-            "format": "double",
+            "format": "decimal",
             "nullable": true
           },
           "available_start_date_time_utc": {
@@ -11297,6 +11312,9 @@
         "format": "int32"
       },
       "ShoppingCartItemDto": {
+        "required": [
+          "shopping_cart_type"
+        ],
         "type": "object",
         "properties": {
           "product_attributes": {
@@ -11308,7 +11326,7 @@
           },
           "customer_entered_price": {
             "type": "number",
-            "format": "double",
+            "format": "decimal",
             "nullable": true
           },
           "quantity": {
@@ -11337,8 +11355,7 @@
             "nullable": true
           },
           "shopping_cart_type": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "product_id": {
             "type": "integer",

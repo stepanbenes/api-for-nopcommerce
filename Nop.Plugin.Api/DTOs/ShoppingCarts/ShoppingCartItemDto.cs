@@ -59,7 +59,7 @@ namespace Nop.Plugin.Api.DTO.ShoppingCarts
         /// <summary>
         ///     Gets the log type
         /// </summary>
-        [JsonProperty("shopping_cart_type")]
+        [JsonProperty("shopping_cart_type", Required = Required.Always)]
         public string ShoppingCartType
         {
             get

@@ -69,17 +69,19 @@ namespace Nop.Plugin.Api.Infrastructure
             {
                 options.AllowSynchronousIO = true;
             });
-            services.AddSwaggerGen(c =>
+            services.AddSwaggerGen(options =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Nop API", Version = "v1" });
-                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                // api description >>
+                options.SwaggerDoc("v1", new OpenApiInfo { Title = "Nop API", Version = "v1" });
+                // auth definition >>
+                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     In = ParameterLocation.Header,
                     Description = "Please enter into field the word 'Bearer' following by space and JWT",
                     Name = "Authorization",
                     Type = SecuritySchemeType.ApiKey
                 });
-                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                options.AddSecurityRequirement(new OpenApiSecurityRequirement
                 {
                     {
                         new OpenApiSecurityScheme
@@ -93,6 +95,8 @@ namespace Nop.Plugin.Api.Infrastructure
                         Array.Empty<string>()
                     }
                 });
+                // custom type mappings >>
+                options.MapType<decimal>(() => new OpenApiSchema { Type = "number", Format = "decimal" }); // correct currency typings
             });
             services.AddSwaggerGenNewtonsoftSupport();
         }
