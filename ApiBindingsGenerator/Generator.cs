@@ -325,11 +325,16 @@ namespace {BASE_NAMESPACE}.{apiName}
 
 			static string generateEndpointUri(ApiEndpoint endpoint)
 			{
-				// TODO: fix serialization of complex types into query parameters
-				string query = string.Join("&", endpoint.Parameters.Where(p => p.In == ParameterLocation.Query).Select(p => $"{p.Name}={{{p.Name}}}"));
+				string query = string.Join("&", endpoint.Parameters.Where(p => p.In == ParameterLocation.Query).Select(p => getParameterValue(p)));
 				if (!string.IsNullOrWhiteSpace(query))
 					query = "?" + query;
 				return @$"$""{endpoint.Path}{query}""";
+				string getParameterValue(ApiEndpointParameter param)
+				{
+					if (param.Schema is { Type: "string" })
+						return $@"{param.Name}={{{param.Name}}}";
+					return $"{param.Name}={{Uri.EscapeUriString(JsonSerializer.Serialize({param.Name}, IgnoreNullValuesJsonSerializerOptions))}}";
+				}
 			}
 		}
 
