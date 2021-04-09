@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Linq;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
+using ApiBindings.NopApi.DTOs;
 
 namespace ClientApp
 {
@@ -33,6 +35,23 @@ namespace ClientApp
 				{
 					Console.WriteLine(category.ToString());
 				}
+			}
+
+			try
+			{
+				var result = await nopApiClient.CreateShoppingCartItem(new ShoppingCartItemDtoDelta { ShoppingCartItem = new ShoppingCartItemDto { CustomerId = 1, ProductId = 1, Quantity = 1, ShoppingCartType = "ShoppingCart" } });
+
+				var item = result?.ShoppingCarts?.SingleOrDefault();
+				if (item != null)
+				{
+					_ = await nopApiClient.UpdateShoppingCartItem(new ShoppingCartItemDtoDelta { ShoppingCartItem = item }, item.Id.ToString());
+				}
+
+				result = await nopApiClient.GetShoppingCartItems(new ShoppingCartItemsParametersModel { Limit = 2, Page = 1 });
+			}
+			catch (ApiBindings.ApiException ex)
+			{
+				Console.WriteLine(ex.Message);
 			}
 
 			Console.ReadKey();

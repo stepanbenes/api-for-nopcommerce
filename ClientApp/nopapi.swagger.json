@@ -6680,13 +6680,6 @@
         "operationId": "UpdateShoppingCartItem",
         "parameters": [
           {
-            "name": "shoppingCartItemDelta",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/ShoppingCartItemDtoDelta"
-            }
-          },
-          {
             "name": "id",
             "in": "path",
             "required": true,
@@ -6695,6 +6688,30 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShoppingCartItemDtoDelta"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShoppingCartItemDtoDelta"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShoppingCartItemDtoDelta"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShoppingCartItemDtoDelta"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Success",
@@ -8596,7 +8613,7 @@
             "additionalProperties": {},
             "nullable": true
           },
-          "Dto": {
+          "category": {
             "$ref": "#/components/schemas/CategoryDto"
           }
         },
@@ -8736,7 +8753,7 @@
             "additionalProperties": {},
             "nullable": true
           },
-          "Dto": {
+          "customer": {
             "$ref": "#/components/schemas/CustomerDto"
           }
         },
@@ -9261,7 +9278,7 @@
             "additionalProperties": {},
             "nullable": true
           },
-          "Dto": {
+          "manufacturer": {
             "$ref": "#/components/schemas/ManufacturerDto"
           }
         },
@@ -9792,7 +9809,7 @@
             "additionalProperties": {},
             "nullable": true
           },
-          "Dto": {
+          "order": {
             "$ref": "#/components/schemas/OrderDto"
           }
         },
@@ -9904,7 +9921,7 @@
             "additionalProperties": {},
             "nullable": true
           },
-          "Dto": {
+          "order_item": {
             "$ref": "#/components/schemas/OrderItemDto"
           }
         },
@@ -10153,7 +10170,7 @@
             "additionalProperties": {},
             "nullable": true
           },
-          "Dto": {
+          "product_attribute": {
             "$ref": "#/components/schemas/ProductAttributeDto"
           }
         },
@@ -10366,7 +10383,7 @@
             "additionalProperties": {},
             "nullable": true
           },
-          "Dto": {
+          "product_category_mapping": {
             "$ref": "#/components/schemas/ProductCategoryMappingDto"
           }
         },
@@ -10909,7 +10926,7 @@
             "additionalProperties": {},
             "nullable": true
           },
-          "Dto": {
+          "product": {
             "$ref": "#/components/schemas/ProductDto"
           }
         },
@@ -10992,7 +11009,7 @@
             "additionalProperties": {},
             "nullable": true
           },
-          "Dto": {
+          "product_manufacturer_mapping": {
             "$ref": "#/components/schemas/ProductManufacturerMappingsDto"
           }
         },
@@ -11206,7 +11223,7 @@
             "additionalProperties": {},
             "nullable": true
           },
-          "Dto": {
+          "product_specification_attribute": {
             "$ref": "#/components/schemas/ProductSpecificationAttributeDto"
           }
         },
@@ -11388,7 +11405,7 @@
             "additionalProperties": {},
             "nullable": true
           },
-          "Dto": {
+          "shopping_cart_item": {
             "$ref": "#/components/schemas/ShoppingCartItemDto"
           }
         },
@@ -11516,7 +11533,7 @@
             "additionalProperties": {},
             "nullable": true
           },
-          "Dto": {
+          "specification_attribute": {
             "$ref": "#/components/schemas/SpecificationAttributeDto"
           }
         },
@@ -11794,7 +11811,7 @@
             "additionalProperties": {},
             "nullable": true
           },
-          "Dto": {
+          "topic": {
             "$ref": "#/components/schemas/TopicDto"
           }
         },
