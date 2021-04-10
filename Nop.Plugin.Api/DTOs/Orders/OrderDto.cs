@@ -244,13 +244,13 @@ namespace Nop.Plugin.Api.DTO.Orders
         /// <summary>
         ///     Gets or sets the billing address
         /// </summary>
-        [JsonProperty("billing_address")]
+        [JsonProperty("billing_address", Required = Required.Always)]
         public AddressDto BillingAddress { get; set; }
 
         /// <summary>
         ///     Gets or sets the shipping address
         /// </summary>
-        [JsonProperty("shipping_address")]
+        [JsonProperty("shipping_address", Required = Required.Always)]
         public AddressDto ShippingAddress { get; set; }
 
         /// <summary>

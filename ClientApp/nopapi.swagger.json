@@ -2851,15 +2851,30 @@
           "Orders"
         ],
         "operationId": "CreateOrder",
-        "parameters": [
-          {
-            "name": "orderDelta",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/OrderDtoDelta"
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderDtoDelta"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderDtoDelta"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderDtoDelta"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderDtoDelta"
+              }
             }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "Success",
@@ -3260,13 +3275,6 @@
         "operationId": "UpdateOrder",
         "parameters": [
           {
-            "name": "orderDelta",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/OrderDtoDelta"
-            }
-          },
-          {
             "name": "id",
             "in": "path",
             "required": true,
@@ -3275,6 +3283,30 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderDtoDelta"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderDtoDelta"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderDtoDelta"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderDtoDelta"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Success",
@@ -3379,7 +3411,7 @@
         }
       }
     },
-    "/api/orders/customer/{customer_id}": {
+    "/api/orders/customer/{customerId}": {
       "get": {
         "tags": [
           "Orders"
@@ -3388,18 +3420,11 @@
         "parameters": [
           {
             "name": "customerId",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "customer_id",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "integer",
+              "format": "int32"
             }
           }
         ],
@@ -11412,6 +11437,10 @@
         "additionalProperties": false
       },
       "ShoppingCartItemsForCustomerParametersModel": {
+        "required": [
+          "limit",
+          "page"
+        ],
         "type": "object",
         "properties": {
           "created_at_min": {
@@ -11450,6 +11479,10 @@
         "additionalProperties": false
       },
       "ShoppingCartItemsParametersModel": {
+        "required": [
+          "limit",
+          "page"
+        ],
         "type": "object",
         "properties": {
           "created_at_min": {

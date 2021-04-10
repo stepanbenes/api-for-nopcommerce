@@ -23,6 +23,7 @@ using Nop.Plugin.Api.DTOs.Topics;
 using Nop.Plugin.Api.MappingExtensions;
 using Nop.Plugin.Api.Services;
 using Nop.Services.Catalog;
+using Nop.Services.Common;
 using Nop.Services.Customers;
 using Nop.Services.Directory;
 using Nop.Services.Discounts;
@@ -54,7 +55,8 @@ namespace Nop.Plugin.Api.Helpers
         private readonly IOrderService _orderService;
         private readonly IProductAttributeConverter _productAttributeConverter;
         private readonly IShoppingCartService _shoppingCartService;
-        private readonly IStoreMappingService _storeMappingService;
+		private readonly IAddressService _addressService;
+		private readonly IStoreMappingService _storeMappingService;
         private readonly IStoreService _storeService;
         private readonly IUrlRecordService _urlRecordService;
 
@@ -77,7 +79,8 @@ namespace Nop.Plugin.Api.Helpers
             IManufacturerService manufacturerService,
             IOrderService orderService,
             IProductAttributeConverter productAttributeConverter,
-            IShoppingCartService shoppingCartService)
+            IShoppingCartService shoppingCartService,
+            IAddressService addressService)
         {
             _productService = productService;
             _aclService = aclService;
@@ -98,7 +101,8 @@ namespace Nop.Plugin.Api.Helpers
             _orderService = orderService;
             _productAttributeConverter = productAttributeConverter;
             _shoppingCartService = shoppingCartService;
-        }
+			this._addressService = addressService;
+		}
 
         public async Task<ProductDto> PrepareProductDTOAsync(Product product)
         {
@@ -177,11 +181,13 @@ namespace Nop.Plugin.Api.Helpers
 
             orderDto.OrderItems = await (await _orderService.GetOrderItemsAsync(order.Id)).SelectAwait(async item => await PrepareOrderItemDTOAsync(item)).ToListAsync();
 
-            var customerDto = await _customerService.GetCustomerByIdAsync(order.CustomerId);
+            var customer = await _customerService.GetCustomerByIdAsync(order.CustomerId);
 
-            if (customerDto != null)
+            if (customer != null)
             {
-                orderDto.Customer = customerDto.ToOrderCustomerDto();
+                orderDto.Customer = customer.ToOrderCustomerDto();
+                orderDto.BillingAddress = (await _addressService.GetAddressByIdAsync(order.BillingAddressId))?.ToDto();
+                orderDto.ShippingAddress = (await _addressService.GetAddressByIdAsync(order.ShippingAddressId ?? 0))?.ToDto();
             }
 
             return orderDto;

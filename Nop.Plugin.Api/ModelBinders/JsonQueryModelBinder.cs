@@ -18,6 +18,10 @@ namespace Nop.Plugin.Api.ModelBinders
 				var json = bindingContext.HttpContext.Request.Query.FirstOrDefault(x => x.Key == name).Value;
 				var targetType = bindingContext.ModelType;
 				var model = JsonConvert.DeserializeObject(json, targetType);
+				if (model is null)
+				{
+					model = Activator.CreateInstance(targetType);
+				}
 				bindingContext.Model = model;
 				bindingContext.Result = ModelBindingResult.Success(bindingContext.Model);
 			}

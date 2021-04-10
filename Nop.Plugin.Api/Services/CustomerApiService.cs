@@ -19,6 +19,7 @@ using Nop.Services.Localization;
 using Nop.Services.Stores;
 using Nop.Services.Caching;
 using System.Threading.Tasks;
+using Nop.Services.Customers;
 
 namespace Nop.Plugin.Api.Services
 {
@@ -39,12 +40,16 @@ namespace Nop.Plugin.Api.Services
         private readonly IStoreContext _storeContext;
         private readonly IStoreMappingService _storeMappingService;
         private readonly IRepository<NewsLetterSubscription> _subscriptionRepository;
+		private readonly IRepository<Address> _customerAddressRepository;
+		private readonly IRepository<CustomerAddressMapping> _customerAddressMappingRepository;
 
-        public CustomerApiService(
+		public CustomerApiService(
             IRepository<Customer> customerRepository,
             IRepository<GenericAttribute> genericAttributeRepository,
             IRepository<NewsLetterSubscription> subscriptionRepository,
-            IStoreContext storeContext,
+            IRepository<Address> customerAddressRepository,
+            IRepository<CustomerAddressMapping> customerAddressMappingRepository,
+        IStoreContext storeContext,
             ILanguageService languageService,
             IStoreMappingService storeMappingService,
             IStaticCacheManager staticCacheManager)
@@ -52,7 +57,9 @@ namespace Nop.Plugin.Api.Services
             _customerRepository = customerRepository;
             _genericAttributeRepository = genericAttributeRepository;
             _subscriptionRepository = subscriptionRepository;
-            _storeContext = storeContext;
+			_customerAddressRepository = customerAddressRepository;
+			_customerAddressMappingRepository = customerAddressMappingRepository;
+			_storeContext = storeContext;
             _languageService = languageService;
             _storeMappingService = storeMappingService;
             _cacheManager = staticCacheManager;
@@ -66,7 +73,9 @@ namespace Nop.Plugin.Api.Services
 
             var result = await HandleCustomerGenericAttributesAsync(null, query, limit, page);
 
-            await SetNewsletterSubscribtionStatusAsync(result);
+            await SetNewsletterSubscriptionStatusAsync(result);
+
+            // TODO: call SetCustomerAddressesAsync
 
             return result;
         }
@@ -109,6 +118,8 @@ namespace Nop.Plugin.Api.Services
                 result = await HandleCustomerGenericAttributesAsync(searchParams, query, limit, page, order);
             }
 
+            // TODO: call SetCustomerAddressesAsync
+
             return result;
         }
 
@@ -136,23 +147,24 @@ namespace Nop.Plugin.Api.Services
             }
 
             // Here we expect to get two records, one for the first name and one for the last name.
-            var customerAttributeMappings = await (from customer in _customerRepository.Table //NoTracking
-                                             join attribute in _genericAttributeRepository.Table //NoTracking
-                                                 on customer.Id equals attribute.EntityId
-                                             where customer.Id == id &&
-                                                   attribute.KeyGroup == "Customer"
+            var customerAttributeMappings = await (from c in _customerRepository.Table //NoTracking
+                                             join a in _genericAttributeRepository.Table //NoTracking
+                                                 on c.Id equals a.EntityId
+                                             where c.Id == id &&
+                                                   a.KeyGroup == "Customer"
                                              select new CustomerAttributeMappingDto
                                              {
-                                                 Attribute = attribute,
-                                                 Customer = customer
+                                                 Attribute = a,
+                                                 Customer = c
                                              }).ToListAsync();
 
+            Customer customer = null;
             CustomerDto customerDto = null;
 
             // This is in case we have first and last names set for the customer.
             if (customerAttributeMappings.Count > 0)
             {
-                var customer = customerAttributeMappings.First().Customer;
+                customer = customerAttributeMappings.First().Customer;
                 // The customer object is the same in all mappings.
                 customerDto = customer.ToDto();
 
@@ -214,18 +226,20 @@ namespace Nop.Plugin.Api.Services
             else
             {
                 // This is when we do not have first and last name set.
-                var currentCustomer = _customerRepository.Table.FirstOrDefault(customer => customer.Id == id);
+                customer = _customerRepository.Table.FirstOrDefault(c => c.Id == id);
 
-                if (currentCustomer != null)
+                if (customer != null)
                 {
-                    if (showDeleted || !currentCustomer.Deleted)
+                    if (showDeleted || !customer.Deleted)
                     {
-                        customerDto = currentCustomer.ToDto();
+                        customerDto = customer.ToDto();
                     }
                 }
             }
 
-            await SetNewsletterSubscribtionStatusAsync(customerDto);
+            await SetNewsletterSubscriptionStatusAsync(customerDto);
+
+            await SetCustomerAddressesAsync(customer, customerDto);
 
             return customerDto;
         }
@@ -504,7 +518,7 @@ namespace Nop.Plugin.Api.Services
             return defaultLanguageId;
         }
 
-        private async Task SetNewsletterSubscribtionStatusAsync(IList<CustomerDto> customerDtos)
+        private async Task SetNewsletterSubscriptionStatusAsync(IList<CustomerDto> customerDtos)
         {
             if (customerDtos == null)
             {
@@ -515,11 +529,11 @@ namespace Nop.Plugin.Api.Services
 
             foreach (var customerDto in customerDtos)
             {
-                await SetNewsletterSubscribtionStatusAsync(customerDto, allNewsletterCustomerEmail);
+                await SetNewsletterSubscriptionStatusAsync(customerDto, allNewsletterCustomerEmail);
             }
         }
 
-        private async Task SetNewsletterSubscribtionStatusAsync(BaseCustomerDto customerDto, IEnumerable<string> allNewsletterCustomerEmail = null)
+        private async Task SetNewsletterSubscriptionStatusAsync(BaseCustomerDto customerDto, IEnumerable<string> allNewsletterCustomerEmail = null)
         {
             if (customerDto == null || string.IsNullOrEmpty(customerDto.Email))
             {
@@ -547,6 +561,61 @@ namespace Nop.Plugin.Api.Services
                                               select nls.Email).ToListAsync();
                 return subscriberEmails.Where(e => !string.IsNullOrEmpty(e)).Select(e => e.ToLowerInvariant()).ToList();
             });
+        }
+
+        private async Task SetCustomerAddressesAsync(Customer customer, CustomerDto customerDto)
+        {
+            // TODO: make separate controller for addresses?
+            var customerAddresses = await GetAddressesByCustomerIdAsync(customer.Id);
+            var customerBillingAddress = await GetCustomerAddressAsync(customer.Id, customer.BillingAddressId ?? 0);
+            var customerShippingAddress = await GetCustomerAddressAsync(customer.Id, customer.ShippingAddressId ?? 0);
+            customerDto.Addresses = customerAddresses.Select(a => a.ToDto()).ToList();
+            customerDto.BillingAddress = customerBillingAddress?.ToDto();
+            customerDto.ShippingAddress = customerShippingAddress?.ToDto();
+        }
+
+        /// <summary>
+        /// Gets a list of addresses mapped to customer
+        /// </summary>
+        /// <param name="customerId">Customer identifier</param>
+        /// <returns>
+        /// A task that represents the asynchronous operation
+        /// The task result contains the result
+        /// </returns>
+        public async Task<IList<Address>> GetAddressesByCustomerIdAsync(int customerId)
+        {
+            var query = from address in _customerAddressRepository.Table
+                        join cam in _customerAddressMappingRepository.Table on address.Id equals cam.AddressId
+                        where cam.CustomerId == customerId
+                        select address;
+
+            var key = _cacheManager.PrepareKeyForShortTermCache(NopCustomerServicesDefaults.CustomerAddressesCacheKey, customerId);
+
+            return await _cacheManager.GetAsync(key, async () => await query.ToListAsync());
+        }
+
+        /// <summary>
+        /// Gets a address mapped to customer
+        /// </summary>
+        /// <param name="customerId">Customer identifier</param>
+        /// <param name="addressId">Address identifier</param>
+        /// <returns>
+        /// A task that represents the asynchronous operation
+        /// The task result contains the result
+        /// </returns>
+        public async Task<Address> GetCustomerAddressAsync(int customerId, int addressId)
+        {
+            if (customerId == 0 || addressId == 0)
+                return null;
+
+            var query = from address in _customerAddressRepository.Table
+                        join cam in _customerAddressMappingRepository.Table on address.Id equals cam.AddressId
+                        where cam.CustomerId == customerId && address.Id == addressId
+                        select address;
+
+            var key = _cacheManager.PrepareKeyForShortTermCache(NopCustomerServicesDefaults.CustomerAddressCacheKey, customerId, addressId);
+
+            return await _cacheManager.GetAsync(key, async () => await query.FirstOrDefaultAsync());
         }
     }
 }
