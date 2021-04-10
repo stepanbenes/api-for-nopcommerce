@@ -7756,6 +7756,46 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           }
         }
       }
@@ -9613,6 +9653,10 @@
         "additionalProperties": false
       },
       "OrderDto": {
+        "required": [
+          "billing_address",
+          "shipping_address"
+        ],
         "type": "object",
         "properties": {
           "store_id": {
@@ -11742,10 +11786,6 @@
           "expires_in": {
             "type": "integer",
             "format": "int64"
-          },
-          "error_description": {
-            "type": "string",
-            "nullable": true
           }
         },
         "additionalProperties": false

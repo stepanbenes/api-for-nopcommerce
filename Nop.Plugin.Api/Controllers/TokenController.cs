@@ -47,26 +47,30 @@ namespace Nop.Plugin.Api.Controllers
         [HttpGet]
         [Route("/token", Name = "RequestToken")]
         [ProducesResponseType(typeof(TokenResponse), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.Forbidden)]
         public async Task<IActionResult> Create(TokenRequest model)
         {
+            User.FindFirstValue(ClaimTypes.NameIdentifier);
+
             if (string.IsNullOrEmpty(model.Username))
             {
-                return Json(new TokenResponse("Missing username"));
+                return BadRequest("Missing username");
             }
 
             if (string.IsNullOrEmpty(model.Password))
             {
-                return Json(new TokenResponse("Missing password"));
+                return BadRequest("Missing password");
             }
 
             var customer = await ValidateUserAsync(model);
 
-            if (customer != null)
+            if (customer is null)
             {
-                return Json(GenerateToken(customer));
+                return StatusCode((int)HttpStatusCode.Forbidden, "Wrong username or password");
             }
 
-            return Json(new TokenResponse("Access Denied"));
+            return Json(GenerateToken(customer));
         }
 
         private Task<CustomerLoginResults> LoginCustomerAsync(TokenRequest model)

@@ -4,11 +4,6 @@ namespace Nop.Plugin.Api.Models.Authentication
 {
     public class TokenResponse
     {
-        public TokenResponse(string errorDescription)
-        {
-            ErrorDescription = errorDescription;
-        }
-
         public TokenResponse(string accessToken, long expiresInSeconds, string tokenType = "Bearer")
         {
             AccessToken = accessToken;
@@ -24,8 +19,5 @@ namespace Nop.Plugin.Api.Models.Authentication
 
         [JsonProperty("expires_in")]
         public long ExpiresInSeconds { get; set; }
-
-        [JsonProperty("error_description")]
-        public string ErrorDescription { get; set; }
     }
 }
