@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Nop.Core;
 using Nop.Core.Domain.Customers;
@@ -46,6 +49,7 @@ namespace Nop.Plugin.Api.Controllers
 		private readonly IOrderService _orderService;
 		private readonly IProductAttributeConverter _productAttributeConverter;
 		private readonly IPaymentService _paymentService;
+		private readonly IPdfService _pdfService;
 		private readonly IProductService _productService;
 		private readonly IShippingService _shippingService;
 		private readonly IShoppingCartService _shoppingCartService;
@@ -76,7 +80,8 @@ namespace Nop.Plugin.Api.Controllers
 			IPictureService pictureService,
 			IDTOHelper dtoHelper,
 			IProductAttributeConverter productAttributeConverter,
-			IPaymentService paymentService)
+			IPaymentService paymentService,
+			IPdfService pdfService)
 			: base(jsonFieldsSerializer, aclService, customerService, storeMappingService,
 				   storeService, discountService, customerActivityService, localizationService, pictureService)
 		{
@@ -91,7 +96,8 @@ namespace Nop.Plugin.Api.Controllers
 			_dtoHelper = dtoHelper;
 			_productService = productService;
 			_productAttributeConverter = productAttributeConverter;
-			this._paymentService = paymentService;
+			_paymentService = paymentService;
+			_pdfService = pdfService;
 		}
 
 		private OrderSettings OrderSettings => _orderSettings ?? (_orderSettings = EngineContext.Current.Resolve<OrderSettings>());
@@ -438,6 +444,39 @@ namespace Nop.Plugin.Api.Controllers
 			var json = JsonFieldsSerializer.Serialize(ordersRootObject, string.Empty);
 
 			return new RawJsonActionResult(json);
+		}
+
+		[HttpGet]
+		[Route("/api/orders/{orderId}/pdf-invoice", Name = "GetPdfInvoice")]
+		[ProducesResponseType(typeof(DTOs.BinaryFileDto), (int)HttpStatusCode.OK)]
+		[ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
+		[ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
+		public async Task<IActionResult> GetPdfInvoice([FromRoute] int orderId)
+		{
+			var order = await _orderService.GetOrderByIdAsync(orderId);
+			if (order == null || order.Deleted)
+				return NotFound();
+
+			var orders = new List<Order>
+			{
+				order
+			};
+			byte[] bytes;
+			await using (var stream = new MemoryStream())
+			{
+				await _pdfService.PrintOrdersToPdfAsync(stream, orders);
+				bytes = stream.ToArray();
+			}
+
+			var document = new DTOs.BinaryFileDto
+			{
+				FileName = $"order_{order.OrderGuid:N}.pdf",
+				Content = bytes,
+				MimeType = MimeTypes.ApplicationPdf,
+				CreatedAt = DateTimeOffset.Now,
+			};
+
+			return Ok(document);
 		}
 
 		#region Private methods

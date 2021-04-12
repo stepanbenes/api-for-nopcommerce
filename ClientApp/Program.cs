@@ -29,6 +29,7 @@ namespace ClientApp
 			Console.WriteLine("Requesting categories...");
 			var categories = await nopApiClient.GetCategories();
 
+
 			if (categories?.Categories is not null)
 			{
 				foreach (var category in categories.Categories)
@@ -36,6 +37,8 @@ namespace ClientApp
 					Console.WriteLine(category.ToString());
 				}
 			}
+
+			var invoiceDocument = await nopApiClient.GetPdfInvoice(orderId: 1);
 
 			try
 			{
