@@ -52,6 +52,8 @@ namespace ApiBindingsGenerator
 			}
 		}
 
+		#region Generating
+
 		private static IEnumerable<(string filename, string code)> GenerateCommonFiles()
 		{
 			string code = $"namespace {BASE_NAMESPACE}" + @"
@@ -241,7 +243,7 @@ namespace {BASE_NAMESPACE}.{apiName}
 					requestBodyTypeName = GenerateCSharpType(requestBodyTypeDescriptor, out _);
 				}
 
-				var parameters = apiEndpoint.Parameters.OrderByDescending(p => p.Required ?? false).Select(p => GenerateParameterSource(p));
+				var parameters = apiEndpoint.Parameters.OrderByDescending(p => p.Required ?? false).Select(p => GenerateApiEndpointParameter(p));
 				if (requestBodyTypeName is not null)
 				{
 					parameters = parameters.Prepend($"{requestBodyTypeName} {REQUEST_BODY_PARAMETER_NAME}");
@@ -256,7 +258,7 @@ namespace {BASE_NAMESPACE}.{apiName}
 				sourceCode.AppendLine($@"{____}{____}public async {taskReturnTypeName} {operationName}({string.Join(", ", parameters)})
         {{
             HttpContent? content = {(requestBodyTypeName is not null ? $"JsonContent.Create({REQUEST_BODY_PARAMETER_NAME}, options: IgnoreNullValuesJsonSerializerOptions)" : "null")};
-            var response = await Send(HttpMethod.{apiEndpoint.Method.Method.ToPascalCase()}, requestEndpoint: {generateEndpointUri(apiEndpoint)}, content);
+            var response = await Send(HttpMethod.{apiEndpoint.Method.Method.ToPascalCase()}, requestEndpoint: {GenerateApiEndpointUri(apiEndpoint)}, content);
             switch ((int)response.StatusCode)
             {{
                 case 200: // OK");
@@ -322,82 +324,27 @@ namespace {BASE_NAMESPACE}.{apiName}
 					return null;
 				return typeDescriptor;
 			}
+		}
 
-			static string generateEndpointUri(ApiEndpoint endpoint)
+		private static string GenerateApiEndpointUri(ApiEndpoint endpoint)
+		{
+			string query = string.Join("&", endpoint.Parameters.Where(p => p.In == ParameterLocation.Query).Select(p => getParameterValue(p)));
+			if (!string.IsNullOrWhiteSpace(query))
+				query = "?" + query;
+			return @$"$""{endpoint.Path}{query}""";
+			string getParameterValue(ApiEndpointParameter param)
 			{
-				string query = string.Join("&", endpoint.Parameters.Where(p => p.In == ParameterLocation.Query).Select(p => getParameterValue(p)));
-				if (!string.IsNullOrWhiteSpace(query))
-					query = "?" + query;
-				return @$"$""{endpoint.Path}{query}""";
-				string getParameterValue(ApiEndpointParameter param)
-				{
-					if (param.Schema is { Type: "string" })
-						return $@"{param.Name}={{{param.Name}}}";
-					return $"{param.Name}={{Uri.EscapeUriString(JsonSerializer.Serialize({param.Name}, IgnoreNullValuesJsonSerializerOptions))}}";
-				}
+				if (param.Schema is { Type: "string" })
+					return $@"{param.Name}={{{param.Name}}}";
+				return $"{param.Name}={{Uri.EscapeUriString(JsonSerializer.Serialize({param.Name}, IgnoreNullValuesJsonSerializerOptions))}}";
 			}
 		}
 
-		private static string GenerateParameterSource(ApiEndpointParameter parameter)
+		private static string GenerateApiEndpointParameter(ApiEndpointParameter parameter)
 		{
-			try
-			{
-				bool isOptional = parameter.Required is not true;
-				string initExpression = isOptional ? " = default" : "";
-				return $"{GenerateCSharpType(isOptional ? parameter.Schema.MakeNullable() : parameter.Schema, out _)} {parameter.Name}{initExpression}";
-			}
-			catch (NullReferenceException ex)
-			{
-				throw new InvalidOperationException($"Parameter {parameter}; {ex.StackTrace}");
-			}
-		}
-
-		private static TypeDescriptor ParseTypeDescriptor(JObject schema)
-		{
-			string? type = null;
-			string? format = null;
-			bool? nullable = null;
-			TypeDescriptor? items = null;
-			string? refType = null;
-			Dictionary<string, TypeDescriptor>? properties = null;
-			string[]? enumValues = null;
-
-			var typeToken = schema["type"];
-			if (typeToken is { Type: JTokenType.String })
-				type = typeToken.ToString();
-			var formatToken = schema["format"];
-			if (formatToken is { Type: JTokenType.String })
-				format = formatToken.ToString();
-			var nullableToken = schema["nullable"];
-			if (nullableToken is { Type: JTokenType.Boolean })
-				nullable = (bool)nullableToken;
-			var itemsToken = schema["items"];
-			if (itemsToken is JObject itemsObject)
-				items = ParseTypeDescriptor(itemsObject);
-			var refToken = schema["$ref"];
-			if (refToken is { Type: JTokenType.String })
-				refType = refToken.ToString();
-			var propertiesToken = schema["properties"];
-			if (propertiesToken is JObject propertiesObject)
-			{
-				properties = new Dictionary<string, TypeDescriptor>();
-				foreach (var jProperty in propertiesObject.Properties())
-				{
-					if (jProperty.Value is JObject propertyObject && ParseTypeDescriptor(propertyObject) is { } typeDescriptor)
-					{
-						properties[jProperty.Name] = typeDescriptor;
-					}
-				}
-			}
-			var enumToken = schema["enum"];
-			if (enumToken is JArray jArray)
-			{
-				enumValues = jArray.Select(jToken => jToken.ToString()).ToArray();
-			}
-
-			// TODO: parse "required" array -> these should be mapped to dto object constructor parameters
-
-			return new TypeDescriptor(type, format, nullable, items, enumValues, refType, properties);
+			bool isOptional = parameter.Required is not true;
+			string initExpression = isOptional ? " = default" : "";
+			return $"{GenerateCSharpType(isOptional ? parameter.Schema.MakeNullable() : parameter.Schema, out _)} {parameter.Name}{initExpression}";
 		}
 
 		private static string GenerateEnum(string enumName, TypeDescriptor typeDescriptor, string indent)
@@ -440,14 +387,23 @@ namespace {BASE_NAMESPACE}.{apiName}
 			return source.ToString();
 		}
 
+		private static string GenerateRecordPrimaryParameter(string name, TypeDescriptor type)
+		{
+			return $"{GenerateCSharpType(type, out _)} {name}";
+		}
+
 		private static string GenerateRecord(string recordName, TypeDescriptor typeDescriptor, string indent)
 		{
 			if (typeDescriptor.Type != "object")
 				throw new FormatException($"Cannot generate record '{recordName}' with non-object schema ({typeDescriptor.Type}).");
 
-			// TODO: generate primary constructor parameters from typeDescriptor.Required list
+			var propertyMap = typeDescriptor.Properties ?? new Dictionary<string, TypeDescriptor>();
+			var requiredProperties = typeDescriptor.RequiredProperties ?? new HashSet<string>();
 
-			var sourceCode = new StringBuilder($@"{indent}{TYPE_ACCESS_MODIFIER}record {recordName}
+			// generate primary constructor parameters from typeDescriptor.RequiredProperties set
+			var primaryParameters = requiredProperties.Where(rp => propertyMap.ContainsKey(rp)).Select(rp => GenerateRecordPrimaryParameter(name: rp.ToPascalCase(), type: propertyMap[rp])).ToList();
+
+			var sourceCode = new StringBuilder($@"{indent}{TYPE_ACCESS_MODIFIER}record {recordName}({string.Join(", ", primaryParameters)})
 {indent}{{
 ");
 
@@ -464,8 +420,20 @@ namespace {BASE_NAMESPACE}.{apiName}
 				{
 					throw new FormatException(ex.Message + $" ({propertyName})");
 				}
-				string initExpression = (isReferenceType && propertyType.Nullable is not true) ? " = default!;" : "";
 				string propertyNamePascalCase = propertyName.ToPascalCase();
+				string initExpression;
+				if (requiredProperties.Contains(propertyName))
+				{
+					initExpression = $" = {propertyNamePascalCase};";
+				}
+				else if (isReferenceType && propertyType.Nullable is not true)
+				{
+					initExpression = " = default!;";
+				}
+				else
+				{
+					initExpression = "";
+				}
 				sourceCode.AppendLine($"{indent}{____}[JsonPropertyName(\"{propertyName}\")]");
 				sourceCode.AppendLine($"{indent}{____}{PROPERTY_ACCESS_MODIFIER}{typeName} {propertyNamePascalCase} {{ get; init; }}{initExpression}");
 			}
@@ -474,6 +442,7 @@ namespace {BASE_NAMESPACE}.{apiName}
 			return sourceCode.ToString();
 
 		}
+
 		private static string GenerateCSharpType(TypeDescriptor? typeDescriptor, out bool isReferenceType)
 		{
 			if (typeDescriptor is null) // null represents "unit" type
@@ -484,7 +453,7 @@ namespace {BASE_NAMESPACE}.{apiName}
 			string csTypeName;
 			if (typeDescriptor.RefType is not null)
 			{
-				isReferenceType = true; // TODO: I don't really know if it is reference type
+				isReferenceType = true; // WARNING: I don't really know if it is reference type
 				csTypeName = typeDescriptor.RefType.Substring("#/components/schemas/".Length);
 			}
 			else
@@ -523,6 +492,62 @@ namespace {BASE_NAMESPACE}.{apiName}
 			var sourceCode = new StringBuilder($"{indent}{TYPE_ACCESS_MODIFIER}class {arrayName} : System.Collections.Generic.List<{GenerateCSharpType(typeDescriptor.Items, out _)}> {{ }}");
 			sourceCode.AppendLine();
 			return sourceCode.ToString();
+		}
+
+		#endregion
+
+		#region Parsing
+
+		private static TypeDescriptor ParseTypeDescriptor(JObject schema)
+		{
+			string? type = null;
+			string? format = null;
+			bool? nullable = null;
+			TypeDescriptor? items = null;
+			string? refType = null;
+			Dictionary<string, TypeDescriptor>? properties = null;
+			string[]? enumValues = null;
+			HashSet<string>? requiredProperties = null;
+
+			var typeToken = schema["type"];
+			if (typeToken is { Type: JTokenType.String })
+				type = typeToken.ToString();
+			var formatToken = schema["format"];
+			if (formatToken is { Type: JTokenType.String })
+				format = formatToken.ToString();
+			var nullableToken = schema["nullable"];
+			if (nullableToken is { Type: JTokenType.Boolean })
+				nullable = (bool)nullableToken;
+			var itemsToken = schema["items"];
+			if (itemsToken is JObject itemsObject)
+				items = ParseTypeDescriptor(itemsObject);
+			var refToken = schema["$ref"];
+			if (refToken is { Type: JTokenType.String })
+				refType = refToken.ToString();
+			var propertiesToken = schema["properties"];
+			if (propertiesToken is JObject propertiesObject)
+			{
+				properties = new Dictionary<string, TypeDescriptor>();
+				foreach (var jProperty in propertiesObject.Properties())
+				{
+					if (jProperty.Value is JObject propertyObject && ParseTypeDescriptor(propertyObject) is { } typeDescriptor)
+					{
+						properties[jProperty.Name] = typeDescriptor;
+					}
+				}
+			}
+			var enumToken = schema["enum"];
+			if (enumToken is JArray enumArray)
+			{
+				enumValues = enumArray.Select(jToken => jToken.ToString()).ToArray();
+			}
+			var requiredToken = schema["required"];
+			if (requiredToken is JArray requiredArray)
+			{
+				requiredProperties = new HashSet<string>(requiredArray.Select(requiredToken => requiredToken.ToString()));
+			}
+
+			return new TypeDescriptor(type, format, nullable, items, enumValues, refType, properties, requiredProperties);
 		}
 
 		private static IEnumerable<ApiEndpoint> ParseApiEndpoints(JProperty pathProperty)
@@ -638,5 +663,7 @@ namespace {BASE_NAMESPACE}.{apiName}
 				required,
 				description);
 		}
+
+		#endregion
 	}
 }

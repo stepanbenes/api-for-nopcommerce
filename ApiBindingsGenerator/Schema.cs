@@ -7,7 +7,7 @@ namespace ApiBindingsGenerator
 {
 	record TypeDescriptor
 	{
-		public TypeDescriptor(string? type = null, string? format = null, bool? nullable = null, TypeDescriptor? items = null, string[]? enumValues = null, string? refType = null, Dictionary<string, TypeDescriptor>? properties = null)
+		public TypeDescriptor(string? type = null, string? format = null, bool? nullable = null, TypeDescriptor? items = null, string[]? enumValues = null, string? refType = null, Dictionary<string, TypeDescriptor>? properties = null, HashSet<string>? requiredProperties = null)
 		{
 			Type = type;
 			Format = format;
@@ -16,6 +16,7 @@ namespace ApiBindingsGenerator
 			EnumValues = enumValues;
 			RefType = refType;
 			Properties = properties;
+			RequiredProperties = requiredProperties;
 		}
 		public string? Type { get; }
 		public string? Format { get; }
@@ -24,8 +25,9 @@ namespace ApiBindingsGenerator
 		public string[]? EnumValues { get; }
 		public string? RefType { get; }
 		public Dictionary<string, TypeDescriptor>? Properties { get; }
+		public HashSet<string>? RequiredProperties { get; }
 
-		public TypeDescriptor MakeNullable() => new(this.Type, this.Format, nullable: true, this.Items, this.EnumValues, this.RefType, this.Properties);
+		public TypeDescriptor MakeNullable() => new(this.Type, this.Format, nullable: true, this.Items, this.EnumValues, this.RefType, this.Properties, this.RequiredProperties);
 	}
 
 	record ApiInfo(string Title, string Version)

@@ -25,7 +25,7 @@ namespace ClientApp
 			var tokenResponse = await nopApiClient.RequestToken(Username: args[1], Password: args[2]);
 			if (tokenResponse is { AccessToken: string token, TokenType: var type })
 				httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(type ?? "Bearer", token);
-			
+
 			Console.WriteLine("Requesting categories...");
 			var categories = await nopApiClient.GetCategories();
 
@@ -42,7 +42,7 @@ namespace ClientApp
 
 			try
 			{
-				var result = await nopApiClient.CreateShoppingCartItem(new ShoppingCartItemDtoDelta { ShoppingCartItem = new ShoppingCartItemDto { CustomerId = 1, ProductId = 1, Quantity = 1, ShoppingCartType = "ShoppingCart" } });
+				var result = await nopApiClient.CreateShoppingCartItem(new ShoppingCartItemDtoDelta { ShoppingCartItem = new ShoppingCartItemDto(ShoppingCartType: "ShoppingCart") { CustomerId = 1, ProductId = 1, Quantity = 1 } });
 
 				var item = result?.ShoppingCarts?.SingleOrDefault();
 				if (item != null)
@@ -50,7 +50,7 @@ namespace ClientApp
 					_ = await nopApiClient.UpdateShoppingCartItem(new ShoppingCartItemDtoDelta { ShoppingCartItem = item }, item.Id.ToString());
 				}
 
-				result = await nopApiClient.GetShoppingCartItems(new ShoppingCartItemsParametersModel { Limit = 2, Page = 1 });
+				result = await nopApiClient.GetShoppingCartItems(new ShoppingCartItemsParametersModel(Limit: 2, Page: 1));
 			}
 			catch (ApiBindings.ApiException ex)
 			{
