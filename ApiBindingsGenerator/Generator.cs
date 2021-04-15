@@ -5,6 +5,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -22,6 +23,14 @@ namespace ApiBindingsGenerator
 		private const string TYPE_ACCESS_MODIFIER = "public ";
 		private const string PROPERTY_ACCESS_MODIFIER = "public ";
 		private const string JSON_MEDIA_TYPE = "application/json";
+		private const string REQUEST_BODY_PARAMETER_NAME = "requestBody";
+
+		enum ApiClientType
+		{
+			NormalClass = 0,
+			FakeClass,
+			Interface
+		}
 
 		public void Initialize(GeneratorInitializationContext context)
 		{
@@ -165,7 +174,9 @@ namespace ApiBindingsGenerator
 			string apiName = apiInfo?.Title?.ToPascalCase() ?? fileName.ToPascalCase();
 
 			yield return (filename: $"{apiName}.DTOs", GenerateDTOs(apiName, schema));
-			yield return (filename: $"{apiName}.ApiClient", GenerateApiClientClass(apiName, apiEndpoints, securitySchemes));
+			yield return (filename: $"I{apiName}Client", GenerateApiClient(ApiClientType.Interface, apiName, apiEndpoints, securitySchemes));
+			yield return (filename: $"{apiName}Client", GenerateApiClient(ApiClientType.NormalClass, apiName, apiEndpoints, securitySchemes));
+			yield return (filename: $"Fake{apiName}Client", GenerateApiClient(ApiClientType.FakeClass, apiName, apiEndpoints, securitySchemes));
 		}
 
 		private static string GenerateDTOs(string apiName, Dictionary<string, TypeDescriptor> schema)
@@ -199,30 +210,25 @@ namespace {BASE_NAMESPACE}.{apiName}.DTOs
 			return sourceCode.ToString();
 		}
 
-		private static string GenerateApiClientClass(string apiName, IReadOnlyList<ApiEndpoint> apiEndpoints, Dictionary<string, SecuritySchemeDescriptor>? securitySchemes)
+		private static string GenerateApiClient(ApiClientType apiClientType, string apiName, IReadOnlyList<ApiEndpoint> apiEndpoints, Dictionary<string, SecuritySchemeDescriptor>? securitySchemes)
 		{
 			string className = apiName + "Client";
-			var sourceCode = new StringBuilder($@"#nullable enable
-namespace {BASE_NAMESPACE}.{apiName}
-{{
-    using System;
-    using System.Net.Http;
-    using System.Net.Http.Json;
-    using System.Text.Json;
-    using System.Threading.Tasks;
-    using {BASE_NAMESPACE};
-    using {BASE_NAMESPACE}.{apiName}.DTOs;
+			var sourceCode = new StringBuilder();
 
-    {TYPE_ACCESS_MODIFIER}class {className} : ApiClientBase
-    {{
-        private readonly HttpClient httpClient;
-
-        public {className}(HttpClient httpClient) : base(httpClient)
-        {{
-            this.httpClient = httpClient;
-        }}
-
-");
+			switch (apiClientType)
+			{
+				case ApiClientType.NormalClass:
+					writeNormalClassBeginning(sourceCode, apiName, className);
+					break;
+				case ApiClientType.FakeClass:
+					writeFakeClassBeginning(sourceCode, apiName, className);
+					break;
+				case ApiClientType.Interface:
+					writeInterfaceBeginning(sourceCode, apiName, className);
+					break;
+				default:
+					break;
+			}
 
 			foreach (var apiEndpoint in apiEndpoints)
 			{
@@ -230,11 +236,9 @@ namespace {BASE_NAMESPACE}.{apiName}
 				TypeDescriptor? returnType = apiEndpoint.Responses.TryGetValue(HttpStatusCode.OK, out var okResponse)
 					? getTypeDescriptorForResponse(okResponse, JSON_MEDIA_TYPE)
 					: null;
-				string returnTypeName = GenerateCSharpType(returnType, out _);
 				string taskReturnTypeName = returnType is null ? "Task" : $"Task<{GenerateCSharpType(returnType.MakeNullable(), out _)}>";
 
 				string? requestBodyTypeName = null;
-				const string REQUEST_BODY_PARAMETER_NAME = "requestBody";
 
 				// TODO: add support for multi-form media type (and other media types?)
 
@@ -251,18 +255,50 @@ namespace {BASE_NAMESPACE}.{apiName}
 
 
 				string operationName = apiEndpoint.OperationId ?? (apiEndpoint.Method.Method + "_" + apiEndpoint.Path.Replace('/', '_')).ToPascalCase();
-				string returnNothingToken = $"return{(returnType is not null ? " null" : "")};";
 				sourceCode.AppendLine($"{____}{____}/// <summary>");
 				sourceCode.AppendLine($"{____}{____}/// {endpointLabel}");
 				sourceCode.AppendLine($"{____}{____}/// </summary>");
-				sourceCode.AppendLine($@"{____}{____}public async {taskReturnTypeName} {operationName}({string.Join(", ", parameters)})
+
+				switch (apiClientType)
+				{
+					case ApiClientType.NormalClass:
+						sourceCode.Append($@"{____}{____}public async {taskReturnTypeName} {operationName}({string.Join(", ", parameters)})");
+						writeNormalActionBody(sourceCode, apiEndpoint, returnType, requestBodyTypeName);
+						break;
+					case ApiClientType.FakeClass:
+						sourceCode.Append($@"{____}{____}public virtual {taskReturnTypeName} {operationName}({string.Join(", ", parameters)})");
+						writeFakeActionBody(sourceCode, returnType);
+						break;
+					case ApiClientType.Interface:
+						sourceCode.AppendLine($@"{____}{____}{taskReturnTypeName} {operationName}({string.Join(", ", parameters)});");
+						break;
+				}
+			} // end of foreach
+
+			// write footer
+			sourceCode.Append($@"{____}}}
+}}");
+			return sourceCode.ToString();
+
+			static TypeDescriptor? getTypeDescriptorForResponse(Response response, string mediaType)
+			{
+				if (response.Content is null || !response.Content.TryGetValue(mediaType, out var typeDescriptor))
+					return null;
+				return typeDescriptor;
+			}
+
+			static void writeNormalActionBody(StringBuilder sourceCode, ApiEndpoint apiEndpoint, TypeDescriptor? returnType, string? requestBodyTypeName)
+			{
+				string? returnTypeName = GenerateCSharpType(returnType, out _);
+				string returnNothingToken = $"return{(returnTypeName is not null ? " null" : "")};";
+				sourceCode.AppendLine($@"
         {{
             HttpContent? content = {(requestBodyTypeName is not null ? $"JsonContent.Create({REQUEST_BODY_PARAMETER_NAME}, options: IgnoreNullValuesJsonSerializerOptions)" : "null")};
             var response = await Send(HttpMethod.{apiEndpoint.Method.Method.ToPascalCase()}, requestEndpoint: {GenerateApiEndpointUri(apiEndpoint)}, content);
             switch ((int)response.StatusCode)
             {{
                 case 200: // OK");
-				if (returnType is not null)
+				if (returnTypeName is not null)
 				{
 					if (returnTypeName is "string")
 						sourceCode.AppendLine($@"                    return await response.Content.ReadAsStringAsync();");
@@ -282,7 +318,7 @@ namespace {BASE_NAMESPACE}.{apiName}
 					sourceCode.AppendLine($"{____}{____}{____}{____}case {(int)response.StatusCode}:");
 					if ((int)response.StatusCode is > 200 and <= 299)
 					{
-						sourceCode.AppendLine($"{____}{____}{____}{____}{____}return{(returnType is not null ? " null" : "")};");
+						sourceCode.AppendLine($"{____}{____}{____}{____}{____}return{(returnTypeName is not null ? " null" : "")};");
 					}
 					else
 					{
@@ -312,17 +348,68 @@ namespace {BASE_NAMESPACE}.{apiName}
             }}
         }}
 ");
-			} // end of foreach
-
-			sourceCode.Append($@"{____}}}
-}}");
-			return sourceCode.ToString();
-
-			static TypeDescriptor? getTypeDescriptorForResponse(Response response, string mediaType)
+			}
+			
+			static void writeFakeActionBody(StringBuilder sourceCode, TypeDescriptor? returnType)
 			{
-				if (response.Content is null || !response.Content.TryGetValue(mediaType, out var typeDescriptor))
-					return null;
-				return typeDescriptor;
+				string? returnTypeName = GenerateCSharpType(returnType?.MakeNullable(), out _);
+				string returnNothingToken = $" => {(returnTypeName is not null ? $"Task.FromResult(({returnTypeName})null)" : "Task.CompletedTask")};";
+				sourceCode.AppendLine(returnNothingToken);
+			}
+
+			static void writeNormalClassBeginning(StringBuilder sourceCode, string apiName, string className)
+			{
+				sourceCode.Append($@"#nullable enable
+namespace {BASE_NAMESPACE}.{apiName}
+{{
+    using System;
+    using System.Net.Http;
+    using System.Net.Http.Json;
+    using System.Text.Json;
+    using System.Threading.Tasks;
+    using {BASE_NAMESPACE};
+    using {BASE_NAMESPACE}.{apiName}.DTOs;
+
+    {TYPE_ACCESS_MODIFIER}class {className} : ApiClientBase, I{className}
+    {{
+        private readonly HttpClient httpClient;
+
+        public {className}(HttpClient httpClient) : base(httpClient)
+        {{
+            this.httpClient = httpClient;
+        }}
+
+");
+			}
+
+			static void writeFakeClassBeginning(StringBuilder sourceCode, string apiName, string className)
+			{
+				sourceCode.Append($@"#nullable enable
+namespace {BASE_NAMESPACE}.{apiName}
+{{
+    using System;
+    using System.Threading.Tasks;
+    using {BASE_NAMESPACE};
+    using {BASE_NAMESPACE}.{apiName}.DTOs;
+
+    {TYPE_ACCESS_MODIFIER}class Fake{className} : I{className}
+    {{
+");
+			}
+
+			static void writeInterfaceBeginning(StringBuilder sourceCode, string apiName, string className)
+			{
+				sourceCode.Append($@"#nullable enable
+namespace {BASE_NAMESPACE}.{apiName}
+{{
+    using System;
+    using System.Threading.Tasks;
+    using {BASE_NAMESPACE};
+    using {BASE_NAMESPACE}.{apiName}.DTOs;
+
+    {TYPE_ACCESS_MODIFIER}interface I{className}
+    {{
+");
 			}
 		}
 
@@ -443,12 +530,13 @@ namespace {BASE_NAMESPACE}.{apiName}
 
 		}
 
-		private static string GenerateCSharpType(TypeDescriptor? typeDescriptor, out bool isReferenceType)
+		[return: NotNullIfNotNull("typeDescriptor")]
+		private static string? GenerateCSharpType(TypeDescriptor? typeDescriptor, out bool isReferenceType)
 		{
-			if (typeDescriptor is null) // null represents "unit" type
+			if (typeDescriptor is null)
 			{
 				isReferenceType = false;
-				return "void";
+				return null;
 			}
 			string csTypeName;
 			if (typeDescriptor.RefType is not null)
