@@ -12,4 +12,4 @@ This plugin provides a RESTful API for managing resources in nopCommerce 4.40 be
 1. install the nopCommerce database, create the admin user (skip this step if already done)
 1. go to the administration page, Api plugin should be listed in local plugins configuration section.
 1. in the customers section assign the  role `Api Users` to the user that will be used to access the api.
-1. go to `/api/swagger` page and experiment with the api (use the Authorize button to authenticate requests)
+1. go to `/api/swagger` page and experiment with the api (use the Authorize button to authenticate requests) or run .NET 5 client application (`ClientApp` project) that contains auto-generated Api client class generated from the swagger json file using C# 9 source generator.
