@@ -3,6 +3,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
+using ApiBindings.NopApi;
 using ApiBindings.NopApi.DTOs;
 
 namespace ClientApp
@@ -19,12 +20,16 @@ namespace ClientApp
 
 			// Create api client
 			var httpClient = new HttpClient { BaseAddress = new Uri(args[0]) };
-			var nopApiClient = new ApiBindings.NopApi.NopApiClient(httpClient);
+			INopApiClient nopApiClient = new NopApiClient(httpClient);
 
 			Console.WriteLine("Authenticating...");
+
 			var tokenResponse = await nopApiClient.RequestToken(Username: args[1], Password: args[2]);
+
 			if (tokenResponse is { AccessToken: string token, TokenType: var type })
-				httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(type ?? "Bearer", token);
+			{
+				nopApiClient.SetAuthorizationHeader(type ?? "Bearer", token);
+			}
 
 			try
 			{
