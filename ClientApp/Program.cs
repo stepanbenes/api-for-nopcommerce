@@ -26,22 +26,20 @@ namespace ClientApp
 			if (tokenResponse is { AccessToken: string token, TokenType: var type })
 				httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(type ?? "Bearer", token);
 
-			Console.WriteLine("Requesting categories...");
-			var categories = await nopApiClient.GetCategories();
-
-
-			if (categories?.Categories is not null)
-			{
-				foreach (var category in categories.Categories)
-				{
-					Console.WriteLine(category.ToString());
-				}
-			}
-
-			var invoiceDocument = await nopApiClient.GetPdfInvoice(orderId: 1);
-
 			try
 			{
+				Console.WriteLine("Requesting categories...");
+				var categories = await nopApiClient.GetCategories();
+
+
+				if (categories?.Categories is not null)
+				{
+					foreach (var category in categories.Categories)
+					{
+						Console.WriteLine(category.ToString());
+					}
+				}
+
 				var result = await nopApiClient.CreateShoppingCartItem(new ShoppingCartItemDtoDelta { ShoppingCartItem = new ShoppingCartItemDto(ShoppingCartType: "ShoppingCart") { CustomerId = 1, ProductId = 1, Quantity = 1 } });
 
 				var item = result?.ShoppingCarts?.SingleOrDefault();
@@ -51,6 +49,8 @@ namespace ClientApp
 				}
 
 				result = await nopApiClient.GetShoppingCartItems(new ShoppingCartItemsParametersModel(Limit: 2, Page: 1));
+
+				//var invoiceDocument = await nopApiClient.GetPdfInvoice(orderId: 1);
 			}
 			catch (ApiBindings.ApiException ex)
 			{
