@@ -11877,19 +11877,37 @@
         "additionalProperties": false
       },
       "TokenResponse": {
+        "required": [
+          "access_token",
+          "token_type"
+        ],
         "type": "object",
         "properties": {
           "access_token": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "token_type": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "expires_in": {
             "type": "integer",
             "format": "int64"
+          },
+          "created_at_utc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "username": {
+            "type": "string",
+            "nullable": true
+          },
+          "customer_id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "customer_guid": {
+            "type": "string",
+            "format": "uuid"
           }
         },
         "additionalProperties": false

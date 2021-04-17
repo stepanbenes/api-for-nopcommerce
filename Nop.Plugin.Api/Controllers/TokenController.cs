@@ -107,11 +107,12 @@ namespace Nop.Plugin.Api.Controllers
 
         private TokenResponse GenerateToken(Customer customer)
         {
-            var expiresInSeconds = new DateTimeOffset(DateTime.Now.AddDays(GetTokenExpiryInDays())).ToUnixTimeSeconds();
+            var currentTime = DateTimeOffset.Now;
+            var expiresInSeconds = currentTime.AddDays(GetTokenExpiryInDays()).ToUnixTimeSeconds();
 
             var claims = new List<Claim>
                          {
-                             new Claim(JwtRegisteredClaimNames.Nbf, new DateTimeOffset(DateTime.Now).ToUnixTimeSeconds().ToString()),
+                             new Claim(JwtRegisteredClaimNames.Nbf, currentTime.ToUnixTimeSeconds().ToString()),
                              new Claim(JwtRegisteredClaimNames.Exp, expiresInSeconds.ToString()),
                              new Claim(ClaimTypes.Email, customer.Email),
                              new Claim(ClaimTypes.NameIdentifier, customer.CustomerGuid.ToString()),
@@ -126,7 +127,13 @@ namespace Nop.Plugin.Api.Controllers
             var accessToken = new JwtSecurityTokenHandler().WriteToken(token);
 
 
-            return new TokenResponse(accessToken, expiresInSeconds);
+            return new TokenResponse(accessToken, currentTime.UtcDateTime, expiresInSeconds)
+            {
+                CustomerId = customer.Id,
+                CustomerGuid = customer.CustomerGuid,
+                Username = _customerSettings.UsernamesEnabled ? customer.Username : customer.Email,
+                TokenType = "Bearer"
+            };
         }
     }
 }
