@@ -52,6 +52,10 @@ namespace Nop.Plugin.Api.Areas.Admin.Controllers
             {
                 await _settingService.SaveSettingAsync(apiSettings, x => x.EnableApi, storeScope, false);
             }
+            if (model.TokenExpiryInDays_OverrideForStore || storeScope == 0)
+            {
+                await _settingService.SaveSettingAsync(apiSettings, x => x.TokenExpiryInDays, storeScope, false);
+            }
 
             //now clear settings cache
             await _settingService.ClearCacheAsync();
@@ -74,6 +78,10 @@ namespace Nop.Plugin.Api.Areas.Admin.Controllers
             if (model.EnableApi_OverrideForStore || storeScope == 0)
             {
                 await _settingService.SaveSettingAsync(settings, x => x.EnableApi, storeScope, false);
+            }
+            if (model.TokenExpiryInDays_OverrideForStore || storeScope == 0)
+            {
+                await _settingService.SaveSettingAsync(settings, x => x.TokenExpiryInDays, storeScope, false);
             }
 
             //now clear settings cache
