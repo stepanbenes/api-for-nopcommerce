@@ -97,6 +97,11 @@ namespace ApiBindingsGenerator
         {
             httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(scheme, parameter);
 		}
+
+        public void RemoveAuthorizationHeader()
+        {
+            httpClient.DefaultRequestHeaders.Authorization = null;
+		}
     }
 
     public class ApiException : Exception
@@ -400,6 +405,7 @@ namespace {BASE_NAMESPACE}.{apiName}
     {TYPE_ACCESS_MODIFIER}class Fake{className} : I{className}
     {{
         public virtual void SetAuthorizationHeader(string scheme, string? parameter) {{ }}
+        public virtual void RemoveAuthorizationHeader() {{ }}
 ");
 			}
 
@@ -419,6 +425,10 @@ namespace {BASE_NAMESPACE}.{apiName}
 		/// Sets default authorization header for all requests of underlying http client. Scheme is usually ""Bearer"" and parameter is JWT token.
         /// </summary>
         void SetAuthorizationHeader(string scheme, string? parameter);
+        /// <summary>
+		/// Sets default authorization header for all requests of underlying http client to null;
+        /// </summary>
+        void RemoveAuthorizationHeader();
 ");
 			}
 		}

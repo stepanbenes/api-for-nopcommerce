@@ -45,6 +45,8 @@ namespace ClientApp
 					}
 				}
 
+				//nopApiClient.RemoveAuthorizationHeader();
+
 				var result = await nopApiClient.CreateShoppingCartItem(new ShoppingCartItemDtoDelta { ShoppingCartItem = new ShoppingCartItemDto(ShoppingCartType: "ShoppingCart") { CustomerId = 1, ProductId = 1, Quantity = 1 } });
 
 				var item = result?.ShoppingCarts?.SingleOrDefault();
