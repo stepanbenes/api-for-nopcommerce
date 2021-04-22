@@ -24,7 +24,7 @@ namespace ClientApp
 
 			Console.WriteLine("Authenticating...");
 
-			var tokenResponse = await nopApiClient.RequestToken(Username: args[1], Password: args[2]);
+			var tokenResponse = await nopApiClient.RequestToken(new TokenRequest { Username = args[1], Password = args[2] });
 
 			if (tokenResponse is { AccessToken: string token, TokenType: var type })
 			{

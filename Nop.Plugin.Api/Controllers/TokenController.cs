@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using Nop.Core;
 using Nop.Core.Domain.Customers;
 using Nop.Plugin.Api.Configuration;
 using Nop.Plugin.Api.Domain;
@@ -24,6 +25,7 @@ namespace Nop.Plugin.Api.Controllers
         private readonly ApiConfiguration _apiConfiguration;
         private readonly ApiSettings _apiSettings;
         private readonly ICustomerActivityService _customerActivityService;
+        private readonly IWorkContext _workContext;
         private readonly ICustomerRegistrationService _customerRegistrationService;
         private readonly ICustomerService _customerService;
         private readonly CustomerSettings _customerSettings;
@@ -32,6 +34,7 @@ namespace Nop.Plugin.Api.Controllers
             ICustomerService customerService,
             ICustomerRegistrationService customerRegistrationService,
             ICustomerActivityService customerActivityService,
+            IWorkContext workContext,
             CustomerSettings customerSettings,
             ApiSettings apiSettings,
             ApiConfiguration apiConfiguration)
@@ -39,6 +42,7 @@ namespace Nop.Plugin.Api.Controllers
             _customerService = customerService;
             _customerRegistrationService = customerRegistrationService;
             _customerActivityService = customerActivityService;
+            _workContext = workContext;
             _customerSettings = customerSettings;
             _apiSettings = apiSettings;
             _apiConfiguration = apiConfiguration;
@@ -49,53 +53,83 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(TokenResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Forbidden)]
-        public async Task<IActionResult> Create(TokenRequest model)
+        public async Task<IActionResult> Create([FromBody] TokenRequest model)
         {
-            User.FindFirstValue(ClaimTypes.NameIdentifier);
+            Customer customer;
 
-            if (string.IsNullOrEmpty(model.Username))
+            if (model.Guest)
             {
-                return BadRequest("Missing username");
+                customer = await _workContext.GetCurrentCustomerAsync();
+
+                if (!await _customerService.IsGuestAsync(customer))
+                {
+                    customer = await _customerService.InsertGuestCustomerAsync();
+                    await _workContext.SetCurrentCustomerAsync(customer);
+                }
+
+                if (!await _customerService.IsInCustomerRoleAsync(customer, Constants.Roles.ApiRoleSystemName))
+                {
+                    //add to 'ApiUserRole' role if not yet present
+                    var apiRole = await _customerService.GetCustomerRoleBySystemNameAsync(Constants.Roles.ApiRoleSystemName);
+                    if (apiRole == null)
+                        throw new InvalidOperationException($"'{Constants.Roles.ApiRoleSystemName}' role could not be loaded");
+                    await _customerService.AddCustomerRoleMappingAsync(new CustomerCustomerRoleMapping { CustomerId = customer.Id, CustomerRoleId = apiRole.Id });
+                }
+
+                // activity log
+                await _customerActivityService.InsertActivityAsync(customer, "Api.TokenRequest", "API token request for guest customer", customer);
+            }
+            else
+            {
+                if (string.IsNullOrEmpty(model.Username))
+                {
+                    return BadRequest("Missing username");
+                }
+
+                if (string.IsNullOrEmpty(model.Password))
+                {
+                    return BadRequest("Missing password");
+                }
+
+                customer = await ValidateUserAsync(model.Username, model.Password);
+
+                if (customer is null)
+                {
+                    return StatusCode((int)HttpStatusCode.Forbidden, "Wrong username or password");
+                }
+
             }
 
-            if (string.IsNullOrEmpty(model.Password))
-            {
-                return BadRequest("Missing password");
-            }
+            var tokenResponse = GenerateToken(customer);
 
-            var customer = await ValidateUserAsync(model);
+            await _workContext.SetCurrentCustomerAsync(customer);
 
-            if (customer is null)
-            {
-                return StatusCode((int)HttpStatusCode.Forbidden, "Wrong username or password");
-            }
+            // activity log
+            await _customerActivityService.InsertActivityAsync(customer, "Api.TokenRequest", "API token request", customer);
 
-            return Json(GenerateToken(customer));
+            return Json(tokenResponse);
         }
 
-        private Task<CustomerLoginResults> LoginCustomerAsync(TokenRequest model)
-        {
-            return _customerRegistrationService.ValidateCustomerAsync(model.Username, model.Password);
-        }
+        #region Private methods
 
-        private async Task<Customer> ValidateUserAsync(TokenRequest model)
+        private async Task<Customer> ValidateUserAsync(string username, string password)
         {
-            var result = await LoginCustomerAsync(model);
+            var result = await LoginCustomerAsync(username, password);
 
             if (result == CustomerLoginResults.Successful)
             {
                 var customer = await (_customerSettings.UsernamesEnabled
-                                   ? _customerService.GetCustomerByUsernameAsync(model.Username)
-                                   : _customerService.GetCustomerByEmailAsync(model.Username));
-
-
-                //activity log
-                await _customerActivityService.InsertActivityAsync(customer, "Api.TokenRequest", "User API token request", customer);
-
+                                   ? _customerService.GetCustomerByUsernameAsync(username)
+                                   : _customerService.GetCustomerByEmailAsync(username));
                 return customer;
             }
 
             return null;
+        }
+
+        private Task<CustomerLoginResults> LoginCustomerAsync(string username, string password)
+        {
+            return _customerRegistrationService.ValidateCustomerAsync(username, password);
         }
 
         private int GetTokenExpiryInDays()
@@ -114,18 +148,33 @@ namespace Nop.Plugin.Api.Controllers
                          {
                              new Claim(JwtRegisteredClaimNames.Nbf, currentTime.ToUnixTimeSeconds().ToString()),
                              new Claim(JwtRegisteredClaimNames.Exp, expiresInSeconds.ToString()),
-                             new Claim(ClaimTypes.Email, customer.Email),
+                             new Claim("CustomerId", customer.Id.ToString()),
                              new Claim(ClaimTypes.NameIdentifier, customer.CustomerGuid.ToString()),
-                             _customerSettings.UsernamesEnabled
-                                 ? new Claim(ClaimTypes.Name, customer.Username)
-                                 : new Claim(ClaimTypes.Name, customer.Email)
                          };
 
-            var signingCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_apiConfiguration.SecurityKey)),
-                                                            SecurityAlgorithms.HmacSha256);
+            if (!string.IsNullOrEmpty(customer.Email))
+            {
+                claims.Add(new Claim(ClaimTypes.Email, customer.Email));
+            }
+
+            if (_customerSettings.UsernamesEnabled)
+            {
+                if (!string.IsNullOrEmpty(customer.Username))
+                {
+                    claims.Add(new Claim(ClaimTypes.Name, customer.Username));
+                }
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(customer.Email))
+                {
+                    claims.Add(new Claim(ClaimTypes.Email, customer.Email));
+                }
+            }
+
+            var signingCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_apiConfiguration.SecurityKey)), SecurityAlgorithms.HmacSha256);
             var token = new JwtSecurityToken(new JwtHeader(signingCredentials), new JwtPayload(claims));
             var accessToken = new JwtSecurityTokenHandler().WriteToken(token);
-
 
             return new TokenResponse(accessToken, currentTime.UtcDateTime, expiresInSeconds)
             {
@@ -135,5 +184,7 @@ namespace Nop.Plugin.Api.Controllers
                 TokenType = "Bearer"
             };
         }
+
+        #endregion
     }
 }

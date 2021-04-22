@@ -73,12 +73,10 @@ namespace Nop.Plugin.Api.Infrastructure
 								jwtBearerOptions.TokenValidationParameters = new TokenValidationParameters
 								{
 									ValidateIssuerSigningKey = true,
-									IssuerSigningKey =
-																					 new SymmetricSecurityKey(Encoding.UTF8.GetBytes(apiConfig.SecurityKey)),
+									IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(apiConfig.SecurityKey)),
 									ValidateIssuer = false, // ValidIssuer = "The name of the issuer",
 									ValidateAudience = false, // ValidAudience = "The name of the audience",
-									ValidateLifetime =
-																					 true, // validate the expiration and not before values in the token
+									ValidateLifetime = true, // validate the expiration and not before values in the token
 									ClockSkew = TimeSpan.FromMinutes(apiConfig.AllowedClockSkewInMinutes)
 								};
 							});

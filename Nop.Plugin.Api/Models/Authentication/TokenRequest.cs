@@ -4,6 +4,9 @@ namespace Nop.Plugin.Api.Models.Authentication
 {
     public class TokenRequest
     {
+        [JsonProperty("guest")]
+        public bool Guest { get; set; }
+
         [JsonProperty("username")]
         public string Username { get; set; }
 
