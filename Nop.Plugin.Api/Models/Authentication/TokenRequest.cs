@@ -12,5 +12,8 @@ namespace Nop.Plugin.Api.Models.Authentication
 
         [JsonProperty("password")]
         public string Password { get; set; }
+
+        [JsonProperty("remember_me")]
+        public bool RememberMe { get; set; }
     }
 }

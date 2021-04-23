@@ -102,6 +102,11 @@ namespace Nop.Plugin.Api.Controllers
             return new ErrorActionResult(errorsJson, statusCode);
         }
 
+        protected IActionResult AccessDenied()
+        {
+            return new StatusCodeResult(Microsoft.AspNetCore.Http.StatusCodes.Status403Forbidden);
+        }
+
         protected async Task UpdateAclRolesAsync<TEntity>(TEntity entity, List<int> passedRoleIds) where TEntity : BaseEntity, IAclSupported
         {
             if (passedRoleIds == null)

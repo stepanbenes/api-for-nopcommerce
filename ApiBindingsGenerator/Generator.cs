@@ -78,14 +78,14 @@ namespace ApiBindingsGenerator
     " + $"{TYPE_ACCESS_MODIFIER}abstract class ApiClientBase" + @"
     {
         private readonly HttpClient httpClient;
-        private JsonSerializerOptions? ignoreNullValuesJsonSerializerOptions = null;
+        private JsonSerializerOptions? serializerOptions = null;
 
         public ApiClientBase(HttpClient httpClient)
         {
             this.httpClient = httpClient;
         }
 
-        protected JsonSerializerOptions IgnoreNullValuesJsonSerializerOptions => ignoreNullValuesJsonSerializerOptions ?? (ignoreNullValuesJsonSerializerOptions = new JsonSerializerOptions { IgnoreNullValues = true, Converters = { new JsonStringEnumConverter() } });
+        protected JsonSerializerOptions SerializerOptions => serializerOptions ?? (serializerOptions = new JsonSerializerOptions { IgnoreNullValues = true, Converters = { new JsonStringEnumConverter() } });
         
         protected async Task<HttpResponseMessage> Send(HttpMethod httpMethod, string requestEndpoint, HttpContent? content = null)
         {
@@ -304,7 +304,7 @@ namespace {BASE_NAMESPACE}.{apiName}.DTOs
 				string returnNothingToken = $"return{(returnTypeName is not null ? " null" : "")};";
 				sourceCode.AppendLine($@"
         {{
-            HttpContent? content = {(requestBodyTypeName is not null ? $"JsonContent.Create({REQUEST_BODY_PARAMETER_NAME}, options: IgnoreNullValuesJsonSerializerOptions)" : "null")};
+            HttpContent? content = {(requestBodyTypeName is not null ? $"JsonContent.Create({REQUEST_BODY_PARAMETER_NAME}, options: SerializerOptions)" : "null")};
             var response = await Send(HttpMethod.{apiEndpoint.Method.Method.ToPascalCase()}, requestEndpoint: {GenerateApiEndpointUri(apiEndpoint)}, content);
             switch ((int)response.StatusCode)
             {{
@@ -314,7 +314,7 @@ namespace {BASE_NAMESPACE}.{apiName}.DTOs
 					if (returnTypeName is "string")
 						sourceCode.AppendLine($@"                    return await response.Content.ReadAsStringAsync();");
 					else
-						sourceCode.AppendLine($@"                    return await response.Content.ReadFromJsonAsync<{returnTypeName}>();");
+						sourceCode.AppendLine($@"                    return await response.Content.ReadFromJsonAsync<{returnTypeName}>(SerializerOptions);");
 				}
 				else
 				{
@@ -339,7 +339,7 @@ namespace {BASE_NAMESPACE}.{apiName}.DTOs
 							if (errorTypeName is "string")
 								sourceCode.AppendLine($"{____}{____}{____}{____}{____}throw new ApiException<{errorTypeName}>(response.StatusCode, \"{response.Description ?? ""}\", await response.Content.ReadAsStringAsync());");
 							else
-								sourceCode.AppendLine($"{____}{____}{____}{____}{____}throw new ApiException<{errorTypeName}>(response.StatusCode, \"{response.Description ?? ""}\", await response.Content.ReadFromJsonAsync<{errorTypeName}>());");
+								sourceCode.AppendLine($"{____}{____}{____}{____}{____}throw new ApiException<{errorTypeName}>(response.StatusCode, \"{response.Description ?? ""}\", await response.Content.ReadFromJsonAsync<{errorTypeName}>(SerializerOptions));");
 						}
 						else
 						{
@@ -444,7 +444,7 @@ namespace {BASE_NAMESPACE}.{apiName}
 			{
 				if (param.Schema is { Type: "string" })
 					return $@"{param.Name}={{{param.Name}}}";
-				return $"{param.Name}={{Uri.EscapeUriString(JsonSerializer.Serialize({param.Name}, IgnoreNullValuesJsonSerializerOptions))}}";
+				return $"{param.Name}={{Uri.EscapeUriString(JsonSerializer.Serialize({param.Name}, SerializerOptions))}}";
 			}
 		}
 

@@ -94,7 +94,7 @@ namespace Nop.Plugin.Api.Authorization.Attributes
 					return; // authorized, allow access
 
 				// current user hasn't access
-				context.Result = new ForbidResult();
+				context.Result = new StatusCodeResult(Microsoft.AspNetCore.Http.StatusCodes.Status403Forbidden);
 			}
 
 			#endregion

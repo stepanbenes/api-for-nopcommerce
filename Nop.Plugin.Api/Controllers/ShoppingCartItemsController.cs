@@ -84,7 +84,7 @@ namespace Nop.Plugin.Api.Controllers
 		}
 
 		/// <summary>
-		///     Receive a list of all shopping cart items
+		///     Receive a list of all shopping cart items of all customers if the customerId is NOT specified. Otherwise, return all shopping cart items of a customer.
 		/// </summary>
 		/// <response code="200">OK</response>
 		/// <response code="400">Bad Request</response>
@@ -95,35 +95,43 @@ namespace Nop.Plugin.Api.Controllers
 		[ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
 		[ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
 		[GetRequestsErrorInterceptorActionFilter]
-		public Task<IActionResult> GetShoppingCartItems([FromQueryJson] ShoppingCartItemsParametersModel parameters)
+		public async Task<IActionResult> GetShoppingCartItems([FromQueryJson] ShoppingCartItemsParametersModel parameters)
 		{
-			return GetShoppingCartItemsBase(customerId: null, parameters);
-		}
-
-		/// <summary>
-		///     Receive a list of all shopping cart items by customer id
-		/// </summary>
-		/// <param name="customerId">Id of the customer whoes shopping cart items you want to get</param>
-		/// <param name="parameters"></param>
-		/// <response code="200">OK</response>
-		/// <response code="400">Bad Request</response>
-		/// <response code="404">Not Found</response>
-		/// <response code="401">Unauthorized</response>
-		[HttpGet]
-		[Route("/api/shopping_cart_items/{customerId}", Name = "GetShoppingCartItemsByCustomerId")]
-		[ProducesResponseType(typeof(ShoppingCartItemsRootObject), (int)HttpStatusCode.OK)]
-		[ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
-		[ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
-		[ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-		[GetRequestsErrorInterceptorActionFilter]
-		public async Task<IActionResult> GetShoppingCartItemsByCustomerId([FromRoute] int customerId, [FromQueryJson] ShoppingCartItemsForCustomerParametersModel parameters)
-		{
-			if (customerId <= Constants.Configurations.DefaultCustomerId)
+			if (parameters.Limit < Constants.Configurations.MinLimit || parameters.Limit > Constants.Configurations.MaxLimit)
 			{
-				return Error(HttpStatusCode.BadRequest, "customer_id", "invalid customer_id");
+				return Error(HttpStatusCode.BadRequest, "limit", "invalid limit parameter");
 			}
 
-			return await GetShoppingCartItemsBase(customerId, parameters);
+			if (parameters.Page < Constants.Configurations.DefaultPageValue)
+			{
+				return Error(HttpStatusCode.BadRequest, "page", "invalid page parameter");
+			}
+
+			if (!await CheckPermissions(parameters.CustomerId, (ShoppingCartType)parameters.ShoppingCartType))
+			{
+				return AccessDenied();
+			}
+
+			IList<ShoppingCartItem> shoppingCartItems = _shoppingCartItemApiService.GetShoppingCartItems(parameters.CustomerId,
+																										 parameters.CreatedAtMin,
+																										 parameters.CreatedAtMax,
+																										 parameters.UpdatedAtMin,
+																										 parameters.UpdatedAtMax,
+																										 parameters.Limit,
+																										 parameters.Page);
+
+			var shoppingCartItemsDtos = await shoppingCartItems
+										.SelectAwait(async shoppingCartItem => await _dtoHelper.PrepareShoppingCartItemDTOAsync(shoppingCartItem))
+										.ToListAsync();
+
+			var shoppingCartsRootObject = new ShoppingCartItemsRootObject
+			{
+				ShoppingCartItems = shoppingCartItemsDtos
+			};
+
+			var json = JsonFieldsSerializer.Serialize(shoppingCartsRootObject, parameters.Fields);
+
+			return new RawJsonActionResult(json);
 		}
 
 		[HttpPost]
@@ -159,7 +167,7 @@ namespace Nop.Plugin.Api.Controllers
 
 			if (!await CheckPermissions(shoppingCartItemDelta.Dto.CustomerId, (ShoppingCartType)shoppingCartItemDelta.Dto.ShoppingCartType))
 			{
-				return Forbid();
+				return AccessDenied();
 			}
 
 			if (!product.IsRental)
@@ -221,7 +229,7 @@ namespace Nop.Plugin.Api.Controllers
 
 			if (!await CheckPermissions(shoppingCartItemForUpdate.CustomerId, shoppingCartItemForUpdate.ShoppingCartType))
 			{
-				return Forbid();
+				return AccessDenied();
 			}
 
 			shoppingCartItemDelta.Merge(shoppingCartItemForUpdate);
@@ -290,7 +298,7 @@ namespace Nop.Plugin.Api.Controllers
 
 			if (!await CheckPermissions(shoppingCartItemForDelete.CustomerId, shoppingCartItemForDelete.ShoppingCartType))
 			{
-				return Forbid();
+				return AccessDenied();
 			}
 
 			await _shoppingCartService.DeleteShoppingCartItemAsync(shoppingCartItemForDelete);
@@ -321,45 +329,6 @@ namespace Nop.Plugin.Api.Controllers
 			}
 			// if I want to handle other customer's shopping carts, check admin permission
 			return await _permissionService.AuthorizeAsync(StandardPermissionProvider.ManageCurrentCarts);
-		}
-
-		private async Task<IActionResult> GetShoppingCartItemsBase(int? customerId, BaseShoppingCartItemsParametersModel parameters)
-		{
-			if (parameters.Limit < Constants.Configurations.MinLimit || parameters.Limit > Constants.Configurations.MaxLimit)
-			{
-				return Error(HttpStatusCode.BadRequest, "limit", "invalid limit parameter");
-			}
-
-			if (parameters.Page < Constants.Configurations.DefaultPageValue)
-			{
-				return Error(HttpStatusCode.BadRequest, "page", "invalid page parameter");
-			}
-
-			if (!await CheckPermissions(customerId, (ShoppingCartType)parameters.ShoppingCartType))
-			{
-				return Forbid();
-			}
-
-			IList<ShoppingCartItem> shoppingCartItems = _shoppingCartItemApiService.GetShoppingCartItems(customerId,
-																										 parameters.CreatedAtMin,
-																										 parameters.CreatedAtMax,
-																										 parameters.UpdatedAtMin,
-																										 parameters.UpdatedAtMax,
-																										 parameters.Limit,
-																										 parameters.Page);
-
-			var shoppingCartItemsDtos = await shoppingCartItems
-										.SelectAwait(async shoppingCartItem => await _dtoHelper.PrepareShoppingCartItemDTOAsync(shoppingCartItem))
-										.ToListAsync();
-
-			var shoppingCartsRootObject = new ShoppingCartItemsRootObject
-			{
-				ShoppingCartItems = shoppingCartItemsDtos
-			};
-
-			var json = JsonFieldsSerializer.Serialize(shoppingCartsRootObject, parameters.Fields);
-
-			return new RawJsonActionResult(json);
 		}
 
 		#endregion

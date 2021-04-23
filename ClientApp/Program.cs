@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -19,12 +20,15 @@ namespace ClientApp
 			}
 
 			// Create api client
-			var httpClient = new HttpClient { BaseAddress = new Uri(args[0]) };
+			var cookieContainer = new CookieContainer();
+			using var handler = new HttpClientHandler() { CookieContainer = cookieContainer, UseCookies = true };
+			using var httpClient = new HttpClient(handler) { BaseAddress = new Uri(args[0]) };
+			
 			INopApiClient nopApiClient = new NopApiClient(httpClient);
 
 			Console.WriteLine("Authenticating...");
 
-			var tokenResponse = await nopApiClient.RequestToken(new TokenRequest { Username = args[1], Password = args[2] });
+			var tokenResponse = await nopApiClient.RequestToken(new TokenRequest { Username = args[1], Password = args[2], RememberMe = true });
 
 			if (tokenResponse is { AccessToken: string token, TokenType: var type })
 			{
@@ -47,7 +51,15 @@ namespace ClientApp
 
 				//nopApiClient.RemoveAuthorizationHeader();
 
-				var result = await nopApiClient.CreateShoppingCartItem(new ShoppingCartItemDtoDelta { ShoppingCartItem = new ShoppingCartItemDto(ShoppingCartType.ShoppingCart) { CustomerId = 1, ProductId = 1, Quantity = 1 } });
+				var result = await nopApiClient.CreateShoppingCartItem(new ShoppingCartItemDtoDelta
+				{
+					ShoppingCartItem = new ShoppingCartItemDto(ShoppingCartType.ShoppingCart)
+					{
+						CustomerId = tokenResponse?.CustomerId,
+						ProductId = 1,
+						Quantity = 1
+					}
+				});
 
 				var item = result?.ShoppingCarts?.SingleOrDefault();
 				if (item != null)
@@ -55,7 +67,7 @@ namespace ClientApp
 					_ = await nopApiClient.UpdateShoppingCartItem(new ShoppingCartItemDtoDelta { ShoppingCartItem = item }, item.Id.ToString());
 				}
 
-				result = await nopApiClient.GetShoppingCartItems(new ShoppingCartItemsParametersModel(Limit: 2, Page: 1, ShoppingCartType.ShoppingCart));
+				result = await nopApiClient.GetShoppingCartItems(new ShoppingCartItemsParametersModel(CustomerId: tokenResponse?.CustomerId, Limit: 2, Page: 1, ShoppingCartType.ShoppingCart));
 
 				//var invoiceDocument = await nopApiClient.GetPdfInvoice(orderId: 1);
 			}

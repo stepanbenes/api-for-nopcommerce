@@ -134,7 +134,7 @@ namespace Nop.Plugin.Api.Controllers
 
 			if (!await CheckPermissions(parameters.CustomerId))
 			{
-				return Forbid();
+				return AccessDenied();
 			}
 
 			var storeId = _storeContext.GetCurrentStore().Id;
@@ -172,7 +172,7 @@ namespace Nop.Plugin.Api.Controllers
 		{
 			if (!await CheckPermissions(parameters.CustomerId))
 			{
-				return Forbid();
+				return AccessDenied();
 			}
 
 			// TODO: make async
@@ -222,7 +222,7 @@ namespace Nop.Plugin.Api.Controllers
 
 			if (!await CheckPermissions(order.CustomerId))
 			{
-				return Forbid();
+				return AccessDenied();
 			}
 
 			var ordersRootObject = new OrdersRootObject();
@@ -250,7 +250,7 @@ namespace Nop.Plugin.Api.Controllers
 		{
 			if (!await CheckPermissions(customerId))
 			{
-				return Forbid();
+				return AccessDenied();
 			}
 
 			IList<OrderDto> ordersForCustomer = await _orderApiService.GetOrdersByCustomerId(customerId).SelectAwait(async x => await _dtoHelper.PrepareOrderDTOAsync(x)).ToListAsync();
@@ -292,7 +292,7 @@ namespace Nop.Plugin.Api.Controllers
 
 			if (!await CheckPermissions(orderDelta.Dto.CustomerId))
 			{
-				return Forbid();
+				return AccessDenied();
 			}
 
 			// We doesn't have to check for value because this is done by the order validator.
@@ -402,7 +402,7 @@ namespace Nop.Plugin.Api.Controllers
 
 			if (!await CheckPermissions(currentOrder.CustomerId))
 			{
-				return Forbid();
+				return AccessDenied();
 			}
 
 			var customer = await CustomerService.GetCustomerByIdAsync(currentOrder.CustomerId);
@@ -480,7 +480,7 @@ namespace Nop.Plugin.Api.Controllers
 
 			if (!await CheckPermissions(orderToDelete.CustomerId))
 			{
-				return Forbid();
+				return AccessDenied();
 			}
 
 			await _orderProcessingService.DeleteOrderAsync(orderToDelete);
@@ -506,7 +506,7 @@ namespace Nop.Plugin.Api.Controllers
 
 			if (!await CheckPermissions(order.CustomerId))
 			{
-				return Forbid();
+				return AccessDenied();
 			}
 
 			var orders = new List<Order> { order };

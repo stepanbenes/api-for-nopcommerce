@@ -75,9 +75,6 @@ namespace Nop.Plugin.Api.Controllers
                         throw new InvalidOperationException($"'{Constants.Roles.ApiRoleSystemName}' role could not be loaded");
                     await _customerService.AddCustomerRoleMappingAsync(new CustomerCustomerRoleMapping { CustomerId = customer.Id, CustomerRoleId = apiRole.Id });
                 }
-
-                // activity log
-                await _customerActivityService.InsertActivityAsync(customer, "Api.TokenRequest", "API token request for guest customer", customer);
             }
             else
             {
@@ -91,7 +88,7 @@ namespace Nop.Plugin.Api.Controllers
                     return BadRequest("Missing password");
                 }
 
-                customer = await ValidateUserAsync(model.Username, model.Password);
+                customer = await LoginAsync(model.Username, model.Password, model.RememberMe);
 
                 if (customer is null)
                 {
@@ -102,7 +99,6 @@ namespace Nop.Plugin.Api.Controllers
 
             var tokenResponse = GenerateToken(customer);
 
-            await _workContext.SetCurrentCustomerAsync(customer);
 
             // activity log
             await _customerActivityService.InsertActivityAsync(customer, "Api.TokenRequest", "API token request", customer);
@@ -112,24 +108,22 @@ namespace Nop.Plugin.Api.Controllers
 
         #region Private methods
 
-        private async Task<Customer> ValidateUserAsync(string username, string password)
+        private async Task<Customer> LoginAsync(string username, string password, bool rememberMe)
         {
-            var result = await LoginCustomerAsync(username, password);
+            var result = await _customerRegistrationService.ValidateCustomerAsync(username, password);
 
             if (result == CustomerLoginResults.Successful)
             {
                 var customer = await (_customerSettings.UsernamesEnabled
                                    ? _customerService.GetCustomerByUsernameAsync(username)
                                    : _customerService.GetCustomerByEmailAsync(username));
+
+                _ = await _customerRegistrationService.SignInCustomerAsync(customer, null, rememberMe);
+
                 return customer;
             }
 
             return null;
-        }
-
-        private Task<CustomerLoginResults> LoginCustomerAsync(string username, string password)
-        {
-            return _customerRegistrationService.ValidateCustomerAsync(username, password);
         }
 
         private int GetTokenExpiryInDays()
