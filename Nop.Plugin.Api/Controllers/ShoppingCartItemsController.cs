@@ -97,12 +97,12 @@ namespace Nop.Plugin.Api.Controllers
 		[GetRequestsErrorInterceptorActionFilter]
 		public async Task<IActionResult> GetShoppingCartItems([FromQueryJson] ShoppingCartItemsParametersModel parameters)
 		{
-			if (parameters.Limit < Constants.Configurations.MinLimit || parameters.Limit > Constants.Configurations.MaxLimit)
+			if (parameters.Limit.HasValue && (parameters.Limit < Constants.Configurations.MinLimit || parameters.Limit > Constants.Configurations.MaxLimit))
 			{
 				return Error(HttpStatusCode.BadRequest, "limit", "invalid limit parameter");
 			}
 
-			if (parameters.Page < Constants.Configurations.DefaultPageValue)
+			if (parameters.Page.HasValue && (parameters.Page < Constants.Configurations.DefaultPageValue))
 			{
 				return Error(HttpStatusCode.BadRequest, "page", "invalid page parameter");
 			}

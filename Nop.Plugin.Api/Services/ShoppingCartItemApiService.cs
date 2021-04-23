@@ -23,13 +23,13 @@ namespace Nop.Plugin.Api.Services
 
         public List<ShoppingCartItem> GetShoppingCartItems(
             int? customerId = null, DateTime? createdAtMin = null, DateTime? createdAtMax = null,
-            DateTime? updatedAtMin = null, DateTime? updatedAtMax = null, int limit = Constants.Configurations.DefaultLimit,
-            int page = Constants.Configurations.DefaultPageValue)
+            DateTime? updatedAtMin = null, DateTime? updatedAtMax = null, int? limit = null,
+            int? page = null)
         {
             var query = GetShoppingCartItemsQuery(customerId, createdAtMin, createdAtMax,
                                                   updatedAtMin, updatedAtMax);
 
-            return new ApiList<ShoppingCartItem>(query, page - 1, limit);
+            return new ApiList<ShoppingCartItem>(query, (page ?? Constants.Configurations.DefaultPageValue) - 1, limit ?? Constants.Configurations.DefaultLimit);
         }
 
         public Task<ShoppingCartItem> GetShoppingCartItemAsync(int id)

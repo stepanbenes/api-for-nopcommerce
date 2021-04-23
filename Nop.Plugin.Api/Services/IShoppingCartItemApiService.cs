@@ -10,8 +10,8 @@ namespace Nop.Plugin.Api.Services
     {
         List<ShoppingCartItem> GetShoppingCartItems(
             int? customerId = null, DateTime? createdAtMin = null, DateTime? createdAtMax = null,
-            DateTime? updatedAtMin = null, DateTime? updatedAtMax = null, int limit = Constants.Configurations.DefaultLimit,
-            int page = Constants.Configurations.DefaultPageValue);
+            DateTime? updatedAtMin = null, DateTime? updatedAtMax = null, int? limit = null,
+            int? page = null);
 
         Task<ShoppingCartItem> GetShoppingCartItemAsync(int id);
     }

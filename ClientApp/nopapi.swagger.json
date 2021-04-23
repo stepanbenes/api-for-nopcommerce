@@ -11473,8 +11473,6 @@
       "ShoppingCartItemsParametersModel": {
         "required": [
           "customer_id",
-          "limit",
-          "page",
           "shopping_cart_type"
         ],
         "type": "object",
@@ -11501,11 +11499,13 @@
           },
           "limit": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "page": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "fields": {
             "type": "string",
