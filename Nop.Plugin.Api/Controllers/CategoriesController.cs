@@ -8,6 +8,7 @@ using Nop.Core.Domain.Catalog;
 using Nop.Core.Domain.Discounts;
 using Nop.Core.Domain.Media;
 using Nop.Plugin.Api.Attributes;
+using Nop.Plugin.Api.Authorization.Attributes;
 using Nop.Plugin.Api.Delta;
 using Nop.Plugin.Api.DTO.Categories;
 using Nop.Plugin.Api.DTO.Errors;
@@ -72,6 +73,7 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="401">Unauthorized</response>
         [HttpGet]
         [Route("/api/categories", Name = "GetCategories")]
+        [AuthorizePermission("PublicStoreAllowNavigation")]
         [ProducesResponseType(typeof(CategoriesRootObject), (int) HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int) HttpStatusCode.BadRequest)]
         [GetRequestsErrorInterceptorActionFilter]
@@ -112,6 +114,7 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="401">Unauthorized</response>
         [HttpGet]
         [Route("/api/categories/count", Name = "GetCategoriesCount")]
+        [AuthorizePermission("PublicStoreAllowNavigation")]
         [ProducesResponseType(typeof(CategoriesCountRootObject), (int) HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int) HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int) HttpStatusCode.BadRequest)]
@@ -140,6 +143,7 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="401">Unauthorized</response>
         [HttpGet]
         [Route("/api/categories/{id}", Name = "GetCategoryById")]
+        [AuthorizePermission("PublicStoreAllowNavigation")]
         [ProducesResponseType(typeof(CategoriesRootObject), (int) HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int) HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int) HttpStatusCode.NotFound)]
@@ -172,6 +176,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpPost]
         [Route("/api/categories", Name = "CreateCategory")]
+        [AuthorizePermission("ManageCategories")]
         [ProducesResponseType(typeof(CategoriesRootObject), (int) HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), 422)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int) HttpStatusCode.BadRequest)]
@@ -238,6 +243,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpPut]
         [Route("/api/categories/{id}", Name = "UpdateCategory")]
+        [AuthorizePermission("ManageCategories")]
         [ProducesResponseType(typeof(CategoriesRootObject), (int) HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), 422)]
         [ProducesResponseType(typeof(string), (int) HttpStatusCode.NotFound)]
@@ -299,6 +305,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpDelete]
         [Route("/api/categories/{id}", Name = "DeleteCategory")]
+        [AuthorizePermission("ManageCategories")]
         [ProducesResponseType(typeof(void), (int) HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int) HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int) HttpStatusCode.NotFound)]
@@ -326,7 +333,9 @@ namespace Nop.Plugin.Api.Controllers
             return new RawJsonActionResult("{}");
         }
 
-        private async Task UpdatePictureAsync(Category categoryEntityToUpdate, ImageDto imageDto)
+		#region Private methods
+
+		private async Task UpdatePictureAsync(Category categoryEntityToUpdate, ImageDto imageDto)
         {
             // no image specified then do nothing
             if (imageDto == null)
@@ -394,5 +403,7 @@ namespace Nop.Plugin.Api.Controllers
             }
             await _categoryService.UpdateCategoryAsync(category);
         }
+
+        #endregion
     }
 }

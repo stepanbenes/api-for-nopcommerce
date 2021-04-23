@@ -8,6 +8,7 @@ using Nop.Core.Domain.Catalog;
 using Nop.Core.Domain.Discounts;
 using Nop.Core.Domain.Media;
 using Nop.Plugin.Api.Attributes;
+using Nop.Plugin.Api.Authorization.Attributes;
 using Nop.Plugin.Api.Delta;
 using Nop.Plugin.Api.DTO.Errors;
 using Nop.Plugin.Api.DTO.Images;
@@ -32,6 +33,7 @@ using Nop.Services.Stores;
 
 namespace Nop.Plugin.Api.Controllers
 {
+    [AuthorizePermission("ManageManufacturers")]
     public class ManufacturersController : BaseApiController
     {
         private readonly IDTOHelper _dtoHelper;
@@ -324,7 +326,9 @@ namespace Nop.Plugin.Api.Controllers
             return new RawJsonActionResult("{}");
         }
 
-        private async Task UpdatePictureAsync(Manufacturer manufacturerEntityToUpdate, ImageDto imageDto)
+		#region Private methods
+
+		private async Task UpdatePictureAsync(Manufacturer manufacturerEntityToUpdate, ImageDto imageDto)
         {
             // no image specified then do nothing
             if (imageDto == null)
@@ -403,5 +407,7 @@ namespace Nop.Plugin.Api.Controllers
             }
             await _manufacturerService.UpdateManufacturerAsync(manufacturer);
         }
+
+        #endregion
     }
 }

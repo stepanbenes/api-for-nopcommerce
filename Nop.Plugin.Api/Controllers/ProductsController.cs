@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Nop.Core.Domain.Catalog;
 using Nop.Core.Domain.Discounts;
 using Nop.Plugin.Api.Attributes;
+using Nop.Plugin.Api.Authorization.Attributes;
 using Nop.Plugin.Api.Delta;
 using Nop.Plugin.Api.DTO.Errors;
 using Nop.Plugin.Api.DTO.Images;
@@ -81,6 +82,7 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="401">Unauthorized</response>
         [HttpGet]
         [Route("/api/products", Name = "GetProducts")]
+        [AuthorizePermission("PublicStoreAllowNavigation")]
         [ProducesResponseType(typeof(ProductsRootObjectDto), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -121,6 +123,7 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="401">Unauthorized</response>
         [HttpGet]
         [Route("/api/products/count", Name = "GetProductsCount")]
+        [AuthorizePermission("PublicStoreAllowNavigation")]
         [ProducesResponseType(typeof(ProductsCountRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -149,6 +152,7 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="401">Unauthorized</response>
         [HttpGet]
         [Route("/api/products/{id}", Name = "GetProductById")]
+        [AuthorizePermission("PublicStoreAllowNavigation")]
         [ProducesResponseType(typeof(ProductsRootObjectDto), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -180,6 +184,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpPost]
         [Route("/api/products", Name = "CreateProduct")]
+        [AuthorizePermission("ManageProducts")]
         [ProducesResponseType(typeof(ProductsRootObjectDto), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), 422)]
@@ -235,6 +240,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpPut]
         [Route("/api/products/{id}", Name = "UpdateProduct")]
+        [AuthorizePermission("ManageProducts")]
         [ProducesResponseType(typeof(ProductsRootObjectDto), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
@@ -303,6 +309,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpDelete]
         [Route("/api/products/{id}", Name = "DeleteProduct")]
+        [AuthorizePermission("ManageProducts")]
         [ProducesResponseType(typeof(void), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
@@ -330,7 +337,9 @@ namespace Nop.Plugin.Api.Controllers
             return new RawJsonActionResult("{}");
         }
 
-        private async Task UpdateProductPicturesAsync(Product entityToUpdate, List<ImageMappingDto> setPictures)
+		#region Private methods
+
+		private async Task UpdateProductPicturesAsync(Product entityToUpdate, List<ImageMappingDto> setPictures)
         {
             // If no pictures are specified means we don't have to update anything
             if (setPictures == null)
@@ -561,5 +570,7 @@ namespace Nop.Plugin.Api.Controllers
                 await _productService.UpdateProductAsync(newAssociatedProduct);
             }
         }
+
+        #endregion
     }
 }

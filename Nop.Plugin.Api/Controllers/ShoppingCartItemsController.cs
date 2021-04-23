@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Nop.Core;
 using Nop.Core.Domain.Orders;
 using Nop.Plugin.Api.Attributes;
+using Nop.Plugin.Api.Authorization.Attributes;
 using Nop.Plugin.Api.Delta;
 using Nop.Plugin.Api.DTO.Errors;
 using Nop.Plugin.Api.DTO.ShoppingCarts;
@@ -39,6 +40,8 @@ namespace Nop.Plugin.Api.Controllers
 		private readonly IShoppingCartItemApiService _shoppingCartItemApiService;
 		private readonly IShoppingCartService _shoppingCartService;
 		private readonly IStoreContext _storeContext;
+		private readonly IWorkContext _workContext;
+		private readonly IPermissionService _permissionService;
 
 		public ShoppingCartItemsController(
 			IShoppingCartItemApiService shoppingCartItemApiService,
@@ -56,7 +59,9 @@ namespace Nop.Plugin.Api.Controllers
 			IPictureService pictureService,
 			IProductAttributeConverter productAttributeConverter,
 			IDTOHelper dtoHelper,
-			IStoreContext storeContext)
+			IStoreContext storeContext,
+			IWorkContext workContext,
+			IPermissionService permissionService)
 			: base(jsonFieldsSerializer,
 				   aclService,
 				   customerService,
@@ -74,6 +79,8 @@ namespace Nop.Plugin.Api.Controllers
 			_productAttributeConverter = productAttributeConverter;
 			_dtoHelper = dtoHelper;
 			_storeContext = storeContext;
+			_workContext = workContext;
+			_permissionService = permissionService;
 		}
 
 		/// <summary>
@@ -88,36 +95,9 @@ namespace Nop.Plugin.Api.Controllers
 		[ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
 		[ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
 		[GetRequestsErrorInterceptorActionFilter]
-		public async Task<IActionResult> GetShoppingCartItems([FromQueryJson] ShoppingCartItemsParametersModel parameters)
+		public Task<IActionResult> GetShoppingCartItems([FromQueryJson] ShoppingCartItemsParametersModel parameters)
 		{
-			if (parameters.Limit < Constants.Configurations.MinLimit || parameters.Limit > Constants.Configurations.MaxLimit)
-			{
-				return Error(HttpStatusCode.BadRequest, "limit", "invalid limit parameter");
-			}
-
-			if (parameters.Page < Constants.Configurations.DefaultPageValue)
-			{
-				return Error(HttpStatusCode.BadRequest, "page", "invalid page parameter");
-			}
-
-			IList<ShoppingCartItem> shoppingCartItems = _shoppingCartItemApiService.GetShoppingCartItems(null,
-																										 parameters.CreatedAtMin,
-																										 parameters.CreatedAtMax,
-																										 parameters.UpdatedAtMin,
-																										 parameters.UpdatedAtMax,
-																										 parameters.Limit,
-																										 parameters.Page);
-
-			var shoppingCartItemsDtos = await shoppingCartItems.SelectAwait(async shoppingCartItem => await _dtoHelper.PrepareShoppingCartItemDTOAsync(shoppingCartItem)).ToListAsync();
-
-			var shoppingCartsRootObject = new ShoppingCartItemsRootObject
-			{
-				ShoppingCartItems = shoppingCartItemsDtos
-			};
-
-			var json = JsonFieldsSerializer.Serialize(shoppingCartsRootObject, parameters.Fields);
-
-			return new RawJsonActionResult(json);
+			return GetShoppingCartItemsBase(customerId: null, parameters);
 		}
 
 		/// <summary>
@@ -143,39 +123,7 @@ namespace Nop.Plugin.Api.Controllers
 				return Error(HttpStatusCode.BadRequest, "customer_id", "invalid customer_id");
 			}
 
-			if (parameters.Limit < Constants.Configurations.MinLimit || parameters.Limit > Constants.Configurations.MaxLimit)
-			{
-				return Error(HttpStatusCode.BadRequest, "limit", "invalid limit parameter");
-			}
-
-			if (parameters.Page < Constants.Configurations.DefaultPageValue)
-			{
-				return Error(HttpStatusCode.BadRequest, "page", "invalid page parameter");
-			}
-
-			IList<ShoppingCartItem> shoppingCartItems = _shoppingCartItemApiService.GetShoppingCartItems(customerId,
-																										 parameters.CreatedAtMin,
-																										 parameters.CreatedAtMax, parameters.UpdatedAtMin,
-																										 parameters.UpdatedAtMax, parameters.Limit,
-																										 parameters.Page);
-
-			if (shoppingCartItems == null)
-			{
-				return Error(HttpStatusCode.NotFound, "shopping_cart_item", "not found");
-			}
-
-			var shoppingCartItemsDtos = await shoppingCartItems
-										.SelectAwait(async shoppingCartItem => await _dtoHelper.PrepareShoppingCartItemDTOAsync(shoppingCartItem))
-										.ToListAsync();
-
-			var shoppingCartsRootObject = new ShoppingCartItemsRootObject
-			{
-				ShoppingCartItems = shoppingCartItemsDtos
-			};
-
-			var json = JsonFieldsSerializer.Serialize(shoppingCartsRootObject, parameters.Fields);
-
-			return new RawJsonActionResult(json);
+			return await GetShoppingCartItemsBase(customerId, parameters);
 		}
 
 		[HttpPost]
@@ -190,12 +138,6 @@ namespace Nop.Plugin.Api.Controllers
 			[ModelBinder(typeof(JsonModelBinder<ShoppingCartItemDto>))]
 			Delta<ShoppingCartItemDto> shoppingCartItemDelta)
 		{
-			// Here we display the errors if the validation has failed at some point.
-			if (!ModelState.IsValid)
-			{
-				return Error();
-			}
-
 			var newShoppingCartItem = await _factory.InitializeAsync();
 			shoppingCartItemDelta.Merge(newShoppingCartItem);
 
@@ -215,9 +157,9 @@ namespace Nop.Plugin.Api.Controllers
 				return Error(HttpStatusCode.NotFound, "customer", "not found");
 			}
 
-			if (!Enum.TryParse(shoppingCartItemDelta.Dto.ShoppingCartType, out ShoppingCartType shoppingCartType))
+			if (!await CheckPermissions(shoppingCartItemDelta.Dto.CustomerId, (ShoppingCartType)shoppingCartItemDelta.Dto.ShoppingCartType))
 			{
-				return Error(HttpStatusCode.BadRequest, "shoppingCartType", "unrecognized shopping cart type");
+				return Forbid();
 			}
 
 			if (!product.IsRental)
@@ -230,7 +172,7 @@ namespace Nop.Plugin.Api.Controllers
 
 			var currentStoreId = _storeContext.GetCurrentStore().Id;
 
-			var warnings = await _shoppingCartService.AddToCartAsync(customer, product, shoppingCartType, currentStoreId, attributesXml, 0M,
+			var warnings = await _shoppingCartService.AddToCartAsync(customer, product, (ShoppingCartType)shoppingCartItemDelta.Dto.ShoppingCartType, currentStoreId, attributesXml, 0M,
 														  newShoppingCartItem.RentalStartDateUtc, newShoppingCartItem.RentalEndDateUtc,
 														  shoppingCartItemDelta.Dto.Quantity ?? 1);
 
@@ -269,18 +211,17 @@ namespace Nop.Plugin.Api.Controllers
 			[ModelBinder(typeof(JsonModelBinder<ShoppingCartItemDto>))]
 			Delta<ShoppingCartItemDto> shoppingCartItemDelta) // NOTE: id parameter is missing intentionally to fix the generation of swagger json
 		{
-			// Here we display the errors if the validation has failed at some point.
-			if (!ModelState.IsValid)
-			{
-				return Error();
-			}
-
 			// We kno that the id will be valid integer because the validation for this happens in the validator which is executed by the model binder.
 			var shoppingCartItemForUpdate = await _shoppingCartItemApiService.GetShoppingCartItemAsync(shoppingCartItemDelta.Dto.Id);
 
 			if (shoppingCartItemForUpdate == null)
 			{
 				return Error(HttpStatusCode.NotFound, "shopping_cart_item", "not found");
+			}
+
+			if (!await CheckPermissions(shoppingCartItemForUpdate.CustomerId, shoppingCartItemForUpdate.ShoppingCartType))
+			{
+				return Forbid();
 			}
 
 			shoppingCartItemDelta.Merge(shoppingCartItemForUpdate);
@@ -347,6 +288,11 @@ namespace Nop.Plugin.Api.Controllers
 				return Error(HttpStatusCode.NotFound, "shopping_cart_item", "not found");
 			}
 
+			if (!await CheckPermissions(shoppingCartItemForDelete.CustomerId, shoppingCartItemForDelete.ShoppingCartType))
+			{
+				return Forbid();
+			}
+
 			await _shoppingCartService.DeleteShoppingCartItemAsync(shoppingCartItemForDelete);
 
 			//activity log
@@ -354,5 +300,68 @@ namespace Nop.Plugin.Api.Controllers
 
 			return new RawJsonActionResult("{}");
 		}
+
+		#region Private methods
+
+		private async Task<bool> CheckPermissions(int? customerId, ShoppingCartType shoppingCartType)
+		{
+			var currentCustomer = await _workContext.GetCurrentCustomerAsync();
+			if (customerId.HasValue && currentCustomer.Id == customerId)
+			{
+				// if I want to handle my own shopping cart, check only public store permission
+				switch (shoppingCartType)
+				{
+					case ShoppingCartType.ShoppingCart:
+						return await _permissionService.AuthorizeAsync(StandardPermissionProvider.EnableShoppingCart);
+					case ShoppingCartType.Wishlist:
+						return await _permissionService.AuthorizeAsync(StandardPermissionProvider.EnableWishlist);
+					default:
+						throw new InvalidOperationException($"Invalid shopping cart type ({shoppingCartType})");
+				}
+			}
+			// if I want to handle other customer's shopping carts, check admin permission
+			return await _permissionService.AuthorizeAsync(StandardPermissionProvider.ManageCurrentCarts);
+		}
+
+		private async Task<IActionResult> GetShoppingCartItemsBase(int? customerId, BaseShoppingCartItemsParametersModel parameters)
+		{
+			if (parameters.Limit < Constants.Configurations.MinLimit || parameters.Limit > Constants.Configurations.MaxLimit)
+			{
+				return Error(HttpStatusCode.BadRequest, "limit", "invalid limit parameter");
+			}
+
+			if (parameters.Page < Constants.Configurations.DefaultPageValue)
+			{
+				return Error(HttpStatusCode.BadRequest, "page", "invalid page parameter");
+			}
+
+			if (!await CheckPermissions(customerId, (ShoppingCartType)parameters.ShoppingCartType))
+			{
+				return Forbid();
+			}
+
+			IList<ShoppingCartItem> shoppingCartItems = _shoppingCartItemApiService.GetShoppingCartItems(customerId,
+																										 parameters.CreatedAtMin,
+																										 parameters.CreatedAtMax,
+																										 parameters.UpdatedAtMin,
+																										 parameters.UpdatedAtMax,
+																										 parameters.Limit,
+																										 parameters.Page);
+
+			var shoppingCartItemsDtos = await shoppingCartItems
+										.SelectAwait(async shoppingCartItem => await _dtoHelper.PrepareShoppingCartItemDTOAsync(shoppingCartItem))
+										.ToListAsync();
+
+			var shoppingCartsRootObject = new ShoppingCartItemsRootObject
+			{
+				ShoppingCartItems = shoppingCartItemsDtos
+			};
+
+			var json = JsonFieldsSerializer.Serialize(shoppingCartsRootObject, parameters.Fields);
+
+			return new RawJsonActionResult(json);
+		}
+
+		#endregion
 	}
 }

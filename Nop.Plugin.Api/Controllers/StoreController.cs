@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Nop.Core;
 using Nop.Plugin.Api.Attributes;
+using Nop.Plugin.Api.Authorization.Attributes;
 using Nop.Plugin.Api.DTO.Errors;
 using Nop.Plugin.Api.DTO.Stores;
 using Nop.Plugin.Api.Helpers;
@@ -19,6 +20,7 @@ using Nop.Services.Stores;
 
 namespace Nop.Plugin.Api.Controllers
 {
+    [AuthorizePermission("ManageStores")]
     public class StoreController : BaseApiController
     {
         private readonly IDTOHelper _dtoHelper;

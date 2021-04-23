@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Nop.Core.Domain.Catalog;
 using Nop.Plugin.Api.Attributes;
+using Nop.Plugin.Api.Authorization.Attributes;
 using Nop.Plugin.Api.Delta;
 using Nop.Plugin.Api.DTO.Errors;
 using Nop.Plugin.Api.DTO.ProductCategoryMappings;
@@ -26,6 +27,8 @@ using Nop.Services.Stores;
 
 namespace Nop.Plugin.Api.Controllers
 {
+    [AuthorizePermission("ManageProducts")]
+    [AuthorizePermission("ManageCategories")]
     public class ProductCategoryMappingsController : BaseApiController
     {
         private readonly ICategoryApiService _categoryApiService;

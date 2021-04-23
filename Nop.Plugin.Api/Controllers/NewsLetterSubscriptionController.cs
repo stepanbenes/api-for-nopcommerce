@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Nop.Core;
 using Nop.Plugin.Api.Attributes;
+using Nop.Plugin.Api.Authorization.Attributes;
 using Nop.Plugin.Api.DTO.Errors;
 using Nop.Plugin.Api.DTO.NewsLetterSubscriptions;
 using Nop.Plugin.Api.Infrastructure;
@@ -23,6 +24,7 @@ using Nop.Services.Stores;
 
 namespace Nop.Plugin.Api.Controllers
 {
+    [AuthorizePermission("ManageNewsletterSubscribers")]
     public class NewsLetterSubscriptionController : BaseApiController
     {
         private readonly INewsLetterSubscriptionApiService _newsLetterSubscriptionApiService;

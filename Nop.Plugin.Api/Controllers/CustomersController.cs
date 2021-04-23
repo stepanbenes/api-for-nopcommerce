@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Nop.Core.Domain.Customers;
 using Nop.Core.Infrastructure;
 using Nop.Plugin.Api.Attributes;
+using Nop.Plugin.Api.Authorization.Attributes;
 using Nop.Plugin.Api.Delta;
 using Nop.Plugin.Api.DTO;
 using Nop.Plugin.Api.DTO.Customers;
@@ -32,6 +33,7 @@ using Nop.Services.Stores;
 
 namespace Nop.Plugin.Api.Controllers
 {
+    [AuthorizePermission("ManageCustomers")]
     public class CustomersController : BaseApiController
     {
         private readonly ICountryService _countryService;
@@ -462,7 +464,9 @@ namespace Nop.Plugin.Api.Controllers
             return new RawJsonActionResult("{}");
         }
 
-        private async Task InsertFirstAndLastNameGenericAttributesAsync(string firstName, string lastName, Customer newCustomer)
+		#region Private methods
+
+		private async Task InsertFirstAndLastNameGenericAttributesAsync(string firstName, string lastName, Customer newCustomer)
         {
             // we assume that if the first name is not sent then it will be null and in this case we don't want to update it
             if (firstName != null)
@@ -565,5 +569,7 @@ namespace Nop.Plugin.Api.Controllers
 
             await CustomerService.UpdateCustomerAsync(customer);
         }
+
+        #endregion
     }
 }

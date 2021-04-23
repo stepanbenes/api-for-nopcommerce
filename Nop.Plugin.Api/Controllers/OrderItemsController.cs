@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Nop.Core.Domain.Catalog;
 using Nop.Core.Domain.Orders;
 using Nop.Plugin.Api.Attributes;
+using Nop.Plugin.Api.Authorization.Attributes;
 using Nop.Plugin.Api.Delta;
 using Nop.Plugin.Api.DTO.Errors;
 using Nop.Plugin.Api.DTO.OrderItems;
@@ -31,6 +32,7 @@ using Nop.Services.Tax;
 
 namespace Nop.Plugin.Api.Controllers
 {
+    [AuthorizePermission("ManageOrders")]
     public class OrderItemsController : BaseApiController
     {
         private readonly IDTOHelper _dtoHelper;
@@ -356,7 +358,9 @@ namespace Nop.Plugin.Api.Controllers
             return new RawJsonActionResult("{}");
         }
 
-        private Product GetProduct(int? productId)
+		#region Private methods
+
+		private Product GetProduct(int? productId)
         {
             Product product = null;
 
@@ -394,5 +398,7 @@ namespace Nop.Plugin.Api.Controllers
 
             return orderItem;
         }
-    }
+
+		#endregion
+	}
 }

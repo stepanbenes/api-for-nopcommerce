@@ -50,6 +50,8 @@ namespace Nop.Plugin.Api.Controllers
 		private readonly IProductAttributeConverter _productAttributeConverter;
 		private readonly IPaymentService _paymentService;
 		private readonly IPdfService _pdfService;
+		private readonly IWorkContext _workContext;
+		private readonly IPermissionService _permissionService;
 		private readonly IProductService _productService;
 		private readonly IShippingService _shippingService;
 		private readonly IShoppingCartService _shoppingCartService;
@@ -81,7 +83,9 @@ namespace Nop.Plugin.Api.Controllers
 			IDTOHelper dtoHelper,
 			IProductAttributeConverter productAttributeConverter,
 			IPaymentService paymentService,
-			IPdfService pdfService)
+			IPdfService pdfService,
+			IWorkContext workContext,
+			IPermissionService permissionService)
 			: base(jsonFieldsSerializer, aclService, customerService, storeMappingService,
 				   storeService, discountService, customerActivityService, localizationService, pictureService)
 		{
@@ -98,6 +102,8 @@ namespace Nop.Plugin.Api.Controllers
 			_productAttributeConverter = productAttributeConverter;
 			_paymentService = paymentService;
 			_pdfService = pdfService;
+			_workContext = workContext;
+			_permissionService = permissionService;
 		}
 
 		private OrderSettings OrderSettings => _orderSettings ?? (_orderSettings = EngineContext.Current.Resolve<OrderSettings>());
@@ -126,12 +132,17 @@ namespace Nop.Plugin.Api.Controllers
 				return Error(HttpStatusCode.BadRequest, "page", "Invalid limit parameter");
 			}
 
+			if (!await CheckPermissions(parameters.CustomerId))
+			{
+				return Forbid();
+			}
+
 			var storeId = _storeContext.GetCurrentStore().Id;
 
 			var orders = _orderApiService.GetOrders(parameters.Ids, parameters.CreatedAtMin,
 													parameters.CreatedAtMax,
 													parameters.Limit, parameters.Page, parameters.SinceId,
-													parameters.Status, parameters.PaymentStatus, parameters.ShippingStatus,
+													(Core.Domain.Orders.OrderStatus)parameters.Status, (Core.Domain.Payments.PaymentStatus)parameters.PaymentStatus, (Core.Domain.Shipping.ShippingStatus)parameters.ShippingStatus,
 													parameters.CustomerId, storeId);
 
 			IList<OrderDto> ordersAsDtos = await orders.SelectAwait(async x => await _dtoHelper.PrepareOrderDTOAsync(x)).ToListAsync();
@@ -157,14 +168,19 @@ namespace Nop.Plugin.Api.Controllers
 		[ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
 		[ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
 		[GetRequestsErrorInterceptorActionFilter]
-		public IActionResult GetOrdersCount([FromQueryJson] OrdersCountParametersModel parameters)
+		public async Task<IActionResult> GetOrdersCount([FromQueryJson] OrdersCountParametersModel parameters)
 		{
+			if (!await CheckPermissions(parameters.CustomerId))
+			{
+				return Forbid();
+			}
+
 			// TODO: make async
 
 			var storeId = _storeContext.GetCurrentStore().Id;
 
-			var ordersCount = _orderApiService.GetOrdersCount(parameters.CreatedAtMin, parameters.CreatedAtMax, parameters.Status,
-															  parameters.PaymentStatus, parameters.ShippingStatus, parameters.CustomerId, storeId);
+			var ordersCount = _orderApiService.GetOrdersCount(parameters.CreatedAtMin, parameters.CreatedAtMax, (Core.Domain.Orders.OrderStatus)parameters.Status,
+															  (Core.Domain.Payments.PaymentStatus)parameters.PaymentStatus, (Core.Domain.Shipping.ShippingStatus)parameters.ShippingStatus, parameters.CustomerId, storeId);
 
 			var ordersCountRootObject = new OrdersCountRootObject
 			{
@@ -198,10 +214,15 @@ namespace Nop.Plugin.Api.Controllers
 			}
 
 			var order = _orderApiService.GetOrderById(id);
-
+			
 			if (order == null)
 			{
 				return Error(HttpStatusCode.NotFound, "order", "not found");
+			}
+
+			if (!await CheckPermissions(order.CustomerId))
+			{
+				return Forbid();
 			}
 
 			var ordersRootObject = new OrdersRootObject();
@@ -227,6 +248,11 @@ namespace Nop.Plugin.Api.Controllers
 		[GetRequestsErrorInterceptorActionFilter]
 		public async Task<IActionResult> GetOrdersByCustomerId([FromRoute] int customerId)
 		{
+			if (!await CheckPermissions(customerId))
+			{
+				return Forbid();
+			}
+
 			IList<OrderDto> ordersForCustomer = await _orderApiService.GetOrdersByCustomerId(customerId).SelectAwait(async x => await _dtoHelper.PrepareOrderDTOAsync(x)).ToListAsync();
 
 			var ordersRootObject = new OrdersRootObject
@@ -249,15 +275,24 @@ namespace Nop.Plugin.Api.Controllers
 			[ModelBinder(typeof(JsonModelBinder<OrderDto>))]
 			Delta<OrderDto> orderDelta)
 		{
-			// Here we display the errors if the validation has failed at some point.
-			if (!ModelState.IsValid)
-			{
-				return Error();
-			}
-
 			if (orderDelta.Dto.CustomerId == null)
 			{
-				return Error();
+				return Error(HttpStatusCode.BadRequest, "customerId", "invalid customer id");
+			}
+
+			if (orderDelta.Dto.BillingAddress == null)
+			{
+				return Error(HttpStatusCode.BadRequest, "billingAddress", "missing billing address");
+			}
+
+			if (orderDelta.Dto.ShippingAddress == null)
+			{
+				return Error(HttpStatusCode.BadRequest, "shippingAddress", "missing shipping address");
+			}
+
+			if (!await CheckPermissions(orderDelta.Dto.CustomerId))
+			{
+				return Forbid();
 			}
 
 			// We doesn't have to check for value because this is done by the order validator.
@@ -340,36 +375,6 @@ namespace Nop.Plugin.Api.Controllers
 			return new RawJsonActionResult(json);
 		}
 
-		[HttpDelete]
-		[Route("/api/orders/{id}", Name = "DeleteOrder")]
-		[ProducesResponseType(typeof(void), (int)HttpStatusCode.OK)]
-		[ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
-		[ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
-		[ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-		[ProducesResponseType(typeof(ErrorsRootObject), 422)]
-		[GetRequestsErrorInterceptorActionFilter]
-		public async Task<IActionResult> DeleteOrder([FromRoute] int id)
-		{
-			if (id <= 0)
-			{
-				return Error(HttpStatusCode.BadRequest, "id", "invalid id");
-			}
-
-			var orderToDelete = _orderApiService.GetOrderById(id);
-
-			if (orderToDelete == null)
-			{
-				return Error(HttpStatusCode.NotFound, "order", "not found");
-			}
-
-			await _orderProcessingService.DeleteOrderAsync(orderToDelete);
-
-			//activity log
-			await CustomerActivityService.InsertActivityAsync("DeleteOrder", await LocalizationService.GetResourceAsync("ActivityLog.DeleteOrder"), orderToDelete);
-
-			return new RawJsonActionResult("{}");
-		}
-
 		[HttpPut]
 		[Route("/api/orders/{id}", Name = "UpdateOrder")]
 		[ProducesResponseType(typeof(OrdersRootObject), (int)HttpStatusCode.OK)]
@@ -393,6 +398,11 @@ namespace Nop.Plugin.Api.Controllers
 			if (currentOrder == null)
 			{
 				return Error(HttpStatusCode.NotFound, "order", "not found");
+			}
+
+			if (!await CheckPermissions(currentOrder.CustomerId))
+			{
+				return Forbid();
 			}
 
 			var customer = await CustomerService.GetCustomerByIdAsync(currentOrder.CustomerId);
@@ -446,6 +456,41 @@ namespace Nop.Plugin.Api.Controllers
 			return new RawJsonActionResult(json);
 		}
 
+		[HttpDelete]
+		[Route("/api/orders/{id}", Name = "DeleteOrder")]
+		[ProducesResponseType(typeof(void), (int)HttpStatusCode.OK)]
+		[ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
+		[ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
+		[ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
+		[ProducesResponseType(typeof(ErrorsRootObject), 422)]
+		[GetRequestsErrorInterceptorActionFilter]
+		public async Task<IActionResult> DeleteOrder([FromRoute] int id)
+		{
+			if (id <= 0)
+			{
+				return Error(HttpStatusCode.BadRequest, "id", "invalid id");
+			}
+
+			var orderToDelete = _orderApiService.GetOrderById(id);
+
+			if (orderToDelete == null)
+			{
+				return Error(HttpStatusCode.NotFound, "order", "not found");
+			}
+
+			if (!await CheckPermissions(orderToDelete.CustomerId))
+			{
+				return Forbid();
+			}
+
+			await _orderProcessingService.DeleteOrderAsync(orderToDelete);
+
+			//activity log
+			await CustomerActivityService.InsertActivityAsync("DeleteOrder", await LocalizationService.GetResourceAsync("ActivityLog.DeleteOrder"), orderToDelete);
+
+			return new RawJsonActionResult("{}");
+		}
+
 		[HttpGet]
 		[Route("/api/orders/{orderId}/pdf-invoice", Name = "GetPdfInvoice")]
 		[ProducesResponseType(typeof(DTOs.BinaryFileDto), (int)HttpStatusCode.OK)]
@@ -455,12 +500,16 @@ namespace Nop.Plugin.Api.Controllers
 		{
 			var order = await _orderService.GetOrderByIdAsync(orderId);
 			if (order == null || order.Deleted)
-				return NotFound();
-
-			var orders = new List<Order>
 			{
-				order
-			};
+				return NotFound();
+			}
+
+			if (!await CheckPermissions(order.CustomerId))
+			{
+				return Forbid();
+			}
+
+			var orders = new List<Order> { order };
 			byte[] bytes;
 			await using (var stream = new MemoryStream())
 			{
@@ -480,6 +529,18 @@ namespace Nop.Plugin.Api.Controllers
 		}
 
 		#region Private methods
+
+		private async Task<bool> CheckPermissions(int? customerId)
+		{
+			var currentCustomer = await _workContext.GetCurrentCustomerAsync();
+			if (customerId.HasValue && currentCustomer.Id == customerId)
+			{
+				// if I want to handle my own orders, check only public store permission
+				return await _permissionService.AuthorizeAsync(StandardPermissionProvider.EnableShoppingCart);
+			}
+			// if I want to handle other customer's orders, check admin permission
+			return await _permissionService.AuthorizeAsync(StandardPermissionProvider.ManageOrders);
+		}
 
 		private async Task<bool> SetShippingOptionAsync(
 			string shippingRateComputationMethodSystemName, string shippingOptionName, int storeId, Customer customer, List<ShoppingCartItem> shoppingCartItems)

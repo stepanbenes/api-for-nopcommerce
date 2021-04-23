@@ -4,6 +4,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Nop.Plugin.Api.Attributes;
+using Nop.Plugin.Api.Authorization.Attributes;
 using Nop.Plugin.Api.DTO.CustomerRoles;
 using Nop.Plugin.Api.DTO.Errors;
 using Nop.Plugin.Api.JSON.ActionResults;
@@ -51,6 +52,7 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="401">Unauthorized</response>
         [HttpGet]
         [Route("/api/customer_roles", Name = "GetAllCustomerRoles")]
+        [AuthorizePermission("ManageCustomers")]
         [ProducesResponseType(typeof(CustomerRolesRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]

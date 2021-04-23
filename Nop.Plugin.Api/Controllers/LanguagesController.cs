@@ -64,6 +64,8 @@ namespace Nop.Plugin.Api.Controllers
         [GetRequestsErrorInterceptorActionFilter]
         public async Task<IActionResult> GetAllLanguages(string fields = "")
         {
+            // no permissions required
+
             var allLanguages = await _languageService.GetAllLanguagesAsync();
 
             IList<LanguageDto> languagesAsDto = await allLanguages.SelectAwait(async language => await _dtoHelper.PrepareLanguageDtoAsync(language)).ToListAsync();

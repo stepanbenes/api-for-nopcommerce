@@ -26,9 +26,11 @@ using Nop.Plugin.Api.Delta;
 using Nop.Plugin.Api.Factories;
 using Nop.Core.Domain.Topics;
 using System.Threading.Tasks;
+using Nop.Plugin.Api.Authorization.Attributes;
 
 namespace Nop.Plugin.Api.Controllers
 {
+    [AuthorizePermission("ManageTopics")]
     public class TopicsController : BaseApiController
     {
         private readonly ITopicService _topicService;
