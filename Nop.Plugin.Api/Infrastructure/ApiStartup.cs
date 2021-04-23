@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Rewrite;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
@@ -16,6 +17,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Nop.Core.Infrastructure;
 using Nop.Plugin.Api.Authorization.Policies;
 using Nop.Plugin.Api.Authorization.Requirements;
@@ -95,6 +97,10 @@ namespace Nop.Plugin.Api.Infrastructure
 			{
 				options.AllowSynchronousIO = true;
 			});
+			services.Configure<MvcNewtonsoftJsonOptions>(options =>
+			{
+				options.SerializerSettings.Converters.Add(new StringEnumConverter());
+			});
 			services.AddSwaggerGen(options =>
 			{
 				// api description >>
@@ -130,7 +136,6 @@ namespace Nop.Plugin.Api.Infrastructure
 
 		public void Configure(IApplicationBuilder app)
 		{
-
 			var rewriteOptions = new RewriteOptions().AddRewrite("api/token", "/token", true);
 			app.UseRewriter(rewriteOptions);
 

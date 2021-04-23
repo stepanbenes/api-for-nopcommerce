@@ -1,8 +1,6 @@
 ﻿using System;
 using Newtonsoft.Json;
-using Nop.Core.Domain.Orders;
-using Nop.Core.Domain.Payments;
-using Nop.Core.Domain.Shipping;
+using Nop.Plugin.Api.DTOs.Orders;
 
 namespace Nop.Plugin.Api.Models.OrdersParameters
 {

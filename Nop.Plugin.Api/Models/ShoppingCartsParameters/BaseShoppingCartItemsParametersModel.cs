@@ -1,5 +1,6 @@
 ﻿using System;
 using Newtonsoft.Json;
+using Nop.Plugin.Api.DTOs.ShoppingCarts;
 using Nop.Plugin.Api.Infrastructure;
 
 namespace Nop.Plugin.Api.Models.ShoppingCartsParameters
@@ -59,5 +60,11 @@ namespace Nop.Plugin.Api.Models.ShoppingCartsParameters
         /// </summary>
         [JsonProperty("fields")]
         public string Fields { get; set; }
+
+        /// <summary>
+        ///     Either ShoppingCartType.ShoppingCart or ShoppingCartType.WishList
+        /// </summary>
+        [JsonProperty("shopping_cart_type", Required = Required.Always)]
+        public ShoppingCartType ShoppingCartType { get; set; }
     }
 }

@@ -117,11 +117,15 @@ namespace Nop.Plugin.Api.Validators
                     isCurrentPropertyValid = false;
                 }
             }
+            else if (type.IsEnum)
+            {
+                isCurrentPropertyValid = type.IsEnumDefined(value);
+            }
             else
             {
                 if (value != null)
                 {
-                    isCurrentPropertyValid = ValidateNestedProperty(type, (Dictionary<string, object>) value);
+                    isCurrentPropertyValid = ValidateNestedProperty(type, (Dictionary<string, object>)value);
                 }
             }
 

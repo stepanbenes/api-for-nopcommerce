@@ -47,7 +47,7 @@ namespace ClientApp
 
 				//nopApiClient.RemoveAuthorizationHeader();
 
-				var result = await nopApiClient.CreateShoppingCartItem(new ShoppingCartItemDtoDelta { ShoppingCartItem = new ShoppingCartItemDto(ShoppingCartType: "ShoppingCart") { CustomerId = 1, ProductId = 1, Quantity = 1 } });
+				var result = await nopApiClient.CreateShoppingCartItem(new ShoppingCartItemDtoDelta { ShoppingCartItem = new ShoppingCartItemDto(ShoppingCartType.ShoppingCart) { CustomerId = 1, ProductId = 1, Quantity = 1 } });
 
 				var item = result?.ShoppingCarts?.SingleOrDefault();
 				if (item != null)
@@ -55,7 +55,7 @@ namespace ClientApp
 					_ = await nopApiClient.UpdateShoppingCartItem(new ShoppingCartItemDtoDelta { ShoppingCartItem = item }, item.Id.ToString());
 				}
 
-				result = await nopApiClient.GetShoppingCartItems(new ShoppingCartItemsParametersModel(Limit: 2, Page: 1));
+				result = await nopApiClient.GetShoppingCartItems(new ShoppingCartItemsParametersModel(Limit: 2, Page: 1, ShoppingCartType.ShoppingCart));
 
 				//var invoiceDocument = await nopApiClient.GetPdfInvoice(orderId: 1);
 			}

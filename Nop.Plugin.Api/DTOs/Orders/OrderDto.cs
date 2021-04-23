@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using Nop.Plugin.Api.DTO.Base;
 using Nop.Plugin.Api.DTO.Customers;
 using Nop.Plugin.Api.DTO.OrderItems;
+using Nop.Plugin.Api.DTOs.Orders;
 
 namespace Nop.Plugin.Api.DTO.Orders
 {
@@ -275,19 +276,19 @@ namespace Nop.Plugin.Api.DTO.Orders
         ///     Gets or sets the order status
         /// </summary>
         [JsonProperty("order_status")]
-        public string OrderStatus { get; set; }
+        public OrderStatus? OrderStatus { get; set; }
 
         /// <summary>
         ///     Gets or sets the payment status
         /// </summary>
         [JsonProperty("payment_status")]
-        public string PaymentStatus { get; set; }
+        public PaymentStatus? PaymentStatus { get; set; }
 
         /// <summary>
         ///     Gets or sets the shipping status
         /// </summary>
         [JsonProperty("shipping_status")]
-        public string ShippingStatus { get; set; }
+        public ShippingStatus? ShippingStatus { get; set; }
 
         /// <summary>
         ///     Gets or sets the customer tax display type

@@ -3166,25 +3166,65 @@
           }
         }
       },
-      "delete": {
+      "put": {
         "tags": [
           "Orders"
         ],
-        "operationId": "DeleteOrder",
+        "operationId": "UpdateOrder",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int32"
+              "type": "string"
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderDtoDelta"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderDtoDelta"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderDtoDelta"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderDtoDelta"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
-            "description": "Success"
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrdersRootObject"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrdersRootObject"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrdersRootObject"
+                }
+              }
+            }
           },
           "401": {
             "description": "Unauthorized",
@@ -3268,65 +3308,25 @@
           }
         }
       },
-      "put": {
+      "delete": {
         "tags": [
           "Orders"
         ],
-        "operationId": "UpdateOrder",
+        "operationId": "DeleteOrder",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "integer",
+              "format": "int32"
             }
           }
         ],
-        "requestBody": {
-          "content": {
-            "application/json-patch+json": {
-              "schema": {
-                "$ref": "#/components/schemas/OrderDtoDelta"
-              }
-            },
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/OrderDtoDelta"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/OrderDtoDelta"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/OrderDtoDelta"
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
-            "description": "Success",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/OrdersRootObject"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OrdersRootObject"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OrdersRootObject"
-                }
-              }
-            }
+            "description": "Success"
           },
           "401": {
             "description": "Unauthorized",
@@ -10262,25 +10262,23 @@
       },
       "OrderStatus": {
         "enum": [
-          10,
-          20,
-          30,
-          40
+          "Pending",
+          "Processing",
+          "Complete",
+          "Cancelled"
         ],
-        "type": "integer",
-        "format": "int32"
+        "type": "string"
       },
       "PaymentStatus": {
         "enum": [
-          10,
-          20,
-          30,
-          35,
-          40,
-          50
+          "Pending",
+          "Authorized",
+          "Paid",
+          "PartiallyRefunded",
+          "Refunded",
+          "Voided"
         ],
-        "type": "integer",
-        "format": "int32"
+        "type": "string"
       },
       "ProductAttributeCombinationDto": {
         "type": "object",
@@ -10418,14 +10416,6 @@
       "ProductAttributesParametersModel": {
         "type": "object",
         "properties": {
-          "ids": {
-            "type": "array",
-            "items": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "nullable": true
-          },
           "limit": {
             "type": "integer",
             "format": "int32"
@@ -11500,14 +11490,13 @@
       },
       "ShippingStatus": {
         "enum": [
-          10,
-          20,
-          25,
-          30,
-          40
+          "ShippingNotRequired",
+          "NotYetShipped",
+          "PartiallyShipped",
+          "Shipped",
+          "Delivered"
         ],
-        "type": "integer",
-        "format": "int32"
+        "type": "string"
       },
       "ShoppingCartItemDto": {
         "required": [
@@ -11553,7 +11542,7 @@
             "nullable": true
           },
           "shopping_cart_type": {
-            "type": "string"
+            "$ref": "#/components/schemas/ShoppingCartType"
           },
           "product_id": {
             "type": "integer",
@@ -11595,7 +11584,8 @@
       "ShoppingCartItemsForCustomerParametersModel": {
         "required": [
           "limit",
-          "page"
+          "page",
+          "shopping_cart_type"
         ],
         "type": "object",
         "properties": {
@@ -11630,6 +11620,9 @@
           "fields": {
             "type": "string",
             "nullable": true
+          },
+          "shopping_cart_type": {
+            "$ref": "#/components/schemas/ShoppingCartType"
           }
         },
         "additionalProperties": false
@@ -11637,7 +11630,8 @@
       "ShoppingCartItemsParametersModel": {
         "required": [
           "limit",
-          "page"
+          "page",
+          "shopping_cart_type"
         ],
         "type": "object",
         "properties": {
@@ -11672,6 +11666,9 @@
           "fields": {
             "type": "string",
             "nullable": true
+          },
+          "shopping_cart_type": {
+            "$ref": "#/components/schemas/ShoppingCartType"
           }
         },
         "additionalProperties": false
@@ -11688,6 +11685,13 @@
           }
         },
         "additionalProperties": false
+      },
+      "ShoppingCartType": {
+        "enum": [
+          "ShoppingCart",
+          "Wishlist"
+        ],
+        "type": "string"
       },
       "SpecificationAttributeDto": {
         "type": "object",

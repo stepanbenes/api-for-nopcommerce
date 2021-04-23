@@ -12,18 +12,11 @@ namespace Nop.Plugin.Api.Models.ProductAttributesParameters
     {
         public ProductAttributesParametersModel()
         {
-            Ids = null;
             Limit = Constants.Configurations.DefaultLimit;
             Page = Constants.Configurations.DefaultPageValue;
             SinceId = Constants.Configurations.DefaultSinceId;
             Fields = string.Empty;
         }
-
-        /// <summary>
-        ///     A comma-separated list of category ids
-        /// </summary>
-        [JsonProperty("ids")]
-        public List<int> Ids { get; set; }
 
         /// <summary>
         ///     Amount of results (default: 50) (maximum: 250)

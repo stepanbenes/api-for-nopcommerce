@@ -75,8 +75,11 @@ namespace Nop.Plugin.Api.Delta
                     {
                         propertyValuePairs.Add(propertyName, changedProperty.Value);
                     }
-                    // Handle collections
-                    else if (propertyType.GetInterface(typeof(IEnumerable).FullName) != null)
+                    else if (propertyType.IsEnum) // handle enums
+                    {
+                        propertyValuePairs.Add(propertyName, changedProperty.Value);
+                    }
+                    else if (propertyType.GetInterface(typeof(IEnumerable).FullName) != null) // Handle collections
                     {
                         // skip any collections that are passed as null
                         // we can handle only empty collection, which will delete any items if exist

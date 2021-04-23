@@ -72,6 +72,7 @@ namespace ApiBindingsGenerator
     using System.Net.Http;
     using System.Net.Http.Json;
     using System.Text.Json;
+    using System.Text.Json.Serialization;
     using System.Threading.Tasks;
 
     " + $"{TYPE_ACCESS_MODIFIER}abstract class ApiClientBase" + @"
@@ -84,7 +85,7 @@ namespace ApiBindingsGenerator
             this.httpClient = httpClient;
         }
 
-        protected JsonSerializerOptions IgnoreNullValuesJsonSerializerOptions => ignoreNullValuesJsonSerializerOptions ?? (ignoreNullValuesJsonSerializerOptions = new JsonSerializerOptions { IgnoreNullValues = true });
+        protected JsonSerializerOptions IgnoreNullValuesJsonSerializerOptions => ignoreNullValuesJsonSerializerOptions ?? (ignoreNullValuesJsonSerializerOptions = new JsonSerializerOptions { IgnoreNullValues = true, Converters = { new JsonStringEnumConverter() } });
         
         protected async Task<HttpResponseMessage> Send(HttpMethod httpMethod, string requestEndpoint, HttpContent? content = null)
         {
@@ -205,7 +206,7 @@ namespace {BASE_NAMESPACE}.{apiName}.DTOs
 					case "object":
 						sourceCode.AppendLine(GenerateRecord(typeName, typeDescriptor, ____));
 						break;
-					case "integer" when typeDescriptor.EnumValues is not null:
+					case "integer" or "string" when typeDescriptor.EnumValues is not null:
 						sourceCode.AppendLine(GenerateEnum(typeName, typeDescriptor, ____));
 						break;
 					case "array":
@@ -481,11 +482,9 @@ namespace {BASE_NAMESPACE}.{apiName}
 					break;
 				case "string":
 					{
-						int index = 0;
 						foreach (string value in typeDescriptor.EnumValues)
 						{
-							source.AppendLine($"{indent}{____}{value.ToPascalCase()} = {index + 1},");
-							index += 1;
+							source.AppendLine($"{indent}{____}{value},");
 						}
 					}
 					break;

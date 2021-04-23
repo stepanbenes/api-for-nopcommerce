@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
-using Nop.Core.Domain.Orders;
 using Nop.Plugin.Api.DTO.Base;
 using Nop.Plugin.Api.DTO.Customers;
 using Nop.Plugin.Api.DTO.Products;
+using Nop.Plugin.Api.DTOs.ShoppingCarts;
 
 namespace Nop.Plugin.Api.DTO.ShoppingCarts
 {
@@ -12,8 +12,6 @@ namespace Nop.Plugin.Api.DTO.ShoppingCarts
     [JsonObject(Title = "shopping_cart_item")]
     public class ShoppingCartItemDto : BaseDto
     {
-        private int? _shoppingCartTypeId;
-
         /// <summary>
         ///     Gets or sets the selected attributes
         /// </summary>
@@ -60,32 +58,7 @@ namespace Nop.Plugin.Api.DTO.ShoppingCarts
         ///     Gets the log type
         /// </summary>
         [JsonProperty("shopping_cart_type", Required = Required.Always)]
-        public string ShoppingCartType
-        {
-            get
-            {
-                var shoppingCartTypeId = _shoppingCartTypeId;
-
-                if (shoppingCartTypeId != null)
-                {
-                    return ((ShoppingCartType) shoppingCartTypeId).ToString();
-                }
-
-                return null;
-            }
-            set
-            {
-                ShoppingCartType shoppingCartType;
-                if (Enum.TryParse(value, true, out shoppingCartType))
-                {
-                    _shoppingCartTypeId = (int) shoppingCartType;
-                }
-                else
-                {
-                    _shoppingCartTypeId = null;
-                }
-            }
-        }
+        public ShoppingCartType ShoppingCartType { get; set; }
 
         [JsonProperty("product_id")]
         public int? ProductId { get; set; }

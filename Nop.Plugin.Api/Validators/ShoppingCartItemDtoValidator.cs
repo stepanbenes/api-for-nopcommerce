@@ -75,11 +75,7 @@ namespace Nop.Plugin.Api.Validators
             {
                 RuleFor(x => x.ShoppingCartType)
                     .NotNull()
-                    .Must(x =>
-                    {
-                        var parsed = Enum.TryParse(x, true, out ShoppingCartType _);
-                        return parsed;
-                    })
+                    .Must(x => Enum.IsDefined(x))
                     .WithMessage("Please provide a valid shopping cart type");
             }
         }
