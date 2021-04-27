@@ -148,11 +148,16 @@ namespace Nop.Plugin.Api.Controllers
 		[ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
 		[ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
 		[GetRequestsErrorInterceptorActionFilter]
-		public async Task<IActionResult> GetCurrentCustomer([FromQuery] string fields, [FromServices] IWorkContext workContext)
+		public async Task<IActionResult> GetCurrentCustomer([FromQuery] string fields, [FromServices] IApiWorkContext apiWorkContext)
 		{
-			var customerEntity = await workContext.GetCurrentCustomerAsync();
+			var customerEntity = await apiWorkContext.GetAuthenticatedCustomerAsync();
 
-			var customerDto = await _customerApiService.GetCustomerByIdAsync(customerEntity?.Id ?? 0);
+			if (customerEntity is null)
+			{
+				return Error(HttpStatusCode.Unauthorized);
+			}
+
+			var customerDto = await _customerApiService.GetCustomerByIdAsync(customerEntity.Id);
 
 			if (customerDto == null)
 			{

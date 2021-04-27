@@ -50,7 +50,7 @@ namespace Nop.Plugin.Api.Controllers
 		private readonly IProductAttributeConverter _productAttributeConverter;
 		private readonly IPaymentService _paymentService;
 		private readonly IPdfService _pdfService;
-		private readonly IWorkContext _workContext;
+		private readonly IApiWorkContext _apiWorkContext;
 		private readonly IPermissionService _permissionService;
 		private readonly IProductService _productService;
 		private readonly IShippingService _shippingService;
@@ -84,7 +84,7 @@ namespace Nop.Plugin.Api.Controllers
 			IProductAttributeConverter productAttributeConverter,
 			IPaymentService paymentService,
 			IPdfService pdfService,
-			IWorkContext workContext,
+			IApiWorkContext apiWorkContext,
 			IPermissionService permissionService)
 			: base(jsonFieldsSerializer, aclService, customerService, storeMappingService,
 				   storeService, discountService, customerActivityService, localizationService, pictureService)
@@ -102,7 +102,7 @@ namespace Nop.Plugin.Api.Controllers
 			_productAttributeConverter = productAttributeConverter;
 			_paymentService = paymentService;
 			_pdfService = pdfService;
-			_workContext = workContext;
+			_apiWorkContext = apiWorkContext;
 			_permissionService = permissionService;
 		}
 
@@ -214,7 +214,7 @@ namespace Nop.Plugin.Api.Controllers
 			}
 
 			var order = _orderApiService.GetOrderById(id);
-			
+
 			if (order == null)
 			{
 				return Error(HttpStatusCode.NotFound, "order", "not found");
@@ -336,6 +336,8 @@ namespace Nop.Plugin.Api.Controllers
 
 			var newOrder = await _factory.InitializeAsync();
 			orderDelta.Merge(newOrder);
+
+			// TODO: if address is is 0, insert addresses to repo first
 
 			customer.BillingAddressId = newOrder.BillingAddressId = orderDelta.Dto.BillingAddress.Id;
 			customer.ShippingAddressId = newOrder.ShippingAddressId = orderDelta.Dto.ShippingAddress.Id;
@@ -532,14 +534,14 @@ namespace Nop.Plugin.Api.Controllers
 
 		private async Task<bool> CheckPermissions(int? customerId)
 		{
-			var currentCustomer = await _workContext.GetCurrentCustomerAsync();
+			var currentCustomer = await _apiWorkContext.GetAuthenticatedCustomerAsync();
 			if (customerId.HasValue && currentCustomer.Id == customerId)
 			{
 				// if I want to handle my own orders, check only public store permission
-				return await _permissionService.AuthorizeAsync(StandardPermissionProvider.EnableShoppingCart);
+				return await _permissionService.AuthorizeAsync(StandardPermissionProvider.EnableShoppingCart, currentCustomer);
 			}
 			// if I want to handle other customer's orders, check admin permission
-			return await _permissionService.AuthorizeAsync(StandardPermissionProvider.ManageOrders);
+			return await _permissionService.AuthorizeAsync(StandardPermissionProvider.ManageOrders, currentCustomer);
 		}
 
 		private async Task<bool> SetShippingOptionAsync(

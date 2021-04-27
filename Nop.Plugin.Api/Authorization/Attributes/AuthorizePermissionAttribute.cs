@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Nop.Core.Domain.Security;
 using Nop.Data;
+using Nop.Plugin.Api.Services;
 using Nop.Services.Security;
 
 namespace Nop.Plugin.Api.Authorization.Attributes
@@ -48,16 +49,18 @@ namespace Nop.Plugin.Api.Authorization.Attributes
 			private readonly string permission;
 			private readonly bool ignoreFilter;
 			private readonly IPermissionService permissionService;
+			private readonly IApiWorkContext apiWorkContext;
 
 			#endregion
 
 			#region Ctor
 
-			public AuthorizePermissionFilter(string permission, bool ignoreFilter, IPermissionService permissionService)
+			public AuthorizePermissionFilter(string permission, bool ignoreFilter, IPermissionService permissionService, IApiWorkContext apiWorkContext)
 			{
 				this.permission = permission;
 				this.ignoreFilter = ignoreFilter;
 				this.permissionService = permissionService;
+				this.apiWorkContext = apiWorkContext;
 			}
 
 			#endregion
@@ -89,8 +92,10 @@ namespace Nop.Plugin.Api.Authorization.Attributes
 				if (actionFilter is not null && actionFilter.IgnoreFilter)
 					return; // ignore attribute on controller, allow access for anyone
 
+				var customer = await apiWorkContext.GetAuthenticatedCustomerAsync();
+
 				// check whether current customer has permission to access resource
-				if (await permissionService.AuthorizeAsync(permission))
+				if (customer is not null && await permissionService.AuthorizeAsync(permission, customer))
 					return; // authorized, allow access
 
 				// current user hasn't access

@@ -14,6 +14,7 @@ using Nop.Plugin.Api.Configuration;
 using Nop.Plugin.Api.Domain;
 using Nop.Plugin.Api.Infrastructure;
 using Nop.Plugin.Api.Models.Authentication;
+using Nop.Plugin.Api.Services;
 using Nop.Services.Customers;
 using Nop.Services.Logging;
 
@@ -25,7 +26,6 @@ namespace Nop.Plugin.Api.Controllers
         private readonly ApiConfiguration _apiConfiguration;
         private readonly ApiSettings _apiSettings;
         private readonly ICustomerActivityService _customerActivityService;
-        private readonly IWorkContext _workContext;
         private readonly ICustomerRegistrationService _customerRegistrationService;
         private readonly ICustomerService _customerService;
         private readonly CustomerSettings _customerSettings;
@@ -34,7 +34,6 @@ namespace Nop.Plugin.Api.Controllers
             ICustomerService customerService,
             ICustomerRegistrationService customerRegistrationService,
             ICustomerActivityService customerActivityService,
-            IWorkContext workContext,
             CustomerSettings customerSettings,
             ApiSettings apiSettings,
             ApiConfiguration apiConfiguration)
@@ -42,7 +41,6 @@ namespace Nop.Plugin.Api.Controllers
             _customerService = customerService;
             _customerRegistrationService = customerRegistrationService;
             _customerActivityService = customerActivityService;
-            _workContext = workContext;
             _customerSettings = customerSettings;
             _apiSettings = apiSettings;
             _apiConfiguration = apiConfiguration;
@@ -59,13 +57,7 @@ namespace Nop.Plugin.Api.Controllers
 
             if (model.Guest)
             {
-                customer = await _workContext.GetCurrentCustomerAsync();
-
-                if (!await _customerService.IsGuestAsync(customer))
-                {
-                    customer = await _customerService.InsertGuestCustomerAsync();
-                    await _workContext.SetCurrentCustomerAsync(customer);
-                }
+                customer = await _customerService.InsertGuestCustomerAsync();
 
                 if (!await _customerService.IsInCustomerRoleAsync(customer, Constants.Roles.ApiRoleSystemName))
                 {

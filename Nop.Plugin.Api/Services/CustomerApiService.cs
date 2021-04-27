@@ -141,6 +141,8 @@ namespace Nop.Plugin.Api.Services
 
         public async Task<CustomerDto> GetCustomerByIdAsync(int id, bool showDeleted = false)
         {
+            // TODO: fill RoleIds, ShoppingCartItems, add IsGuest property
+
             if (id == 0)
             {
                 return null;

@@ -40,7 +40,7 @@ namespace Nop.Plugin.Api.Controllers
 		private readonly IShoppingCartItemApiService _shoppingCartItemApiService;
 		private readonly IShoppingCartService _shoppingCartService;
 		private readonly IStoreContext _storeContext;
-		private readonly IWorkContext _workContext;
+		private readonly IApiWorkContext _apiWorkContext;
 		private readonly IPermissionService _permissionService;
 
 		public ShoppingCartItemsController(
@@ -60,7 +60,7 @@ namespace Nop.Plugin.Api.Controllers
 			IProductAttributeConverter productAttributeConverter,
 			IDTOHelper dtoHelper,
 			IStoreContext storeContext,
-			IWorkContext workContext,
+			IApiWorkContext apiWorkContext,
 			IPermissionService permissionService)
 			: base(jsonFieldsSerializer,
 				   aclService,
@@ -79,7 +79,7 @@ namespace Nop.Plugin.Api.Controllers
 			_productAttributeConverter = productAttributeConverter;
 			_dtoHelper = dtoHelper;
 			_storeContext = storeContext;
-			_workContext = workContext;
+			_apiWorkContext = apiWorkContext;
 			_permissionService = permissionService;
 		}
 
@@ -313,22 +313,22 @@ namespace Nop.Plugin.Api.Controllers
 
 		private async Task<bool> CheckPermissions(int? customerId, ShoppingCartType shoppingCartType)
 		{
-			var currentCustomer = await _workContext.GetCurrentCustomerAsync();
+			var currentCustomer = await _apiWorkContext.GetAuthenticatedCustomerAsync();
 			if (customerId.HasValue && currentCustomer.Id == customerId)
 			{
 				// if I want to handle my own shopping cart, check only public store permission
 				switch (shoppingCartType)
 				{
 					case ShoppingCartType.ShoppingCart:
-						return await _permissionService.AuthorizeAsync(StandardPermissionProvider.EnableShoppingCart);
+						return await _permissionService.AuthorizeAsync(StandardPermissionProvider.EnableShoppingCart, currentCustomer);
 					case ShoppingCartType.Wishlist:
-						return await _permissionService.AuthorizeAsync(StandardPermissionProvider.EnableWishlist);
+						return await _permissionService.AuthorizeAsync(StandardPermissionProvider.EnableWishlist, currentCustomer);
 					default:
 						throw new InvalidOperationException($"Invalid shopping cart type ({shoppingCartType})");
 				}
 			}
 			// if I want to handle other customer's shopping carts, check admin permission
-			return await _permissionService.AuthorizeAsync(StandardPermissionProvider.ManageCurrentCarts);
+			return await _permissionService.AuthorizeAsync(StandardPermissionProvider.ManageCurrentCarts, currentCustomer);
 		}
 
 		#endregion
