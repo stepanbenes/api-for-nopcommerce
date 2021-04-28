@@ -85,8 +85,9 @@ namespace Nop.Plugin.Api.AutoMapper
             CreateMap<NewsLetterSubscriptionDto, NewsLetterSubscription>();
             CreateMap<NewsLetterSubscription, NewsLetterSubscriptionDto>();
 
-            CreateMap<Topic,TopicDto>();
+            CreateMap<Topic, TopicDto>();
 
+            CreateMap<Country, CountryDto>();
         }
 
         public int Order => 0;

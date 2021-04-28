@@ -556,6 +556,74 @@
         }
       }
     },
+    "/api/countries": {
+      "get": {
+        "tags": [
+          "Countries"
+        ],
+        "operationId": "GetCountries",
+        "parameters": [
+          {
+            "name": "mustAllowBilling",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "name": "mustAllowShipping",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/CountriesRootObject"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CountriesRootObject"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CountriesRootObject"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorsRootObject"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorsRootObject"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorsRootObject"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/customer_roles": {
       "get": {
         "tags": [
@@ -8885,6 +8953,50 @@
           },
           "category": {
             "$ref": "#/components/schemas/CategoryDto"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CountriesRootObject": {
+        "type": "object",
+        "properties": {
+          "countries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CountryDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CountryDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "allows_billing": {
+            "type": "boolean"
+          },
+          "allows_shipping": {
+            "type": "boolean"
+          },
+          "two_letter_iso_code": {
+            "type": "string",
+            "nullable": true
+          },
+          "ThreeLetterIsoCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "numeric_iso_code": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "subject_to_vat": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false

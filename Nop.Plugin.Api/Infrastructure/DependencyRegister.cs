@@ -85,7 +85,7 @@ namespace Nop.Plugin.Api.Infrastructure
             services.AddScoped<ITopicService, TopicService>();
 
             services.AddScoped<IApiWorkContext, ApiWorkContext>();
-
+            services.AddScoped<IAddressApiService, AddressApiService>();
         }
     }
 }

@@ -130,6 +130,7 @@ namespace Nop.Plugin.Api.Infrastructure
 				// custom type mappings >>
 				options.MapType<decimal>(() => new OpenApiSchema { Type = "number", Format = "decimal" }); // correct currency typings
 				options.SchemaFilter<DeltaSchemaFilter>();
+				// TODO: options.UseAllOfToExtendReferenceSchemas(); // https://github.com/stepanbenes/api-for-nopcommerce/issues/16
 			});
 			services.AddSwaggerGenNewtonsoftSupport();
 		}

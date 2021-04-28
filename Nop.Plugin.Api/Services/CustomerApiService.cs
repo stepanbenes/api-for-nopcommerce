@@ -34,6 +34,7 @@ namespace Nop.Plugin.Api.Services
 
         private readonly IStaticCacheManager _cacheManager;
 		private readonly IShoppingCartItemApiService _shoppingCartItemApiService;
+		private readonly IAddressApiService _addressApiService;
 		private readonly IRepository<Customer> _customerRepository;
         private readonly IRepository<GenericAttribute> _genericAttributeRepository;
         private readonly ILanguageService _languageService;
@@ -41,31 +42,27 @@ namespace Nop.Plugin.Api.Services
         private readonly IStoreContext _storeContext;
         private readonly IStoreMappingService _storeMappingService;
         private readonly IRepository<NewsLetterSubscription> _subscriptionRepository;
-		private readonly IRepository<Address> _customerAddressRepository;
-		private readonly IRepository<CustomerAddressMapping> _customerAddressMappingRepository;
         
 		public CustomerApiService(
             IRepository<Customer> customerRepository,
             IRepository<GenericAttribute> genericAttributeRepository,
             IRepository<NewsLetterSubscription> subscriptionRepository,
-            IRepository<Address> customerAddressRepository,
-            IRepository<CustomerAddressMapping> customerAddressMappingRepository,
-        IStoreContext storeContext,
+            IStoreContext storeContext,
             ILanguageService languageService,
             IStoreMappingService storeMappingService,
             IStaticCacheManager staticCacheManager,
-            IShoppingCartItemApiService shoppingCartItemApiService)
+            IShoppingCartItemApiService shoppingCartItemApiService,
+            IAddressApiService addressApiService)
         {
             _customerRepository = customerRepository;
             _genericAttributeRepository = genericAttributeRepository;
             _subscriptionRepository = subscriptionRepository;
-			_customerAddressRepository = customerAddressRepository;
-			_customerAddressMappingRepository = customerAddressMappingRepository;
 			_storeContext = storeContext;
             _languageService = languageService;
             _storeMappingService = storeMappingService;
             _cacheManager = staticCacheManager;
-			this._shoppingCartItemApiService = shoppingCartItemApiService;
+			_shoppingCartItemApiService = shoppingCartItemApiService;
+			_addressApiService = addressApiService;
 		}
 
         public async Task<IList<CustomerDto>> GetCustomersDtosAsync(
@@ -570,56 +567,15 @@ namespace Nop.Plugin.Api.Services
 
         private async Task SetCustomerAddressesAsync(Customer customer, CustomerDto customerDto)
         {
-            var customerAddresses = await GetAddressesByCustomerIdAsync(customer.Id);
-            var customerBillingAddress = await GetCustomerAddressAsync(customer.Id, customer.BillingAddressId ?? 0);
-            var customerShippingAddress = await GetCustomerAddressAsync(customer.Id, customer.ShippingAddressId ?? 0);
-            customerDto.Addresses = customerAddresses.Select(a => a.ToDto()).ToList();
-            customerDto.BillingAddress = customerBillingAddress?.ToDto();
-            customerDto.ShippingAddress = customerShippingAddress?.ToDto();
-        }
-
-        /// <summary>
-        /// Gets a list of addresses mapped to customer
-        /// </summary>
-        /// <param name="customerId">Customer identifier</param>
-        /// <returns>
-        /// A task that represents the asynchronous operation
-        /// The task result contains the result
-        /// </returns>
-        public async Task<IList<Address>> GetAddressesByCustomerIdAsync(int customerId)
-        {
-            var query = from address in _customerAddressRepository.Table
-                        join cam in _customerAddressMappingRepository.Table on address.Id equals cam.AddressId
-                        where cam.CustomerId == customerId
-                        select address;
-
-            var key = _cacheManager.PrepareKeyForShortTermCache(NopCustomerServicesDefaults.CustomerAddressesCacheKey, customerId);
-
-            return await _cacheManager.GetAsync(key, async () => await query.ToListAsync());
-        }
-
-        /// <summary>
-        /// Gets a address mapped to customer
-        /// </summary>
-        /// <param name="customerId">Customer identifier</param>
-        /// <param name="addressId">Address identifier</param>
-        /// <returns>
-        /// A task that represents the asynchronous operation
-        /// The task result contains the result
-        /// </returns>
-        public async Task<Address> GetCustomerAddressAsync(int customerId, int addressId)
-        {
-            if (customerId == 0 || addressId == 0)
-                return null;
-
-            var query = from address in _customerAddressRepository.Table
-                        join cam in _customerAddressMappingRepository.Table on address.Id equals cam.AddressId
-                        where cam.CustomerId == customerId && address.Id == addressId
-                        select address;
-
-            var key = _cacheManager.PrepareKeyForShortTermCache(NopCustomerServicesDefaults.CustomerAddressCacheKey, customerId, addressId);
-
-            return await _cacheManager.GetAsync(key, async () => await query.FirstOrDefaultAsync());
+            customerDto.Addresses = await _addressApiService.GetAddressesByCustomerIdAsync(customer.Id);
+            if (customer.BillingAddressId != null)
+                customerDto.BillingAddress = await _addressApiService.GetCustomerAddressAsync(customer.Id, customer.BillingAddressId.Value);
+            else
+                customerDto.BillingAddress = null;
+            if (customer.ShippingAddressId != null)
+                customerDto.ShippingAddress = await _addressApiService.GetCustomerAddressAsync(customer.Id, customer.ShippingAddressId.Value);
+            else
+                customerDto.ShippingAddress = null;
         }
 
 		private void SetCustomerShoppingCartItems(CustomerDto customerDto)

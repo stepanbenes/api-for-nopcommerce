@@ -40,12 +40,22 @@ namespace ClientApp
 				Console.WriteLine("Requesting categories...");
 				var categories = await nopApiClient.GetCategories();
 
-
 				if (categories?.Categories is not null)
 				{
 					foreach (var category in categories.Categories)
 					{
 						Console.WriteLine(category.ToString());
+					}
+				}
+
+				Console.WriteLine("Requesting countries...");
+				var countries = await nopApiClient.GetCountries();
+
+				if (countries?.Countries is not null)
+				{
+					foreach (var country in countries.Countries)
+					{
+						Console.WriteLine(country.ToString());
 					}
 				}
 
@@ -67,7 +77,7 @@ namespace ClientApp
 					_ = await nopApiClient.UpdateShoppingCartItem(new ShoppingCartItemDtoDelta { ShoppingCartItem = item }, item.Id.ToString());
 				}
 
-				result = await nopApiClient.GetShoppingCartItems(new ShoppingCartItemsParametersModel(CustomerId: tokenResponse?.CustomerId, ShoppingCartType.ShoppingCart));
+				result = await nopApiClient.GetShoppingCartItems(new ShoppingCartItemsParametersModel(CustomerId: tokenResponse?.CustomerId));
 
 				//var invoiceDocument = await nopApiClient.GetPdfInvoice(orderId: 1);
 			}
