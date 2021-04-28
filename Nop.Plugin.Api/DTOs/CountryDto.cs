@@ -4,10 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Nop.Plugin.Api.DTO.Base;
 
 namespace Nop.Plugin.Api.DTO
 {
-	public class CountryDto
+	[JsonObject(Title = "country")]
+	public class CountryDto : BaseDto
 	{
 		[JsonProperty("name")]
 		public string Name { get; set; }

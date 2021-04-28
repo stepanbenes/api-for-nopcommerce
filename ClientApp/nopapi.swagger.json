@@ -567,16 +567,14 @@
             "name": "mustAllowBilling",
             "in": "query",
             "schema": {
-              "type": "boolean",
-              "default": false
+              "type": "boolean"
             }
           },
           {
             "name": "mustAllowShipping",
             "in": "query",
             "schema": {
-              "type": "boolean",
-              "default": false
+              "type": "boolean"
             }
           }
         ],
@@ -8997,6 +8995,10 @@
           },
           "subject_to_vat": {
             "type": "boolean"
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
