@@ -320,10 +320,8 @@ namespace {BASE_NAMESPACE}.{apiName}.DTOs
 				{
 					sourceCode.AppendLine($@"                    return;");
 				}
-				sourceCode.AppendLine($@"                case 404: // NOT FOUND
-                    {returnNothingToken}");
 
-				foreach (var key in apiEndpoint.Responses.Keys.Except(new[] { (HttpStatusCode)200, (HttpStatusCode)404 }))
+				foreach (var key in apiEndpoint.Responses.Keys.Except(new[] { (HttpStatusCode)200 }))
 				{
 					var response = apiEndpoint.Responses[key];
 					sourceCode.AppendLine($"{____}{____}{____}{____}case {(int)response.StatusCode}:");
