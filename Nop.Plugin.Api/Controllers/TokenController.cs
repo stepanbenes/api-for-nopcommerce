@@ -15,6 +15,7 @@ using Nop.Plugin.Api.Domain;
 using Nop.Plugin.Api.Infrastructure;
 using Nop.Plugin.Api.Models.Authentication;
 using Nop.Plugin.Api.Services;
+using Nop.Services.Authentication;
 using Nop.Services.Customers;
 using Nop.Services.Logging;
 using Nop.Services.Orders;
@@ -29,6 +30,7 @@ namespace Nop.Plugin.Api.Controllers
 		private readonly ICustomerActivityService _customerActivityService;
 		private readonly IApiWorkContext _apiWorkContext;
 		private readonly IShoppingCartService _shoppingCartService;
+		private readonly IAuthenticationService _authenticationService;
 		private readonly ICustomerRegistrationService _customerRegistrationService;
 		private readonly ICustomerService _customerService;
 		private readonly CustomerSettings _customerSettings;
@@ -39,6 +41,7 @@ namespace Nop.Plugin.Api.Controllers
 			ICustomerActivityService customerActivityService,
 			IApiWorkContext apiWorkContext,
 			IShoppingCartService shoppingCartService,
+			IAuthenticationService authenticationService,
 			CustomerSettings customerSettings,
 			ApiSettings apiSettings,
 			ApiConfiguration apiConfiguration)
@@ -48,6 +51,7 @@ namespace Nop.Plugin.Api.Controllers
 			_customerActivityService = customerActivityService;
 			_apiWorkContext = apiWorkContext;
 			_shoppingCartService = shoppingCartService;
+			this._authenticationService = authenticationService;
 			_customerSettings = customerSettings;
 			_apiSettings = apiSettings;
 			_apiConfiguration = apiConfiguration;
@@ -104,6 +108,8 @@ namespace Nop.Plugin.Api.Controllers
 			}
 
 			var tokenResponse = GenerateToken(newCustomer);
+
+			await _authenticationService.SignInAsync(newCustomer, model.RememberMe); // update cookie-based authentication - not needed for api, avoids automatic generation of guest customer with each request to api
 
 			// activity log
 			await _customerActivityService.InsertActivityAsync(newCustomer, "Api.TokenRequest", "API token request", newCustomer);
