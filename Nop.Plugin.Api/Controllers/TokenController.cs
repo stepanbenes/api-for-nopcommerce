@@ -5,6 +5,7 @@ using System.Net;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -98,7 +99,6 @@ namespace Nop.Plugin.Api.Controllers
 				{
 					return StatusCode((int)HttpStatusCode.Forbidden, "Wrong username or password");
 				}
-
 			}
 
 			// migrate shopping cart, if the user is different
@@ -115,6 +115,20 @@ namespace Nop.Plugin.Api.Controllers
 			await _customerActivityService.InsertActivityAsync(newCustomer, "Api.TokenRequest", "API token request", newCustomer);
 
 			return Json(tokenResponse);
+		}
+
+		[HttpGet]
+		[Authorize(Policy = JwtBearerDefaults.AuthenticationScheme, AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)] // this validates token
+		[Route("/token/check", Name = "ValidateToken")]
+		[ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
+		[ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
+		[ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
+		public async Task<IActionResult> ValidateToken()
+		{
+			Customer currentCustomer = await _apiWorkContext.GetAuthenticatedCustomerAsync(); // this gets customer entity from db if it exists
+			if (currentCustomer is null)
+				return NotFound();
+			return Ok();
 		}
 
 		#region Private methods

@@ -7912,6 +7912,76 @@
         }
       }
     },
+    "/token/check": {
+      "get": {
+        "tags": [
+          "Token"
+        ],
+        "operationId": "ValidateToken",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/topics": {
       "get": {
         "tags": [
@@ -11603,8 +11673,7 @@
       },
       "ShoppingCartItemsParametersModel": {
         "required": [
-          "customer_id",
-          "shopping_cart_type"
+          "customer_id"
         ],
         "type": "object",
         "properties": {

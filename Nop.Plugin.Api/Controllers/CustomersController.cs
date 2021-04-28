@@ -154,7 +154,7 @@ namespace Nop.Plugin.Api.Controllers
 
 			if (customerEntity is null)
 			{
-				return Error(HttpStatusCode.Unauthorized);
+				return Error(HttpStatusCode.NotFound);
 			}
 
 			var customerDto = await _customerApiService.GetCustomerByIdAsync(customerEntity.Id);
