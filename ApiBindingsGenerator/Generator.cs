@@ -442,7 +442,7 @@ namespace {BASE_NAMESPACE}.{apiName}
 			{
 				if (param.Schema is { Type: "string" })
 					return $@"{param.Name}={{{param.Name}}}";
-				return $"{param.Name}={{Uri.EscapeUriString(JsonSerializer.Serialize({param.Name}, SerializerOptions))}}";
+				return $"{param.Name}={{({param.Name} is not null ? Uri.EscapeUriString(JsonSerializer.Serialize({param.Name}, SerializerOptions)) : string.Empty)}}";
 			}
 		}
 
