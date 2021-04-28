@@ -67,8 +67,8 @@ namespace Nop.Plugin.Api.Models.ShoppingCartsParameters
         /// <summary>
         ///     Either ShoppingCartType.ShoppingCart or ShoppingCartType.WishList
         /// </summary>
-        [JsonProperty("shopping_cart_type", Required = Required.Always)]
-        public ShoppingCartType ShoppingCartType { get; set; }
+        [JsonProperty("shopping_cart_type")]
+        public ShoppingCartType? ShoppingCartType { get; set; }
 
         /// <summary>
         /// if null, get all shopping cart items for all customers

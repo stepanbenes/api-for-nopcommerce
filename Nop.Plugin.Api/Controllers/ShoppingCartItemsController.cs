@@ -107,7 +107,14 @@ namespace Nop.Plugin.Api.Controllers
 				return Error(HttpStatusCode.BadRequest, "page", "invalid page parameter");
 			}
 
-			if (!await CheckPermissions(parameters.CustomerId, (ShoppingCartType)parameters.ShoppingCartType))
+			ShoppingCartType? shoppingCartType = null;
+
+			if (parameters.ShoppingCartType.HasValue && Enum.IsDefined(parameters.ShoppingCartType.Value))
+			{
+				shoppingCartType = (ShoppingCartType)parameters.ShoppingCartType.Value;
+			}
+
+			if (!await CheckPermissions(parameters.CustomerId, shoppingCartType))
 			{
 				return AccessDenied();
 			}
@@ -118,7 +125,8 @@ namespace Nop.Plugin.Api.Controllers
 																										 parameters.UpdatedAtMin,
 																										 parameters.UpdatedAtMax,
 																										 parameters.Limit,
-																										 parameters.Page);
+																										 parameters.Page,
+																										 shoppingCartType);
 
 			var shoppingCartItemsDtos = await shoppingCartItems
 										.SelectAwait(async shoppingCartItem => await _dtoHelper.PrepareShoppingCartItemDTOAsync(shoppingCartItem))
@@ -311,7 +319,7 @@ namespace Nop.Plugin.Api.Controllers
 
 		#region Private methods
 
-		private async Task<bool> CheckPermissions(int? customerId, ShoppingCartType shoppingCartType)
+		private async Task<bool> CheckPermissions(int? customerId, ShoppingCartType? shoppingCartType)
 		{
 			var currentCustomer = await _apiWorkContext.GetAuthenticatedCustomerAsync();
 			if (customerId.HasValue && currentCustomer.Id == customerId)
@@ -324,7 +332,8 @@ namespace Nop.Plugin.Api.Controllers
 					case ShoppingCartType.Wishlist:
 						return await _permissionService.AuthorizeAsync(StandardPermissionProvider.EnableWishlist, currentCustomer);
 					default:
-						throw new InvalidOperationException($"Invalid shopping cart type ({shoppingCartType})");
+						return await _permissionService.AuthorizeAsync(StandardPermissionProvider.EnableShoppingCart, currentCustomer)
+							&& await _permissionService.AuthorizeAsync(StandardPermissionProvider.EnableWishlist, currentCustomer);
 				}
 			}
 			// if I want to handle other customer's shopping carts, check admin permission

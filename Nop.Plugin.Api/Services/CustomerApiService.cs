@@ -33,7 +33,8 @@ namespace Nop.Plugin.Api.Services
         private const string KEY_GROUP = "customer";
 
         private readonly IStaticCacheManager _cacheManager;
-        private readonly IRepository<Customer> _customerRepository;
+		private readonly IShoppingCartItemApiService _shoppingCartItemApiService;
+		private readonly IRepository<Customer> _customerRepository;
         private readonly IRepository<GenericAttribute> _genericAttributeRepository;
         private readonly ILanguageService _languageService;
 
@@ -42,7 +43,7 @@ namespace Nop.Plugin.Api.Services
         private readonly IRepository<NewsLetterSubscription> _subscriptionRepository;
 		private readonly IRepository<Address> _customerAddressRepository;
 		private readonly IRepository<CustomerAddressMapping> _customerAddressMappingRepository;
-
+        
 		public CustomerApiService(
             IRepository<Customer> customerRepository,
             IRepository<GenericAttribute> genericAttributeRepository,
@@ -52,7 +53,8 @@ namespace Nop.Plugin.Api.Services
         IStoreContext storeContext,
             ILanguageService languageService,
             IStoreMappingService storeMappingService,
-            IStaticCacheManager staticCacheManager)
+            IStaticCacheManager staticCacheManager,
+            IShoppingCartItemApiService shoppingCartItemApiService)
         {
             _customerRepository = customerRepository;
             _genericAttributeRepository = genericAttributeRepository;
@@ -63,7 +65,8 @@ namespace Nop.Plugin.Api.Services
             _languageService = languageService;
             _storeMappingService = storeMappingService;
             _cacheManager = staticCacheManager;
-        }
+			this._shoppingCartItemApiService = shoppingCartItemApiService;
+		}
 
         public async Task<IList<CustomerDto>> GetCustomersDtosAsync(
             DateTime? createdAtMin = null, DateTime? createdAtMax = null, int limit = Constants.Configurations.DefaultLimit,
@@ -141,8 +144,6 @@ namespace Nop.Plugin.Api.Services
 
         public async Task<CustomerDto> GetCustomerByIdAsync(int id, bool showDeleted = false)
         {
-            // TODO: fill RoleIds, ShoppingCartItems, add IsGuest property
-
             if (id == 0)
             {
                 return null;
@@ -243,10 +244,12 @@ namespace Nop.Plugin.Api.Services
 
             await SetCustomerAddressesAsync(customer, customerDto);
 
+            SetCustomerShoppingCartItems(customerDto);
+
             return customerDto;
         }
 
-        private Dictionary<string, string> EnsureSearchQueryIsValid(string query, Func<string, Dictionary<string, string>> parseSearchQuery)
+		private Dictionary<string, string> EnsureSearchQueryIsValid(string query, Func<string, Dictionary<string, string>> parseSearchQuery)
         {
             if (!string.IsNullOrEmpty(query))
             {
@@ -567,7 +570,6 @@ namespace Nop.Plugin.Api.Services
 
         private async Task SetCustomerAddressesAsync(Customer customer, CustomerDto customerDto)
         {
-            // TODO: make separate controller for addresses?
             var customerAddresses = await GetAddressesByCustomerIdAsync(customer.Id);
             var customerBillingAddress = await GetCustomerAddressAsync(customer.Id, customer.BillingAddressId ?? 0);
             var customerShippingAddress = await GetCustomerAddressAsync(customer.Id, customer.ShippingAddressId ?? 0);
@@ -619,5 +621,11 @@ namespace Nop.Plugin.Api.Services
 
             return await _cacheManager.GetAsync(key, async () => await query.FirstOrDefaultAsync());
         }
+
+		private void SetCustomerShoppingCartItems(CustomerDto customerDto)
+		{
+            var items = _shoppingCartItemApiService.GetShoppingCartItems(customerId: customerDto.Id);
+            customerDto.ShoppingCartItems = items.Select(entity => entity.ToDto()).ToList();
+		}
     }
 }
