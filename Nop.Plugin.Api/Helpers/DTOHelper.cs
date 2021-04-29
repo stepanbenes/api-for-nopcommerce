@@ -2,12 +2,14 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Nop.Core.Domain.Catalog;
+using Nop.Core.Domain.Common;
 using Nop.Core.Domain.Directory;
 using Nop.Core.Domain.Localization;
 using Nop.Core.Domain.Media;
 using Nop.Core.Domain.Orders;
 using Nop.Core.Domain.Stores;
 using Nop.Core.Domain.Topics;
+using Nop.Plugin.Api.DTO;
 using Nop.Plugin.Api.DTO.Categories;
 using Nop.Plugin.Api.DTO.Images;
 using Nop.Plugin.Api.DTO.Languages;
@@ -298,6 +300,32 @@ namespace Nop.Plugin.Api.Helpers
             return manufacturerDto;
         }
 
+        public void PrepareProductSpecificationAttributes(IEnumerable<ProductSpecificationAttribute> productSpecificationAttributes, ProductDto productDto)
+        {
+            if (productDto.ProductSpecificationAttributes == null)
+            {
+                productDto.ProductSpecificationAttributes = new List<ProductSpecificationAttributeDto>();
+            }
+
+            foreach (var productSpecificationAttribute in productSpecificationAttributes)
+            {
+                var productSpecificationAttributeDto = PrepareProductSpecificationAttributeDto(productSpecificationAttribute);
+
+                if (productSpecificationAttributeDto != null)
+                {
+                    productDto.ProductSpecificationAttributes.Add(productSpecificationAttributeDto);
+                }
+            }
+        }
+
+        public AddressDto PrepareAddressDTO(Address address)
+        {
+            var addressDto = address.ToDto();
+            return addressDto;
+        }
+
+        #region Private methods
+
         private async Task PrepareProductImagesAsync(IEnumerable<ProductPicture> productPictures, ProductDto productDto)
         {
             if (productDto.Images == null)
@@ -446,22 +474,6 @@ namespace Nop.Plugin.Api.Helpers
             return productAttributeCombination.ToDto();
         }
 
-        public void PrepareProductSpecificationAttributes(IEnumerable<ProductSpecificationAttribute> productSpecificationAttributes, ProductDto productDto)
-        {
-            if (productDto.ProductSpecificationAttributes == null)
-            {
-                productDto.ProductSpecificationAttributes = new List<ProductSpecificationAttributeDto>();
-            }
-
-            foreach (var productSpecificationAttribute in productSpecificationAttributes)
-            {
-                var productSpecificationAttributeDto = PrepareProductSpecificationAttributeDto(productSpecificationAttribute);
-
-                if (productSpecificationAttributeDto != null)
-                {
-                    productDto.ProductSpecificationAttributes.Add(productSpecificationAttributeDto);
-                }
-            }
-        }
+        #endregion
     }
 }

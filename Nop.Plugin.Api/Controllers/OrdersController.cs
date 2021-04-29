@@ -284,10 +284,18 @@ namespace Nop.Plugin.Api.Controllers
 			{
 				return Error(HttpStatusCode.BadRequest, "billingAddress", "missing billing address");
 			}
+			if (orderDelta.Dto.BillingAddress.Id == 0)
+			{
+				return Error(HttpStatusCode.BadRequest, "billingAddress", "non-existing billing address");
+			}
 
 			if (orderDelta.Dto.ShippingAddress == null)
 			{
 				return Error(HttpStatusCode.BadRequest, "shippingAddress", "missing shipping address");
+			}
+			if (orderDelta.Dto.ShippingAddress.Id == 0)
+			{
+				return Error(HttpStatusCode.BadRequest, "shippingAddress", "non-existing shipping address");
 			}
 
 			if (!await CheckPermissions(orderDelta.Dto.CustomerId))
@@ -337,11 +345,8 @@ namespace Nop.Plugin.Api.Controllers
 			var newOrder = await _factory.InitializeAsync();
 			orderDelta.Merge(newOrder);
 
-			// TODO: if address is is 0, insert addresses to repo first
-
 			customer.BillingAddressId = newOrder.BillingAddressId = orderDelta.Dto.BillingAddress.Id;
 			customer.ShippingAddressId = newOrder.ShippingAddressId = orderDelta.Dto.ShippingAddress.Id;
-
 
 			// If the customer has something in the cart it will be added too. Should we clear the cart first? 
 			newOrder.CustomerId = customer.Id;

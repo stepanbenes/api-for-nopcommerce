@@ -19,16 +19,16 @@ namespace Nop.Plugin.Api.Services
 	{
         private readonly IStaticCacheManager _cacheManager;
 		private readonly ICountryService _countryService;
-		private readonly IRepository<Address> _customerAddressRepository;
+		private readonly IRepository<Address> _addressRepository;
         private readonly IRepository<CustomerAddressMapping> _customerAddressMappingRepository;
 
         public AddressApiService(
-            IRepository<Address> customerAddressRepository,
+            IRepository<Address> addressRepository,
             IRepository<CustomerAddressMapping> customerAddressMappingRepository,
             IStaticCacheManager staticCacheManager,
             ICountryService countryService)
 		{
-            _customerAddressRepository = customerAddressRepository;
+            _addressRepository = addressRepository;
             _customerAddressMappingRepository = customerAddressMappingRepository;
             _cacheManager = staticCacheManager;
 			_countryService = countryService;
@@ -44,7 +44,7 @@ namespace Nop.Plugin.Api.Services
         /// </returns>
         public async Task<IList<AddressDto>> GetAddressesByCustomerIdAsync(int customerId)
         {
-            var query = from address in _customerAddressRepository.Table
+            var query = from address in _addressRepository.Table
                         join cam in _customerAddressMappingRepository.Table on address.Id equals cam.AddressId
                         where cam.CustomerId == customerId
                         select address;
@@ -66,7 +66,7 @@ namespace Nop.Plugin.Api.Services
 		/// </returns>
 		public async Task<AddressDto> GetCustomerAddressAsync(int customerId, int addressId)
         {
-            var query = from address in _customerAddressRepository.Table
+            var query = from address in _addressRepository.Table
                         join cam in _customerAddressMappingRepository.Table on address.Id equals cam.AddressId
                         where cam.CustomerId == customerId && address.Id == addressId
                         select address;
@@ -86,5 +86,14 @@ namespace Nop.Plugin.Api.Services
                 countries = countries.Where(c => c.AllowsShipping);
             return countries.Select(c => c.ToDto()).ToList();
         }
-    }
+
+		public async Task<AddressDto> GetAddressByIdAsync(int addressId)
+		{
+            var query = from address in _addressRepository.Table
+                        where address.Id == addressId
+                        select address;
+            var addressEntity = await query.FirstOrDefaultAsync();
+            return addressEntity?.ToDto();
+        }
+	}
 }

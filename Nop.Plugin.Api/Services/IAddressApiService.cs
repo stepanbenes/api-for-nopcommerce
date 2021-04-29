@@ -12,5 +12,6 @@ namespace Nop.Plugin.Api.Services
 		Task<IList<AddressDto>> GetAddressesByCustomerIdAsync(int customerId);
 		Task<AddressDto> GetCustomerAddressAsync(int customerId, int addressId);
 		Task<IList<CountryDto>> GetAllCountriesAsync(bool mustAllowBilling = false, bool mustAllowShipping = false);
+		Task<AddressDto> GetAddressByIdAsync(int addressId);
 	}
 }
