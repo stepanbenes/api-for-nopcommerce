@@ -284,14 +284,19 @@ namespace Nop.Plugin.Api.Controllers
 			{
 				return Error(HttpStatusCode.BadRequest, "billingAddress", "missing billing address");
 			}
-
-			if (orderDelta.Dto.ShippingAddress == null)
+			if (orderDelta.Dto.BillingAddress.Id == 0)
 			{
-				return Error(HttpStatusCode.BadRequest, "shippingAddress", "missing shipping address");
+				return Error(HttpStatusCode.BadRequest, "billingAddress", "non-existing billing address");
+			}
+
+			if (orderDelta.Dto.ShippingAddress.Id == 0)
+			{
+				return Error(HttpStatusCode.BadRequest, "shippingAddress", "non-existing shipping address");
 			}
 
 			if (!await CheckPermissions(orderDelta.Dto.CustomerId))
 			{
+				// TODO: check _orderSettings.AnonymousCheckoutAllowed if IsGuest
 				return AccessDenied();
 			}
 

@@ -4,6 +4,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Nop.Core;
+using Nop.Core.Domain.Common;
 using Nop.Core.Domain.Customers;
 using Nop.Core.Infrastructure;
 using Nop.Plugin.Api.Attributes;
@@ -44,6 +45,9 @@ namespace Nop.Plugin.Api.Controllers
 		private readonly IFactory<Customer> _factory;
 		private readonly IGenericAttributeService _genericAttributeService;
 		private readonly ILanguageService _languageService;
+		private readonly IApiWorkContext _apiWorkContext;
+		private readonly IPermissionService _permissionService;
+		private readonly IAddressService _addressService;
 		private readonly IMappingHelper _mappingHelper;
 		private readonly INewsLetterSubscriptionService _newsLetterSubscriptionService;
 
@@ -68,7 +72,10 @@ namespace Nop.Plugin.Api.Controllers
 			ICountryService countryService,
 			IMappingHelper mappingHelper,
 			INewsLetterSubscriptionService newsLetterSubscriptionService,
-			IPictureService pictureService, ILanguageService languageService) :
+			IPictureService pictureService, ILanguageService languageService,
+			IApiWorkContext apiWorkContext,
+			IPermissionService permissionService,
+			IAddressService addressService) :
 			base(jsonFieldsSerializer, aclService, customerService, storeMappingService, storeService, discountService, customerActivityService,
 				 localizationService, pictureService)
 		{
@@ -78,6 +85,9 @@ namespace Nop.Plugin.Api.Controllers
 			_mappingHelper = mappingHelper;
 			_newsLetterSubscriptionService = newsLetterSubscriptionService;
 			_languageService = languageService;
+			this._apiWorkContext = apiWorkContext;
+			this._permissionService = permissionService;
+			this._addressService = addressService;
 			_encryptionService = encryptionService;
 			_genericAttributeService = genericAttributeService;
 			_customerRolesHelper = customerRolesHelper;
@@ -154,7 +164,7 @@ namespace Nop.Plugin.Api.Controllers
 
 			if (customerEntity is null)
 			{
-				return Error(HttpStatusCode.NotFound);
+				return Error(HttpStatusCode.Unauthorized);
 			}
 
 			var customerDto = await _customerApiService.GetCustomerByIdAsync(customerEntity.Id);
@@ -507,7 +517,105 @@ namespace Nop.Plugin.Api.Controllers
 			return new RawJsonActionResult("{}");
 		}
 
+		[HttpPost]
+		[Route("api/customers/{customerId}/billingaddress", Name = "SetBillingAddress")]
+		[AuthorizePermission("ManageCustomers", ignore: true)]
+		[GetRequestsErrorInterceptorActionFilter]
+		[ProducesResponseType(typeof(AddressDto), (int)HttpStatusCode.OK)]
+		[ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
+		[ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
+		[ProducesResponseType(typeof(string), (int)HttpStatusCode.Forbidden)]
+		public async Task<IActionResult> SetBillingAddress([FromRoute] int customerId, [FromBody] AddressDto newAddress)
+		{
+			// TODO: add address validation via model binder
+			if (!await CheckPermissions(customerId))
+			{
+				AccessDenied();
+			}
+			var customer = await CustomerService.GetCustomerByIdAsync(customerId);
+			if (customer is null)
+			{
+				return Error(HttpStatusCode.NotFound, "customerId", $"Customer with id {customerId} not found");
+			}
+			var address = await InsertNewCustomerAddressIfDoesNotExist(customer, newAddress);
+			customer.BillingAddressId = address.Id;
+			await CustomerService.UpdateCustomerAsync(customer);
+			return Ok(address.ToDto());
+		}
+
+		[HttpPost]
+		[Route("api/customers/{customerId}/shippingaddress", Name = "SetShippingAddress")]
+		[AuthorizePermission("ManageCustomers", ignore: true)]
+		[GetRequestsErrorInterceptorActionFilter]
+		[ProducesResponseType(typeof(AddressDto), (int)HttpStatusCode.OK)]
+		[ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
+		[ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
+		[ProducesResponseType(typeof(string), (int)HttpStatusCode.Forbidden)]
+		public async Task<IActionResult> SetShippingAddress([FromRoute] int customerId, [FromBody] AddressDto newAddress)
+		{
+			// TODO: add address validation via model binder
+			if (!await CheckPermissions(customerId))
+			{
+				AccessDenied();
+			}
+			var customer = await CustomerService.GetCustomerByIdAsync(customerId);
+			if (customer is null)
+			{
+				return Error(HttpStatusCode.NotFound, "customerId", $"Customer with id {customerId} not found");
+			}
+			var address = await InsertNewCustomerAddressIfDoesNotExist(customer, newAddress);
+			customer.ShippingAddressId = address.Id;
+			await CustomerService.UpdateCustomerAsync(customer);
+			return Ok(address.ToDto());
+		}
+
 		#region Private methods
+
+		private async Task<Address> InsertNewCustomerAddressIfDoesNotExist(Customer customer, AddressDto newAddress)
+		{
+			var newAddressEntity = newAddress.ToEntity();
+
+			//try to find an address with the same values (don't duplicate records)
+			var allCustomerAddresses = await CustomerService.GetAddressesByCustomerIdAsync(customer.Id);
+			var address = _addressService.FindAddress(allCustomerAddresses.ToList(),
+				newAddressEntity.FirstName, newAddressEntity.LastName, newAddressEntity.PhoneNumber,
+				newAddressEntity.Email, newAddressEntity.FaxNumber, newAddressEntity.Company,
+				newAddressEntity.Address1, newAddressEntity.Address2, newAddressEntity.City,
+				newAddressEntity.County, newAddressEntity.StateProvinceId, newAddressEntity.ZipPostalCode,
+				newAddressEntity.CountryId, newAddressEntity.CustomAttributes);
+
+			if (address is null)
+			{
+				//address is not found. let's create a new one
+				address = newAddressEntity;
+				address.CreatedOnUtc = DateTime.UtcNow;
+
+				//some validation
+				if (address.CountryId == 0)
+					address.CountryId = null;
+				if (address.StateProvinceId == 0)
+					address.StateProvinceId = null;
+
+				await _addressService.InsertAddressAsync(address);
+
+				await CustomerService.InsertCustomerAddressAsync(customer, address);
+			}
+
+			return address;
+		}
+
+		private async Task<bool> CheckPermissions(int customerId)
+		{
+			var currentCustomer = await _apiWorkContext.GetAuthenticatedCustomerAsync();
+			if (currentCustomer is null)
+				return false; // should not happen
+			if (currentCustomer.Id == customerId)
+			{
+				return true;
+			}
+			// if I want to handle other customer's info, check admin permission
+			return await _permissionService.AuthorizeAsync(StandardPermissionProvider.ManageCustomers, currentCustomer);
+		}
 
 		private async Task InsertFirstAndLastNameGenericAttributesAsync(string firstName, string lastName, Customer newCustomer)
 		{
