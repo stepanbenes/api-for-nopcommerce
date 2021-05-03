@@ -12334,11 +12334,11 @@
           "token_type": {
             "type": "string"
           },
-          "expires_in": {
-            "type": "integer",
-            "format": "int64"
-          },
           "created_at_utc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expires_at_utc": {
             "type": "string",
             "format": "date-time"
           },

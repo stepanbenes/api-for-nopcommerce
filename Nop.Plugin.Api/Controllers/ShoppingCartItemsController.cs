@@ -18,6 +18,7 @@ using Nop.Plugin.Api.JSON.Serializers;
 using Nop.Plugin.Api.ModelBinders;
 using Nop.Plugin.Api.Models.ShoppingCartsParameters;
 using Nop.Plugin.Api.Services;
+using Nop.Services.Authentication;
 using Nop.Services.Catalog;
 using Nop.Services.Customers;
 using Nop.Services.Discounts;
@@ -39,8 +40,8 @@ namespace Nop.Plugin.Api.Controllers
 		private readonly IShoppingCartItemApiService _shoppingCartItemApiService;
 		private readonly IShoppingCartService _shoppingCartService;
 		private readonly IStoreContext _storeContext;
-		private readonly IApiWorkContext _apiWorkContext;
 		private readonly IPermissionService _permissionService;
+		private readonly IAuthenticationService _authenticationService;
 
 		public ShoppingCartItemsController(
 			IShoppingCartItemApiService shoppingCartItemApiService,
@@ -59,8 +60,8 @@ namespace Nop.Plugin.Api.Controllers
 			IProductAttributeConverter productAttributeConverter,
 			IDTOHelper dtoHelper,
 			IStoreContext storeContext,
-			IApiWorkContext apiWorkContext,
-			IPermissionService permissionService)
+			IPermissionService permissionService,
+			IAuthenticationService authenticationService)
 			: base(jsonFieldsSerializer,
 				   aclService,
 				   customerService,
@@ -78,8 +79,8 @@ namespace Nop.Plugin.Api.Controllers
 			_productAttributeConverter = productAttributeConverter;
 			_dtoHelper = dtoHelper;
 			_storeContext = storeContext;
-			_apiWorkContext = apiWorkContext;
 			_permissionService = permissionService;
+			_authenticationService = authenticationService;
 		}
 
 		/// <summary>
@@ -320,7 +321,9 @@ namespace Nop.Plugin.Api.Controllers
 
 		private async Task<bool> CheckPermissions(int? customerId, ShoppingCartType? shoppingCartType)
 		{
-			var currentCustomer = await _apiWorkContext.GetAuthenticatedCustomerAsync();
+			var currentCustomer = await _authenticationService.GetAuthenticatedCustomerAsync();
+			if (currentCustomer is null) // authenticated, but does not exist in db
+				return false;
 			if (customerId.HasValue && currentCustomer.Id == customerId)
 			{
 				// if I want to handle my own shopping cart, check only public store permission

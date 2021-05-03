@@ -24,6 +24,7 @@ using Nop.Plugin.Api.JSON.Serializers;
 using Nop.Plugin.Api.ModelBinders;
 using Nop.Plugin.Api.Models.OrdersParameters;
 using Nop.Plugin.Api.Services;
+using Nop.Services.Authentication;
 using Nop.Services.Catalog;
 using Nop.Services.Common;
 using Nop.Services.Customers;
@@ -50,8 +51,8 @@ namespace Nop.Plugin.Api.Controllers
 		private readonly IProductAttributeConverter _productAttributeConverter;
 		private readonly IPaymentService _paymentService;
 		private readonly IPdfService _pdfService;
-		private readonly IApiWorkContext _apiWorkContext;
 		private readonly IPermissionService _permissionService;
+		private readonly IAuthenticationService _authenticationService;
 		private readonly IProductService _productService;
 		private readonly IShippingService _shippingService;
 		private readonly IShoppingCartService _shoppingCartService;
@@ -84,8 +85,8 @@ namespace Nop.Plugin.Api.Controllers
 			IProductAttributeConverter productAttributeConverter,
 			IPaymentService paymentService,
 			IPdfService pdfService,
-			IApiWorkContext apiWorkContext,
-			IPermissionService permissionService)
+			IPermissionService permissionService,
+			IAuthenticationService authenticationService)
 			: base(jsonFieldsSerializer, aclService, customerService, storeMappingService,
 				   storeService, discountService, customerActivityService, localizationService, pictureService)
 		{
@@ -102,8 +103,8 @@ namespace Nop.Plugin.Api.Controllers
 			_productAttributeConverter = productAttributeConverter;
 			_paymentService = paymentService;
 			_pdfService = pdfService;
-			_apiWorkContext = apiWorkContext;
 			_permissionService = permissionService;
+			_authenticationService = authenticationService;
 		}
 
 		private OrderSettings OrderSettings => _orderSettings ?? (_orderSettings = EngineContext.Current.Resolve<OrderSettings>());
@@ -536,7 +537,9 @@ namespace Nop.Plugin.Api.Controllers
 
 		private async Task<bool> CheckPermissions(int? customerId)
 		{
-			var currentCustomer = await _apiWorkContext.GetAuthenticatedCustomerAsync();
+			var currentCustomer = await _authenticationService.GetAuthenticatedCustomerAsync();
+			if (currentCustomer is null) // authenticated, but does not exist in db
+				return false;
 			if (customerId.HasValue && currentCustomer.Id == customerId)
 			{
 				// if I want to handle my own orders, check only public store permission

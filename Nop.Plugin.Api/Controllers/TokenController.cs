@@ -29,7 +29,6 @@ namespace Nop.Plugin.Api.Controllers
 		private readonly ApiConfiguration _apiConfiguration;
 		private readonly ApiSettings _apiSettings;
 		private readonly ICustomerActivityService _customerActivityService;
-		private readonly IApiWorkContext _apiWorkContext;
 		private readonly IShoppingCartService _shoppingCartService;
 		private readonly IAuthenticationService _authenticationService;
 		private readonly ICustomerRegistrationService _customerRegistrationService;
@@ -40,7 +39,6 @@ namespace Nop.Plugin.Api.Controllers
 			ICustomerService customerService,
 			ICustomerRegistrationService customerRegistrationService,
 			ICustomerActivityService customerActivityService,
-			IApiWorkContext apiWorkContext,
 			IShoppingCartService shoppingCartService,
 			IAuthenticationService authenticationService,
 			CustomerSettings customerSettings,
@@ -50,9 +48,8 @@ namespace Nop.Plugin.Api.Controllers
 			_customerService = customerService;
 			_customerRegistrationService = customerRegistrationService;
 			_customerActivityService = customerActivityService;
-			_apiWorkContext = apiWorkContext;
 			_shoppingCartService = shoppingCartService;
-			this._authenticationService = authenticationService;
+			_authenticationService = authenticationService;
 			_customerSettings = customerSettings;
 			_apiSettings = apiSettings;
 			_apiConfiguration = apiConfiguration;
@@ -65,7 +62,7 @@ namespace Nop.Plugin.Api.Controllers
 		[ProducesResponseType(typeof(string), (int)HttpStatusCode.Forbidden)]
 		public async Task<IActionResult> Create([FromBody] TokenRequest model)
 		{
-			Customer oldCustomer = await _apiWorkContext.GetAuthenticatedCustomerAsync();
+			Customer oldCustomer = await _authenticationService.GetAuthenticatedCustomerAsync();
 			Customer newCustomer;
 
 			if (model.Guest)
@@ -125,7 +122,7 @@ namespace Nop.Plugin.Api.Controllers
 		[ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
 		public async Task<IActionResult> ValidateToken()
 		{
-			Customer currentCustomer = await _apiWorkContext.GetAuthenticatedCustomerAsync(); // this gets customer entity from db if it exists
+			Customer currentCustomer = await _authenticationService.GetAuthenticatedCustomerAsync(); // this gets customer entity from db if it exists
 			if (currentCustomer is null)
 				return NotFound();
 			return Ok();
@@ -158,12 +155,12 @@ namespace Nop.Plugin.Api.Controllers
 		private TokenResponse GenerateToken(Customer customer)
 		{
 			var currentTime = DateTimeOffset.Now;
-			var expiresInSeconds = currentTime.AddDays(GetTokenExpiryInDays()).ToUnixTimeSeconds();
+			var expirationTime = currentTime.AddDays(GetTokenExpiryInDays());
 
 			var claims = new List<Claim>
 						 {
 							 new Claim(JwtRegisteredClaimNames.Nbf, currentTime.ToUnixTimeSeconds().ToString()),
-							 new Claim(JwtRegisteredClaimNames.Exp, expiresInSeconds.ToString()),
+							 new Claim(JwtRegisteredClaimNames.Exp, expirationTime.ToUnixTimeSeconds().ToString()),
 							 new Claim("CustomerId", customer.Id.ToString()),
 							 new Claim(ClaimTypes.NameIdentifier, customer.CustomerGuid.ToString()),
 						 };
@@ -184,7 +181,7 @@ namespace Nop.Plugin.Api.Controllers
 			{
 				if (!string.IsNullOrEmpty(customer.Email))
 				{
-					claims.Add(new Claim(ClaimTypes.Email, customer.Email));
+					claims.Add(new Claim(ClaimTypes.Name, customer.Email));
 				}
 			}
 
@@ -192,7 +189,7 @@ namespace Nop.Plugin.Api.Controllers
 			var token = new JwtSecurityToken(new JwtHeader(signingCredentials), new JwtPayload(claims));
 			var accessToken = new JwtSecurityTokenHandler().WriteToken(token);
 
-			return new TokenResponse(accessToken, currentTime.UtcDateTime, expiresInSeconds)
+			return new TokenResponse(accessToken, currentTime.UtcDateTime, expirationTime.UtcDateTime)
 			{
 				CustomerId = customer.Id,
 				CustomerGuid = customer.CustomerGuid,

@@ -19,6 +19,7 @@ using Nop.Plugin.Api.ModelBinders;
 using Nop.Plugin.Api.Services;
 using Nop.Plugin.Api.Validators;
 using Nop.Services.Topics;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Nop.Plugin.Api.Infrastructure
 {
@@ -84,8 +85,11 @@ namespace Nop.Plugin.Api.Infrastructure
 
             services.AddScoped<ITopicService, TopicService>();
 
-            services.AddScoped<IApiWorkContext, ApiWorkContext>();
             services.AddScoped<IAddressApiService, AddressApiService>();
-        }
+
+            // replace IAuthenticationService CookieAutheticationService (used in NopCommerce web) with BearerTokenOrCookieAuthenticationService that will combine Bearer token  (used in Nop api plugin) and Cookies authentication
+            // // if token is not found to be compatible with web client, then IApiWorkContext is unnecessary
+            services.Replace(ServiceDescriptor.Scoped<Nop.Services.Authentication.IAuthenticationService, BearerTokenOrCookieAuthenticationService>());
+		}
     }
 }

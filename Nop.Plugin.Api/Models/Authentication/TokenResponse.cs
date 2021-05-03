@@ -5,11 +5,11 @@ namespace Nop.Plugin.Api.Models.Authentication
 {
     public class TokenResponse
     {
-        public TokenResponse(string accessToken, DateTime createdAtUtc, long expiresInSeconds)
+        public TokenResponse(string accessToken, DateTime createdAtUtc, DateTime expiresAtUtc)
         {
             AccessToken = accessToken;
             CreatedAtUtc = createdAtUtc;
-            ExpiresInSeconds = expiresInSeconds;
+            ExpiresAtUtc = expiresAtUtc;
         }
 
         [JsonProperty("access_token", Required = Required.Always)]
@@ -17,12 +17,12 @@ namespace Nop.Plugin.Api.Models.Authentication
 
         [JsonProperty("token_type", Required = Required.Always)]
         public string TokenType { get; init; } = "Bearer";
-
-        [JsonProperty("expires_in")]
-        public long ExpiresInSeconds { get; init; }
-
+        
         [JsonProperty("created_at_utc")]
         public DateTime CreatedAtUtc { get; init; }
+        
+        [JsonProperty("expires_at_utc")]
+        public DateTime ExpiresAtUtc { get; init; }
 
         [JsonProperty("username")]
         public string Username { get; init; }

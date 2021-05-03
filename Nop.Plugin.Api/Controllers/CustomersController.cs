@@ -22,6 +22,7 @@ using Nop.Plugin.Api.MappingExtensions;
 using Nop.Plugin.Api.ModelBinders;
 using Nop.Plugin.Api.Models.CustomersParameters;
 using Nop.Plugin.Api.Services;
+using Nop.Services.Authentication;
 using Nop.Services.Common;
 using Nop.Services.Customers;
 using Nop.Services.Directory;
@@ -45,9 +46,9 @@ namespace Nop.Plugin.Api.Controllers
 		private readonly IFactory<Customer> _factory;
 		private readonly IGenericAttributeService _genericAttributeService;
 		private readonly ILanguageService _languageService;
-		private readonly IApiWorkContext _apiWorkContext;
 		private readonly IPermissionService _permissionService;
 		private readonly IAddressService _addressService;
+		private readonly IAuthenticationService _authenticationService;
 		private readonly IMappingHelper _mappingHelper;
 		private readonly INewsLetterSubscriptionService _newsLetterSubscriptionService;
 
@@ -73,9 +74,9 @@ namespace Nop.Plugin.Api.Controllers
 			IMappingHelper mappingHelper,
 			INewsLetterSubscriptionService newsLetterSubscriptionService,
 			IPictureService pictureService, ILanguageService languageService,
-			IApiWorkContext apiWorkContext,
 			IPermissionService permissionService,
-			IAddressService addressService) :
+			IAddressService addressService,
+			IAuthenticationService authenticationService) :
 			base(jsonFieldsSerializer, aclService, customerService, storeMappingService, storeService, discountService, customerActivityService,
 				 localizationService, pictureService)
 		{
@@ -85,9 +86,9 @@ namespace Nop.Plugin.Api.Controllers
 			_mappingHelper = mappingHelper;
 			_newsLetterSubscriptionService = newsLetterSubscriptionService;
 			_languageService = languageService;
-			this._apiWorkContext = apiWorkContext;
-			this._permissionService = permissionService;
-			this._addressService = addressService;
+			_permissionService = permissionService;
+			_addressService = addressService;
+			_authenticationService = authenticationService;
 			_encryptionService = encryptionService;
 			_genericAttributeService = genericAttributeService;
 			_customerRolesHelper = customerRolesHelper;
@@ -158,9 +159,9 @@ namespace Nop.Plugin.Api.Controllers
 		[ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
 		[ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
 		[GetRequestsErrorInterceptorActionFilter]
-		public async Task<IActionResult> GetCurrentCustomer([FromQuery] string fields, [FromServices] IApiWorkContext apiWorkContext)
+		public async Task<IActionResult> GetCurrentCustomer([FromQuery] string fields)
 		{
-			var customerEntity = await apiWorkContext.GetAuthenticatedCustomerAsync();
+			var customerEntity = await _authenticationService.GetAuthenticatedCustomerAsync();
 
 			if (customerEntity is null)
 			{
@@ -606,7 +607,7 @@ namespace Nop.Plugin.Api.Controllers
 
 		private async Task<bool> CheckPermissions(int customerId)
 		{
-			var currentCustomer = await _apiWorkContext.GetAuthenticatedCustomerAsync();
+			var currentCustomer = await _authenticationService.GetAuthenticatedCustomerAsync();
 			if (currentCustomer is null)
 				return false; // should not happen
 			if (currentCustomer.Id == customerId)
