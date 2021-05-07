@@ -33,27 +33,27 @@ namespace Nop.Plugin.Api.Services
         public IList<Product> GetProducts(
             IList<int> ids = null,
             DateTime? createdAtMin = null, DateTime? createdAtMax = null, DateTime? updatedAtMin = null, DateTime? updatedAtMax = null,
-            int limit = Constants.Configurations.DefaultLimit, int page = Constants.Configurations.DefaultPageValue,
-            int sinceId = Constants.Configurations.DefaultSinceId,
-            int? categoryId = null, string vendorName = null, bool? publishedStatus = null)
+            int? limit = null, int? page = null,
+            int? sinceId = null,
+            int? categoryId = null, string vendorName = null, bool? publishedStatus = null, IList<string> manufacturerPartNumbers = null, bool? isDownload = null)
         {
-            var query = GetProductsQuery(createdAtMin, createdAtMax, updatedAtMin, updatedAtMax, vendorName, publishedStatus, ids, categoryId);
+            var query = GetProductsQuery(createdAtMin, createdAtMax, updatedAtMin, updatedAtMax, vendorName, publishedStatus, ids, categoryId, manufacturerPartNumbers, isDownload);
 
             if (sinceId > 0)
             {
                 query = query.Where(c => c.Id > sinceId);
             }
 
-            return new ApiList<Product>(query, page - 1, limit);
+            return new ApiList<Product>(query, (page ?? Constants.Configurations.DefaultPageValue) - 1, (limit ?? Constants.Configurations.DefaultLimit));
         }
 
         public async Task<int> GetProductsCountAsync(
             DateTime? createdAtMin = null, DateTime? createdAtMax = null,
             DateTime? updatedAtMin = null, DateTime? updatedAtMax = null, bool? publishedStatus = null, string vendorName = null,
-            int? categoryId = null)
+            int? categoryId = null, IList<string> manufacturerPartNumbers = null, bool? isDownload = null)
         {
             var query = GetProductsQuery(createdAtMin, createdAtMax, updatedAtMin, updatedAtMax, vendorName,
-                                         publishedStatus, categoryId: categoryId);
+                                         publishedStatus, ids: null, categoryId, manufacturerPartNumbers, isDownload);
 
             return await query.WhereAwait(async p => await _storeMappingService.AuthorizeAsync(p)).CountAsync();
         }
@@ -81,42 +81,52 @@ namespace Nop.Plugin.Api.Services
         private IQueryable<Product> GetProductsQuery(
             DateTime? createdAtMin = null, DateTime? createdAtMax = null,
             DateTime? updatedAtMin = null, DateTime? updatedAtMax = null, string vendorName = null,
-            bool? publishedStatus = null, IList<int> ids = null, int? categoryId = null)
+            bool? publishedStatus = null, IList<int> ids = null, int? categoryId = null, IList<string> manufacturerPartNumbers = null, bool? isDownload = null)
 
         {
             var query = _productRepository.Table;
 
             if (ids != null && ids.Count > 0)
             {
-                query = query.Where(c => ids.Contains(c.Id));
+                query = query.Where(p => ids.Contains(p.Id));
+            }
+
+            if (manufacturerPartNumbers != null && manufacturerPartNumbers.Count > 0)
+            {
+                query = query.Where(p => manufacturerPartNumbers.Contains(p.ManufacturerPartNumber));
             }
 
             if (publishedStatus != null)
             {
-                query = query.Where(c => c.Published == publishedStatus.Value);
+                query = query.Where(p => p.Published == publishedStatus.Value);
+            }
+
+            if (isDownload != null)
+            {
+                query = query.Where(p => p.IsDownload == isDownload.Value);
             }
 
             // always return products that are not deleted!!!
-            query = query.Where(c => !c.Deleted);
+            query = query.Where(p => !p.Deleted);
 
             if (createdAtMin != null)
             {
-                query = query.Where(c => c.CreatedOnUtc > createdAtMin.Value);
+                query = query.Where(p => p.CreatedOnUtc > createdAtMin.Value);
             }
 
             if (createdAtMax != null)
             {
-                query = query.Where(c => c.CreatedOnUtc < createdAtMax.Value);
+                query = query.Where(p => p.CreatedOnUtc < createdAtMax.Value);
             }
 
             if (updatedAtMin != null)
             {
-                query = query.Where(c => c.UpdatedOnUtc > updatedAtMin.Value);
+                query = query.Where(p => p.UpdatedOnUtc > updatedAtMin.Value);
             }
 
             if (updatedAtMax != null)
             {
-                query = query.Where(c => c.UpdatedOnUtc < updatedAtMax.Value);
+                query = query.Where(p => p.UpdatedOnUtc < updatedAtMax.Value);
             }
 
             if (!string.IsNullOrEmpty(vendorName))

@@ -87,7 +87,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [GetRequestsErrorInterceptorActionFilter]
-        public async Task<IActionResult> GetProducts(ProductsParametersModel parameters)
+        public async Task<IActionResult> GetProducts([FromQueryJson] ProductsParametersModel parameters)
         {
             if (parameters.Limit < Constants.Configurations.MinLimit || parameters.Limit > Constants.Configurations.MaxLimit)
             {
@@ -101,7 +101,7 @@ namespace Nop.Plugin.Api.Controllers
 
             var allProducts = _productApiService.GetProducts(parameters.Ids, parameters.CreatedAtMin, parameters.CreatedAtMax, parameters.UpdatedAtMin,
                                                              parameters.UpdatedAtMax, parameters.Limit, parameters.Page, parameters.SinceId, parameters.CategoryId,
-                                                             parameters.VendorName, parameters.PublishedStatus)
+                                                             parameters.VendorName, parameters.PublishedStatus, parameters.ManufacturerPartNumbers, parameters.IsDownload)
                                                 .WhereAwait(async p => await StoreMappingService.AuthorizeAsync(p));
 
             IList<ProductDto> productsAsDtos = await allProducts.SelectAwait(async product => await _dtoHelper.PrepareProductDTOAsync(product)).ToListAsync();
@@ -111,7 +111,7 @@ namespace Nop.Plugin.Api.Controllers
                 Products = productsAsDtos
             };
 
-            var json = JsonFieldsSerializer.Serialize(productsRootObject, parameters.Fields);
+            var json = JsonFieldsSerializer.Serialize(productsRootObject, parameters.Fields ?? "");
 
             return new RawJsonActionResult(json);
         }
@@ -128,11 +128,11 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [GetRequestsErrorInterceptorActionFilter]
-        public async Task<IActionResult> GetProductsCount(ProductsCountParametersModel parameters)
+        public async Task<IActionResult> GetProductsCount([FromQueryJson] ProductsCountParametersModel parameters)
         {
             var allProductsCount = await _productApiService.GetProductsCountAsync(parameters.CreatedAtMin, parameters.CreatedAtMax, parameters.UpdatedAtMin,
                                                                        parameters.UpdatedAtMax, parameters.PublishedStatus, parameters.VendorName,
-                                                                       parameters.CategoryId);
+                                                                       parameters.CategoryId, manufacturerPartNumbers: null, parameters.IsDownload);
 
             var productsCountRootObject = new ProductsCountRootObject
             {

@@ -55,7 +55,7 @@ namespace Nop.Plugin.Api.Controllers
 			_apiConfiguration = apiConfiguration;
 		}
 
-		[HttpGet]
+		[HttpPost]
 		[Route("/token", Name = "RequestToken")]
 		[ProducesResponseType(typeof(TokenResponse), (int)HttpStatusCode.OK)]
 		[ProducesResponseType(typeof(string), (int)HttpStatusCode.BadRequest)]
