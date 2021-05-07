@@ -141,6 +141,12 @@ namespace Nop.Plugin.Api.DTO.Products
         public bool? AutomaticallyAddRequiredProducts { get; set; }
 
         /// <summary>
+        ///     Gets or sets a list of ids of products that are required to be added to the cart by this product
+        /// </summary>
+        [JsonProperty("required_product_ids", Required = Required.DisallowNull)]
+        public IList<int> RequiredProductIds { get; set; }
+
+        /// <summary>
         ///     Gets or sets a value indicating whether the product is download
         /// </summary>
         [JsonProperty("is_download")]

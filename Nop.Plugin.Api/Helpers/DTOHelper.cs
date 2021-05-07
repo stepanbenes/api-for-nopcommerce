@@ -138,6 +138,8 @@ namespace Nop.Plugin.Api.Helpers
                 productDto.LocalizedNames.Add(localizedNameDto);
             }
 
+            productDto.RequiredProductIds = _productService.ParseRequiredProductIds(product);
+
             return productDto;
         }
 

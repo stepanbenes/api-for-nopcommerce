@@ -222,6 +222,8 @@ namespace Nop.Plugin.Api.Controllers
 
             await UpdateStoreMappingsAsync(product, productDelta.Dto.StoreIds);
 
+            UpdateRequiredProducts(product, productDelta.Dto.RequiredProductIds);
+
             await _productService.UpdateProductAsync(product);
 
             await CustomerActivityService.InsertActivityAsync("AddNewProduct", await LocalizationService.GetResourceAsync("ActivityLog.AddNewProduct"), product);
@@ -569,6 +571,14 @@ namespace Nop.Plugin.Api.Controllers
                 newAssociatedProduct.ParentGroupedProductId = product.Id;
                 await _productService.UpdateProductAsync(newAssociatedProduct);
             }
+        }
+
+        private void UpdateRequiredProducts(Product product, IList<int> requiredProductIds)
+        {
+            if (requiredProductIds is null)
+                product.RequiredProductIds = null;
+            else
+                product.RequiredProductIds = string.Join(',', requiredProductIds.Select(id => id.ToString()));
         }
 
         #endregion
