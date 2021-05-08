@@ -10223,8 +10223,7 @@
       },
       "OrderDto": {
         "required": [
-          "billing_address",
-          "shipping_address"
+          "billing_address"
         ],
         "type": "object",
         "properties": {

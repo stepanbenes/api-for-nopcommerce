@@ -251,7 +251,7 @@ namespace Nop.Plugin.Api.DTO.Orders
         /// <summary>
         ///     Gets or sets the shipping address
         /// </summary>
-        [JsonProperty("shipping_address", Required = Required.Always)]
+        [JsonProperty("shipping_address")]
         public AddressDto ShippingAddress { get; set; }
 
         /// <summary>
