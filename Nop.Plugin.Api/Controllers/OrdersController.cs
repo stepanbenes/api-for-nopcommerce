@@ -289,8 +289,7 @@ namespace Nop.Plugin.Api.Controllers
 			{
 				return Error(HttpStatusCode.BadRequest, "billingAddress", "non-existing billing address");
 			}
-
-			if (orderDelta.Dto.ShippingAddress.Id == 0)
+			if (orderDelta.Dto.ShippingAddress != null && orderDelta.Dto.ShippingAddress.Id == 0) // shipping address CAN be null, but if it is not, it must exist in db
 			{
 				return Error(HttpStatusCode.BadRequest, "shippingAddress", "non-existing shipping address");
 			}
@@ -344,7 +343,9 @@ namespace Nop.Plugin.Api.Controllers
 			orderDelta.Merge(newOrder);
 
 			customer.BillingAddressId = newOrder.BillingAddressId = orderDelta.Dto.BillingAddress.Id;
-			customer.ShippingAddressId = newOrder.ShippingAddressId = orderDelta.Dto.ShippingAddress.Id;
+			customer.ShippingAddressId = newOrder.ShippingAddressId = orderDelta.Dto.ShippingAddress?.Id;
+
+			await CustomerService.UpdateCustomerAsync(customer); // update billing and shipping addresses
 
 			// If the customer has something in the cart it will be added too. Should we clear the cart first? 
 			newOrder.CustomerId = customer.Id;
@@ -444,6 +445,7 @@ namespace Nop.Plugin.Api.Controllers
 			customer.BillingAddressId = currentOrder.BillingAddressId = orderDelta.Dto.BillingAddress.Id;
 			customer.ShippingAddressId = currentOrder.ShippingAddressId = orderDelta.Dto.ShippingAddress.Id;
 
+			await CustomerService.UpdateCustomerAsync(customer); // update billing and shipping addresses
 
 			await _orderService.UpdateOrderAsync(currentOrder);
 
