@@ -66,10 +66,10 @@ namespace Nop.Plugin.Api.Infrastructure
 				if (!string.IsNullOrEmpty(apiConfig.SecurityKey))
 				{
 					services.AddAuthentication(options =>
-							{
-								options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-								options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-							})
+					{
+						options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+						options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+					})
 							.AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, jwtBearerOptions =>
 							{
 								jwtBearerOptions.TokenValidationParameters = new TokenValidationParameters
@@ -137,6 +137,8 @@ namespace Nop.Plugin.Api.Infrastructure
 
 		public void Configure(IApplicationBuilder app)
 		{
+			IWebHostEnvironment environment = app.ApplicationServices.GetRequiredService<IWebHostEnvironment>();
+
 			var rewriteOptions = new RewriteOptions().AddRewrite("api/token", "/token", true);
 			app.UseRewriter(rewriteOptions);
 
@@ -161,16 +163,17 @@ namespace Nop.Plugin.Api.Infrastructure
 			app.MapWhen(context => context.Request.Path.StartsWithSegments(new PathString("/api")),
 				a =>
 				{
-#if DEBUG
-					a.UseDeveloperExceptionPage();
-#endif
+					if (environment.IsDevelopment())
+					{
+						a.UseDeveloperExceptionPage();
+					}
 
 					a.Use(async (context, next) =>
-								{
-									// API Call
-									context.Request.EnableBuffering();
-									await next();
-								});
+					{
+						// API Call
+						context.Request.EnableBuffering();
+						await next();
+					});
 
 					a.UseExceptionHandler(a => a.Run(async context =>
 					{
@@ -187,17 +190,18 @@ namespace Nop.Plugin.Api.Infrastructure
 						endpoints.MapControllers();
 					});
 
-#if DEBUG
-					// http://eatcodelive.com/2017/05/19/change-default-swagger-route-in-an-asp-net-core-web-api/
-
-					a.UseSwagger(options => options.RouteTemplate = "api/swagger/{documentName}/swagger.json");
-					a.UseSwaggerUI(c =>
+					if (environment.IsDevelopment())
 					{
-						c.RoutePrefix = "api/swagger";
-						c.SwaggerEndpoint("/api/swagger/v1/swagger.json", "Nop.Plugin.Api v4.40");
-						c.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.None);
-					});
-#endif
+						// http://eatcodelive.com/2017/05/19/change-default-swagger-route-in-an-asp-net-core-web-api/
+
+						a.UseSwagger(options => options.RouteTemplate = "api/swagger/{documentName}/swagger.json");
+						a.UseSwaggerUI(c =>
+						{
+							c.RoutePrefix = "api/swagger";
+							c.SwaggerEndpoint("/api/swagger/v1/swagger.json", "Nop.Plugin.Api v4.40");
+							c.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.None);
+						});
+					}
 				}
 			);
 		}
