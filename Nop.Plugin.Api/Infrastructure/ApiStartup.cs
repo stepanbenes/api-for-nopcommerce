@@ -190,7 +190,7 @@ namespace Nop.Plugin.Api.Infrastructure
 						endpoints.MapControllers();
 					});
 
-					if (environment.IsDevelopment())
+					// swagger configuration
 					{
 						// http://eatcodelive.com/2017/05/19/change-default-swagger-route-in-an-asp-net-core-web-api/
 
