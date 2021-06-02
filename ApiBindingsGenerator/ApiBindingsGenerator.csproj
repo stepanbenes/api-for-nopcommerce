@@ -4,11 +4,11 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
-    <Version>0.9.0</Version>
-    <!-- Generates a package at build -->
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <!-- Do not include the generator as a lib dependency -->
-    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <Version>0.9.1-preview1</Version>
+    <Authors>Štěpán Beneš</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Description>C# source generator for generation dto records and api client class from a swagger file.</Description>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
   </PropertyGroup>
 
   <!-- Generate nuget package only in Release config -->
