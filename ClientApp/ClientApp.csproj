@@ -11,8 +11,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ApiBindingsGenerator" Version="0.9.1-preview1" />
     <PackageReference Include="System.Text.Json" Version="5.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ApiBindingsGenerator\ApiBindingsGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
   
 </Project>

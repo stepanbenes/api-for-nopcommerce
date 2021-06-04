@@ -97,12 +97,12 @@ namespace ApiBindingsGenerator
         public void SetAuthorizationHeader(string scheme, string? parameter)
         {
             httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(scheme, parameter);
-		}
+        }
 
         public void RemoveAuthorizationHeader()
         {
             httpClient.DefaultRequestHeaders.Authorization = null;
-		}
+        }
     }
 
     public class ApiException : Exception
@@ -185,9 +185,9 @@ namespace ApiBindingsGenerator
 			string apiName = apiInfo?.Title?.ToPascalCase() ?? fileName.ToPascalCase();
 
 			yield return (filename: $"{apiName}.DTOs", GenerateDTOs(apiName, schema));
-			yield return (filename: $"I{apiName}Client", GenerateApiClient(ApiClientType.Interface, apiName, apiEndpoints, securitySchemes));
-			yield return (filename: $"{apiName}Client", GenerateApiClient(ApiClientType.NormalClass, apiName, apiEndpoints, securitySchemes));
-			yield return (filename: $"Fake{apiName}Client", GenerateApiClient(ApiClientType.FakeClass, apiName, apiEndpoints, securitySchemes));
+			yield return (filename: $"I{apiName}Client", GenerateApiClient(ApiClientType.Interface, apiName, apiEndpoints, schema, securitySchemes));
+			yield return (filename: $"{apiName}Client", GenerateApiClient(ApiClientType.NormalClass, apiName, apiEndpoints, schema, securitySchemes));
+			yield return (filename: $"Fake{apiName}Client", GenerateApiClient(ApiClientType.FakeClass, apiName, apiEndpoints, schema, securitySchemes));
 		}
 
 		private static string GenerateDTOs(string apiName, Dictionary<string, TypeDescriptor> schema)
@@ -221,7 +221,7 @@ namespace {BASE_NAMESPACE}.{apiName}.DTOs
 			return sourceCode.ToString();
 		}
 
-		private static string GenerateApiClient(ApiClientType apiClientType, string apiName, IReadOnlyList<ApiEndpoint> apiEndpoints, Dictionary<string, SecuritySchemeDescriptor>? securitySchemes)
+		private static string GenerateApiClient(ApiClientType apiClientType, string apiName, IReadOnlyList<ApiEndpoint> apiEndpoints, Dictionary<string, TypeDescriptor> typeMap, Dictionary<string, SecuritySchemeDescriptor>? securitySchemes)
 		{
 			string className = apiName + "Client";
 			var sourceCode = new StringBuilder();
@@ -274,7 +274,7 @@ namespace {BASE_NAMESPACE}.{apiName}.DTOs
 				{
 					case ApiClientType.NormalClass:
 						sourceCode.Append($@"{____}{____}public async {taskReturnTypeName} {operationName}({string.Join(", ", parameters)})");
-						writeNormalActionBody(sourceCode, apiEndpoint, returnType, requestBodyTypeName);
+						writeNormalActionBody(sourceCode, apiEndpoint, returnType, requestBodyTypeName, typeMap);
 						break;
 					case ApiClientType.FakeClass:
 						sourceCode.Append($@"{____}{____}public virtual {taskReturnTypeName} {operationName}({string.Join(", ", parameters)})");
@@ -298,14 +298,14 @@ namespace {BASE_NAMESPACE}.{apiName}.DTOs
 				return typeDescriptor;
 			}
 
-			static void writeNormalActionBody(StringBuilder sourceCode, ApiEndpoint apiEndpoint, TypeDescriptor? returnType, string? requestBodyTypeName)
+			static void writeNormalActionBody(StringBuilder sourceCode, ApiEndpoint apiEndpoint, TypeDescriptor? returnType, string? requestBodyTypeName, Dictionary<string, TypeDescriptor> typeMap)
 			{
 				string? returnTypeName = GenerateCSharpType(returnType, out _);
 				string returnNothingToken = $"return{(returnTypeName is not null ? " null" : "")};";
 				sourceCode.AppendLine($@"
         {{
             HttpContent? content = {(requestBodyTypeName is not null ? $"JsonContent.Create({REQUEST_BODY_PARAMETER_NAME}, options: SerializerOptions)" : "null")};
-            var response = await Send(HttpMethod.{apiEndpoint.Method.Method.ToPascalCase()}, requestEndpoint: {GenerateApiEndpointUri(apiEndpoint)}, content);
+            var response = await Send(HttpMethod.{apiEndpoint.Method.Method.ToPascalCase()}, requestEndpoint: {GenerateApiEndpointUri(apiEndpoint, typeMap)}, content);
             switch ((int)response.StatusCode)
             {{
                 case 200: // OK");
@@ -358,7 +358,7 @@ namespace {BASE_NAMESPACE}.{apiName}.DTOs
         }}
 ");
 			}
-			
+
 			static void writeFakeActionBody(StringBuilder sourceCode, TypeDescriptor? returnType)
 			{
 				string? returnTypeName = GenerateCSharpType(returnType?.MakeNullable(), out _);
@@ -372,6 +372,7 @@ namespace {BASE_NAMESPACE}.{apiName}.DTOs
 namespace {BASE_NAMESPACE}.{apiName}
 {{
     using System;
+	using System.Linq;
     using System.Net.Http;
     using System.Net.Http.Json;
     using System.Text.Json;
@@ -421,29 +422,31 @@ namespace {BASE_NAMESPACE}.{apiName}
     {TYPE_ACCESS_MODIFIER}interface I{className}
     {{
         /// <summary>
-		/// Sets default authorization header for all requests of underlying http client. Scheme is usually ""Bearer"" and parameter is JWT token.
+        /// Sets default authorization header for all requests of underlying http client. Scheme is usually ""Bearer"" and parameter is JWT token.
         /// </summary>
         void SetAuthorizationHeader(string scheme, string? parameter);
         /// <summary>
-		/// Sets default authorization header for all requests of underlying http client to null;
+        /// Sets default authorization header for all requests of underlying http client to null;
         /// </summary>
         void RemoveAuthorizationHeader();
 ");
 			}
 		}
 
-		private static string GenerateApiEndpointUri(ApiEndpoint endpoint)
+		private static string GenerateApiEndpointUri(ApiEndpoint endpoint, Dictionary<string, TypeDescriptor> typeMap)
 		{
-			string query = string.Join("&", endpoint.Parameters.Where(p => p.In == ParameterLocation.Query).Select(p => getParameterValue(p)));
+			string query = string.Join("&", endpoint.Parameters.Where(p => p.In == ParameterLocation.Query).Select(p => getParameterValue(p.Name, p.Schema)));
 			if (!string.IsNullOrWhiteSpace(query))
 				query = "?" + query;
 			return @$"$""{endpoint.Path}{query}""";
-			string getParameterValue(ApiEndpointParameter param)
-			{
-				if (param.Schema is { Type: "string" })
-					return $@"{param.Name}={{{param.Name}}}";
-				return $"{param.Name}={{({param.Name} is not null ? Uri.EscapeUriString(JsonSerializer.Serialize({param.Name}, SerializerOptions)) : string.Empty)}}";
-			}
+
+			string getParameterValue(string paramName, TypeDescriptor paramSchema) =>
+				paramSchema.Type switch
+				{
+					"string" or "number" or "integer" or "boolean" => $@"{paramName}={{{paramName}}}",
+					"array" => $@"{paramName}={{string.Join(',', ({paramName} as System.Collections.IEnumerable)?.Cast<object>().Select(o => o.ToString()) ?? Enumerable.Empty<string>())}}",
+					_ => string.Empty
+				};
 		}
 
 		private static string GenerateApiEndpointParameter(ApiEndpointParameter parameter)
