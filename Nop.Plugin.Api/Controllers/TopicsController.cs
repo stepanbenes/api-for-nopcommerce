@@ -74,7 +74,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [GetRequestsErrorInterceptorActionFilter]
-        public async Task<IActionResult> GetTopics(TopicsParametersModel parameters)
+        public async Task<IActionResult> GetTopics([FromQuery] TopicsParametersModel parameters)
         {
             var storeId = _storeContext.GetCurrentStore().Id;
 
@@ -108,7 +108,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
         [GetRequestsErrorInterceptorActionFilter]
-        public async Task<IActionResult> GetTopicById(int id, string fields = "")
+        public async Task<IActionResult> GetTopicById([FromRoute] int id, [FromQuery] string fields = "")
         {
             if (id <= 0)
             {
@@ -140,6 +140,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ErrorsRootObject), 422)]
         public async Task<IActionResult> CreateTopic(
+            [FromBody]
             [ModelBinder(typeof(JsonModelBinder<TopicDto>))]
             Delta<TopicDto> topicDelta)
         {
@@ -175,6 +176,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ErrorsRootObject), 422)]
         public async Task<IActionResult> UpdateTopic(
+            [FromBody]
             [ModelBinder(typeof(JsonModelBinder<TopicDto>))]
             Delta<TopicDto> topicDelta)
         {
@@ -214,7 +216,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ErrorsRootObject), 422)]
         [GetRequestsErrorInterceptorActionFilter]
-        public async Task<IActionResult> DeleteTopic(int id)
+        public async Task<IActionResult> DeleteTopic([FromRoute] int id)
         {
             if (id <= 0)
             {

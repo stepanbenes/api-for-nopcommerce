@@ -63,7 +63,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(NewsLetterSubscriptionsRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [GetRequestsErrorInterceptorActionFilter]
-        public IActionResult GetNewsLetterSubscriptions(NewsLetterSubscriptionsParametersModel parameters)
+        public IActionResult GetNewsLetterSubscriptions([FromQuery] NewsLetterSubscriptionsParametersModel parameters)
         {
             if (parameters.Limit < Constants.Configurations.MinLimit || parameters.Limit > Constants.Configurations.MaxLimit)
             {
@@ -102,7 +102,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), 422)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
-        public async Task<IActionResult> DeactivateNewsLetterSubscription(string email)
+        public async Task<IActionResult> DeactivateNewsLetterSubscription([FromRoute] string email)
         {
             if (string.IsNullOrEmpty(email))
             {

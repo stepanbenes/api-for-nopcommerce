@@ -65,7 +65,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [GetRequestsErrorInterceptorActionFilter]
-        public IActionResult GetSpecificationAttributes(SpecificationAttributesParametersModel parameters)
+        public IActionResult GetSpecificationAttributes([FromQuery] SpecificationAttributesParametersModel parameters)
         {
             if (parameters.Limit < Constants.Configurations.MinLimit || parameters.Limit > Constants.Configurations.MaxLimit)
             {
@@ -102,7 +102,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [GetRequestsErrorInterceptorActionFilter]
-        public async Task<IActionResult> GetSpecificationAttributesCount(SpecificationAttributesCountParametersModel parameters)
+        public async Task<IActionResult> GetSpecificationAttributesCount([FromQuery] SpecificationAttributesCountParametersModel parameters)
         {
             var specificationAttributesCount = (await _specificationAttributeService.GetSpecificationAttributesAsync()).TotalCount;
 
@@ -129,7 +129,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
         [GetRequestsErrorInterceptorActionFilter]
-        public async Task<IActionResult> GetSpecificationAttributeById(int id, string fields = "")
+        public async Task<IActionResult> GetSpecificationAttributeById([FromRoute] int id, [FromQuery] string fields = "")
         {
             if (id <= 0)
             {
@@ -197,6 +197,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ErrorsRootObject), 422)]
         public async Task<IActionResult> UpdateSpecificationAttribute(
+            [FromBody]
             [ModelBinder(typeof(JsonModelBinder<SpecificationAttributeDto>))]
             Delta<SpecificationAttributeDto> specificationAttributeDelta)
         {
@@ -239,7 +240,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ErrorsRootObject), 422)]
-        public async Task<IActionResult> DeleteSpecificationAttribute(int id)
+        public async Task<IActionResult> DeleteSpecificationAttribute([FromRoute] int id)
         {
             if (id <= 0)
             {

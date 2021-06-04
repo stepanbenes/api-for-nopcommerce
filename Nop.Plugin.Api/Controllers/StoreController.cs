@@ -66,7 +66,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [GetRequestsErrorInterceptorActionFilter]
-        public async Task<IActionResult> GetCurrentStore(string fields = "")
+        public async Task<IActionResult> GetCurrentStore([FromQuery] string fields = "")
         {
             var store = _storeContext.GetCurrentStore();
 
@@ -98,7 +98,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [GetRequestsErrorInterceptorActionFilter]
-        public async Task<IActionResult> GetAllStores(string fields = "")
+        public async Task<IActionResult> GetAllStores([FromQuery] string fields = "")
         {
             var allStores = await StoreService.GetAllStoresAsync();
 

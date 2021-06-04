@@ -62,7 +62,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [GetRequestsErrorInterceptorActionFilter]
-        public async Task<IActionResult> GetAllLanguages(string fields = "")
+        public async Task<IActionResult> GetAllLanguages([FromQuery] string fields = "")
         {
             // no permissions required
 

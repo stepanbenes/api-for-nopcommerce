@@ -87,7 +87,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [GetRequestsErrorInterceptorActionFilter]
-        public async Task<IActionResult> GetProducts([FromQueryJson] ProductsParametersModel parameters)
+        public async Task<IActionResult> GetProducts([FromQuery] ProductsParametersModel parameters)
         {
             if (parameters.Limit < Constants.Configurations.MinLimit || parameters.Limit > Constants.Configurations.MaxLimit)
             {
@@ -128,7 +128,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [GetRequestsErrorInterceptorActionFilter]
-        public async Task<IActionResult> GetProductsCount([FromQueryJson] ProductsCountParametersModel parameters)
+        public async Task<IActionResult> GetProductsCount([FromQuery] ProductsCountParametersModel parameters)
         {
             var allProductsCount = await _productApiService.GetProductsCountAsync(parameters.CreatedAtMin, parameters.CreatedAtMax, parameters.UpdatedAtMin,
                                                                        parameters.UpdatedAtMax, parameters.PublishedStatus, parameters.VendorName,
@@ -158,7 +158,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
         [GetRequestsErrorInterceptorActionFilter]
-        public async Task<IActionResult> GetProductById(int id, string fields = "")
+        public async Task<IActionResult> GetProductById([FromRoute] int id, [FromQuery] string fields = "")
         {
             if (id <= 0)
             {
@@ -189,6 +189,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), 422)]
         public async Task<IActionResult> CreateProduct(
+            [FromBody]
             [ModelBinder(typeof(JsonModelBinder<ProductDto>))]
             Delta<ProductDto> productDelta)
         {
@@ -249,6 +250,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(ErrorsRootObject), 422)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> UpdateProduct(
+            [FromBody]
             [ModelBinder(typeof(JsonModelBinder<ProductDto>))]
             Delta<ProductDto> productDelta)
         {
@@ -317,7 +319,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [GetRequestsErrorInterceptorActionFilter]
-        public async Task<IActionResult> DeleteProduct(int id)
+        public async Task<IActionResult> DeleteProduct([FromRoute] int id)
         {
             if (id <= 0)
             {

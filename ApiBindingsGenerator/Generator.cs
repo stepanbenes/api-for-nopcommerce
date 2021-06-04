@@ -302,10 +302,29 @@ namespace {BASE_NAMESPACE}.{apiName}.DTOs
 			{
 				string? returnTypeName = GenerateCSharpType(returnType, out _);
 				string returnNothingToken = $"return{(returnTypeName is not null ? " null" : "")};";
+				var queryParamDescriptions = GenerateApiEndpointQuery(apiEndpoint, typeMap);
 				sourceCode.AppendLine($@"
         {{
             HttpContent? content = {(requestBodyTypeName is not null ? $"JsonContent.Create({REQUEST_BODY_PARAMETER_NAME}, options: SerializerOptions)" : "null")};
-            var response = await Send(HttpMethod.{apiEndpoint.Method.Method.ToPascalCase()}, requestEndpoint: {GenerateApiEndpointUri(apiEndpoint, typeMap)}, content);
+			var queryParams = new List<string>();");
+
+				if (queryParamDescriptions.Count > 0)
+				{
+					sourceCode.AppendLine($@"{____}{____}{____}string paramValueString;
+");
+				}
+
+				foreach (var (paramName, paramValue) in queryParamDescriptions)
+				{
+					sourceCode.AppendLine($@"{____}{____}{____}paramValueString = $""{paramValue}"";
+            if (!string.IsNullOrEmpty(paramValueString)) queryParams.Add($""{paramName}={{paramValueString}}"");");
+				}
+
+				sourceCode.AppendLine($@"
+            string query = (queryParams.Count > 0) ? ""?"" + string.Join(""&"", queryParams) : """";");
+
+				sourceCode.AppendLine($@"
+            var response = await Send(HttpMethod.{apiEndpoint.Method.Method.ToPascalCase()}, requestEndpoint: $""{apiEndpoint.Path}{{query}}"", content);
             switch ((int)response.StatusCode)
             {{
                 case 200: // OK");
@@ -373,6 +392,7 @@ namespace {BASE_NAMESPACE}.{apiName}
 {{
     using System;
 	using System.Linq;
+    using System.Collections.Generic;
     using System.Net.Http;
     using System.Net.Http.Json;
     using System.Text.Json;
@@ -433,19 +453,16 @@ namespace {BASE_NAMESPACE}.{apiName}
 			}
 		}
 
-		private static string GenerateApiEndpointUri(ApiEndpoint endpoint, Dictionary<string, TypeDescriptor> typeMap)
+		private static List<(string paramName, string paramValue)> GenerateApiEndpointQuery(ApiEndpoint endpoint, Dictionary<string, TypeDescriptor> typeMap)
 		{
-			string query = string.Join("&", endpoint.Parameters.Where(p => p.In == ParameterLocation.Query).Select(p => getParameterValue(p.Name, p.Schema)));
-			if (!string.IsNullOrWhiteSpace(query))
-				query = "?" + query;
-			return @$"$""{endpoint.Path}{query}""";
+			return endpoint.Parameters.Where(p => p.In == ParameterLocation.Query).Select(p => getParameterValue(p.Name, p.Schema)).ToList();
 
-			string getParameterValue(string paramName, TypeDescriptor paramSchema) =>
+			(string paramName, string paramValue) getParameterValue(string paramName, TypeDescriptor paramSchema) =>
 				paramSchema.Type switch
 				{
-					"string" or "number" or "integer" or "boolean" => $@"{paramName}={{{paramName}}}",
-					"array" => $@"{paramName}={{string.Join(',', ({paramName} as System.Collections.IEnumerable)?.Cast<object>().Select(o => o.ToString()) ?? Enumerable.Empty<string>())}}",
-					_ => string.Empty
+					"string" or "number" or "integer" or "boolean" => (paramName, $@"{{{paramName}}}"),
+					"array" => (paramName, $@"{{string.Join(',', ({paramName} as System.Collections.IEnumerable)?.Cast<object>().Select(o => o.ToString()) ?? Enumerable.Empty<string>())}}"),
+					_ => (paramName, string.Empty)
 				};
 		}
 

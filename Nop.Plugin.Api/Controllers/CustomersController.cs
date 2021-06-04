@@ -119,7 +119,7 @@ namespace Nop.Plugin.Api.Controllers
 		[ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
 		[ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
 		[GetRequestsErrorInterceptorActionFilter]
-		public async Task<IActionResult> GetCustomers([FromQueryJson] CustomersParametersModel parameters)
+		public async Task<IActionResult> GetCustomers([FromQuery] CustomersParametersModel parameters)
 		{
 			if (parameters.Limit < Constants.Configurations.MinLimit || parameters.Limit > Constants.Configurations.MaxLimit)
 			{
@@ -254,7 +254,7 @@ namespace Nop.Plugin.Api.Controllers
 		[ProducesResponseType(typeof(CustomersRootObject), (int)HttpStatusCode.OK)]
 		[ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
 		[ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
-		public async Task<IActionResult> Search([FromQueryJson] CustomersSearchParametersModel parameters)
+		public async Task<IActionResult> Search([FromQuery] CustomersSearchParametersModel parameters)
 		{
 			if (parameters.Limit <= Constants.Configurations.MinLimit || parameters.Limit > Constants.Configurations.MaxLimit)
 			{

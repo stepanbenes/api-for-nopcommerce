@@ -77,7 +77,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(CategoriesRootObject), (int) HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int) HttpStatusCode.BadRequest)]
         [GetRequestsErrorInterceptorActionFilter]
-        public async Task<IActionResult> GetCategories(CategoriesParametersModel parameters)
+        public async Task<IActionResult> GetCategories([FromQuery] CategoriesParametersModel parameters)
         {
             if (parameters.Limit < Constants.Configurations.MinLimit || parameters.Limit > Constants.Configurations.MaxLimit)
             {
@@ -119,7 +119,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(string), (int) HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int) HttpStatusCode.BadRequest)]
         [GetRequestsErrorInterceptorActionFilter]
-        public async Task<IActionResult> GetCategoriesCount(CategoriesCountParametersModel parameters)
+        public async Task<IActionResult> GetCategoriesCount([FromQuery] CategoriesCountParametersModel parameters)
         {
             var allCategoriesCount = await _categoryApiService.GetCategoriesCountAsync(parameters.CreatedAtMin, parameters.CreatedAtMax,
                                                                             parameters.UpdatedAtMin, parameters.UpdatedAtMax,
@@ -149,7 +149,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(ErrorsRootObject), (int) HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(string), (int) HttpStatusCode.Unauthorized)]
         [GetRequestsErrorInterceptorActionFilter]
-        public async Task<IActionResult> GetCategoryById(int id, string fields = "")
+        public async Task<IActionResult> GetCategoryById([FromRoute] int id, [FromQuery] string fields = "")
         {
             if (id <= 0)
             {
@@ -182,6 +182,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(ErrorsRootObject), (int) HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int) HttpStatusCode.Unauthorized)]
         public async Task<IActionResult> CreateCategory(
+            [FromBody]
             [ModelBinder(typeof(JsonModelBinder<CategoryDto>))]
             Delta<CategoryDto> categoryDelta)
         {
@@ -250,6 +251,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(string), (int) HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int) HttpStatusCode.BadRequest)]
         public async Task<IActionResult> UpdateCategory(
+            [FromBody]
             [ModelBinder(typeof(JsonModelBinder<CategoryDto>))]
             Delta<CategoryDto> categoryDelta)
         {
@@ -311,7 +313,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(string), (int) HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(string), (int) HttpStatusCode.Unauthorized)]
         [GetRequestsErrorInterceptorActionFilter]
-        public async Task<IActionResult> DeleteCategory(int id)
+        public async Task<IActionResult> DeleteCategory([FromRoute] int id)
         {
             if (id <= 0)
             {

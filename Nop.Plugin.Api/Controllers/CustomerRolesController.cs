@@ -57,7 +57,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [GetRequestsErrorInterceptorActionFilter]
-        public async Task<IActionResult> GetAllCustomerRoles(string fields = "")
+        public async Task<IActionResult> GetAllCustomerRoles([FromQuery] string fields = "")
         {
             var allCustomerRoles = await CustomerService.GetAllCustomerRolesAsync();
 

@@ -71,7 +71,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [GetRequestsErrorInterceptorActionFilter]
-        public IActionResult GetMappings(ProductCategoryMappingsParametersModel parameters)
+        public IActionResult GetMappings([FromQuery] ProductCategoryMappingsParametersModel parameters)
         {
             if (parameters.Limit < Constants.Configurations.MinLimit || parameters.Limit > Constants.Configurations.MaxLimit)
             {
@@ -111,7 +111,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [GetRequestsErrorInterceptorActionFilter]
-        public IActionResult GetMappingsCount(ProductCategoryMappingsCountParametersModel parameters)
+        public IActionResult GetMappingsCount([FromQuery] ProductCategoryMappingsCountParametersModel parameters)
         {
             if (parameters.ProductId < 0)
             {
@@ -150,7 +150,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
         [GetRequestsErrorInterceptorActionFilter]
-        public async Task<IActionResult> GetMappingById(int id, string fields = "")
+        public async Task<IActionResult> GetMappingById([FromRoute] int id, [FromQuery] string fields = "")
         {
             if (id <= 0)
             {
@@ -180,6 +180,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ErrorsRootObject), 422)]
         public async Task<IActionResult> CreateProductCategoryMapping(
+            [FromBody]
             [ModelBinder(typeof(JsonModelBinder<ProductCategoryMappingDto>))]
             Delta<ProductCategoryMappingDto> productCategoryDelta)
         {
@@ -238,6 +239,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(ErrorsRootObject), 422)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> UpdateProductCategoryMapping(
+            [FromBody]
             [ModelBinder(typeof(JsonModelBinder<ProductCategoryMappingDto>))]
             Delta<ProductCategoryMappingDto> productCategoryDelta)
         {
@@ -300,7 +302,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
         [GetRequestsErrorInterceptorActionFilter]
-        public async Task<IActionResult> DeleteProductCategoryMapping(int id)
+        public async Task<IActionResult> DeleteProductCategoryMapping([FromRoute] int id)
         {
             if (id <= 0)
             {

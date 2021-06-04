@@ -67,7 +67,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [GetRequestsErrorInterceptorActionFilter]
-        public IActionResult GetProductAttributes(ProductAttributesParametersModel parameters)
+        public IActionResult GetProductAttributes([FromQuery] ProductAttributesParametersModel parameters)
         {
             if (parameters.Limit < Constants.Configurations.MinLimit || parameters.Limit > Constants.Configurations.MaxLimit)
             {
@@ -130,7 +130,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [GetRequestsErrorInterceptorActionFilter]
-        public async Task<IActionResult> GetProductAttributeById(int id, string fields = "")
+        public async Task<IActionResult> GetProductAttributeById([FromRoute] int id, [FromQuery] string fields = "")
         {
             if (id <= 0)
             {
@@ -164,6 +164,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(ErrorsRootObject), 422)]
         [GetRequestsErrorInterceptorActionFilter]
         public async Task<IActionResult> CreateProductAttribute(
+            [FromBody]
             [ModelBinder(typeof(JsonModelBinder<ProductAttributeDto>))]
             Delta<ProductAttributeDto> productAttributeDelta)
         {
@@ -202,6 +203,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(ErrorsRootObject), 422)]
         [GetRequestsErrorInterceptorActionFilter]
         public async Task<IActionResult> UpdateProductAttribute(
+            [FromBody]
             [ModelBinder(typeof(JsonModelBinder<ProductAttributeDto>))]
             Delta<ProductAttributeDto> productAttributeDelta)
         {
@@ -245,7 +247,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ErrorsRootObject), 422)]
         [GetRequestsErrorInterceptorActionFilter]
-        public async Task<IActionResult> DeleteProductAttribute(int id)
+        public async Task<IActionResult> DeleteProductAttribute([FromRoute] int id)
         {
             if (id <= 0)
             {

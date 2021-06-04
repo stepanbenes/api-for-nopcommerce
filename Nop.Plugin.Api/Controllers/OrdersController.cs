@@ -121,7 +121,7 @@ namespace Nop.Plugin.Api.Controllers
 		[ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
 		[ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
 		[GetRequestsErrorInterceptorActionFilter]
-		public async Task<IActionResult> GetOrders([FromQueryJson] OrdersParametersModel parameters)
+		public async Task<IActionResult> GetOrders([FromQuery] OrdersParametersModel parameters)
 		{
 			if (parameters.Page < Constants.Configurations.DefaultPageValue)
 			{
@@ -169,7 +169,7 @@ namespace Nop.Plugin.Api.Controllers
 		[ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
 		[ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
 		[GetRequestsErrorInterceptorActionFilter]
-		public async Task<IActionResult> GetOrdersCount([FromQueryJson] OrdersCountParametersModel parameters)
+		public async Task<IActionResult> GetOrdersCount([FromQuery] OrdersCountParametersModel parameters)
 		{
 			if (!await CheckPermissions(parameters.CustomerId))
 			{

@@ -78,7 +78,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(ManufacturersRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [GetRequestsErrorInterceptorActionFilter]
-        public async Task<IActionResult> GetManufacturers(ManufacturersParametersModel parameters)
+        public async Task<IActionResult> GetManufacturers([FromQuery] ManufacturersParametersModel parameters)
         {
             if (parameters.Limit < Constants.Configurations.MinLimit || parameters.Limit > Constants.Configurations.MaxLimit)
             {
@@ -119,7 +119,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [GetRequestsErrorInterceptorActionFilter]
-        public IActionResult GetManufacturersCount(ManufacturersCountParametersModel parameters)
+        public IActionResult GetManufacturersCount([FromQuery] ManufacturersCountParametersModel parameters)
         {
             var allManufacturersCount = _manufacturerApiService.GetManufacturersCount(parameters.CreatedAtMin, parameters.CreatedAtMax,
                                                                                       parameters.UpdatedAtMin, parameters.UpdatedAtMax,
@@ -147,7 +147,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [GetRequestsErrorInterceptorActionFilter]
-        public async Task<IActionResult> GetManufacturerById(int id, string fields = "")
+        public async Task<IActionResult> GetManufacturerById([FromRoute] int id, [FromQuery] string fields = "")
         {
             if (id <= 0)
             {
@@ -179,6 +179,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         public async Task<IActionResult> CreateManufacturer(
+            [FromBody]
             [ModelBinder(typeof(JsonModelBinder<ManufacturerDto>))]
             Delta<ManufacturerDto> manufacturerDelta)
         {
@@ -245,6 +246,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> UpdateManufacturer(
+            [FromBody]
             [ModelBinder(typeof(JsonModelBinder<ManufacturerDto>))]
             Delta<ManufacturerDto> manufacturerDelta)
         {
@@ -304,7 +306,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [GetRequestsErrorInterceptorActionFilter]
-        public async Task<IActionResult> DeleteManufacturer(int id)
+        public async Task<IActionResult> DeleteManufacturer([FromRoute] int id)
         {
             if (id <= 0)
             {

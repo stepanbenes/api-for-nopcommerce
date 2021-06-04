@@ -77,7 +77,7 @@ namespace ClientApp
 					_ = await nopApiClient.UpdateShoppingCartItem(new ShoppingCartItemDtoDelta { ShoppingCartItem = item }, item.Id.ToString());
 				}
 
-				result = await nopApiClient.GetShoppingCartItems(new ShoppingCartItemsParametersModel(CustomerId: tokenResponse?.CustomerId));
+				result = await nopApiClient.GetShoppingCartItems(CustomerId: tokenResponse?.CustomerId);
 
 				//var invoiceDocument = await nopApiClient.GetPdfInvoice(orderId: 1);
 			}

@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
-    <Version>0.9.1</Version>
+    <Version>0.9.2</Version>
     <Authors>Štěpán Beneš</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Description>C# source generator for generation dto records and api client class from a swagger file.</Description>

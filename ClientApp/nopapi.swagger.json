@@ -13,10 +13,92 @@
         "operationId": "GetCategories",
         "parameters": [
           {
-            "name": "parameters",
+            "name": "Ids",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/CategoriesParametersModel"
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          },
+          {
+            "name": "Limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "SinceId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Fields",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "CreatedAtMin",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "CreatedAtMax",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "UpdatedAtMin",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "UpdatedAtMax",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "PublishedStatus",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "ProductId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
             }
           }
         ],
@@ -68,15 +150,30 @@
           "Categories"
         ],
         "operationId": "CreateCategory",
-        "parameters": [
-          {
-            "name": "categoryDelta",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/CategoryDtoDelta"
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CategoryDtoDelta"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CategoryDtoDelta"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CategoryDtoDelta"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CategoryDtoDelta"
+              }
             }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "Success",
@@ -169,10 +266,50 @@
         "operationId": "GetCategoriesCount",
         "parameters": [
           {
-            "name": "parameters",
+            "name": "CreatedAtMin",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/CategoriesCountParametersModel"
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "CreatedAtMax",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "UpdatedAtMin",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "UpdatedAtMax",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "PublishedStatus",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "ProductId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
             }
           }
         ],
@@ -355,13 +492,6 @@
         "operationId": "UpdateCategory",
         "parameters": [
           {
-            "name": "categoryDelta",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/CategoryDtoDelta"
-            }
-          },
-          {
             "name": "id",
             "in": "path",
             "required": true,
@@ -370,6 +500,30 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CategoryDtoDelta"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CategoryDtoDelta"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CategoryDtoDelta"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CategoryDtoDelta"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Success",
@@ -710,10 +864,50 @@
         "operationId": "GetCustomers",
         "parameters": [
           {
-            "name": "parameters",
+            "name": "Limit",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/CustomersParametersModel"
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "SinceId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Fields",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "CreatedAtMin",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "CreatedAtMax",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
             }
           }
         ],
@@ -1383,10 +1577,40 @@
         "operationId": "SearchCustomers",
         "parameters": [
           {
-            "name": "parameters",
+            "name": "Order",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/CustomersSearchParametersModel"
+              "type": "string"
+            }
+          },
+          {
+            "name": "Query",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Fields",
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -1792,10 +2016,100 @@
         "operationId": "GetManufacturers",
         "parameters": [
           {
-            "name": "parameters",
+            "name": "Ids",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/ManufacturersParametersModel"
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          },
+          {
+            "name": "Limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "SinceId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Fields",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "LanguageId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "CreatedAtMin",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "CreatedAtMax",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "UpdatedAtMin",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "UpdatedAtMax",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "PublishedStatus",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "ProductId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
             }
           }
         ],
@@ -1847,15 +2161,30 @@
           "Manufacturers"
         ],
         "operationId": "CreateManufacturer",
-        "parameters": [
-          {
-            "name": "manufacturerDelta",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/ManufacturerDtoDelta"
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ManufacturerDtoDelta"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ManufacturerDtoDelta"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ManufacturerDtoDelta"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ManufacturerDtoDelta"
+              }
             }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "Success",
@@ -1948,10 +2277,50 @@
         "operationId": "GetManufacturersCount",
         "parameters": [
           {
-            "name": "parameters",
+            "name": "CreatedAtMin",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/ManufacturersCountParametersModel"
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "CreatedAtMax",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "UpdatedAtMin",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "UpdatedAtMax",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "PublishedStatus",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "ProductId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
             }
           }
         ],
@@ -2114,13 +2483,6 @@
         "operationId": "UpdateManufacturer",
         "parameters": [
           {
-            "name": "manufacturerDelta",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/ManufacturerDtoDelta"
-            }
-          },
-          {
             "name": "id",
             "in": "path",
             "required": true,
@@ -2129,6 +2491,30 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ManufacturerDtoDelta"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ManufacturerDtoDelta"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ManufacturerDtoDelta"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ManufacturerDtoDelta"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Success",
@@ -2323,10 +2709,57 @@
         "operationId": "GetNewsLetterSubscriptions",
         "parameters": [
           {
-            "name": "parameters",
+            "name": "Limit",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/NewsLetterSubscriptionsParametersModel"
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "SinceId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Fields",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "CreatedAtMin",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "CreatedAtMax",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "OnlyActive",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
             }
           }
         ],
@@ -2471,10 +2904,34 @@
             }
           },
           {
-            "name": "parameters",
+            "name": "Limit",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/OrderItemsParametersModel"
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "SinceId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Fields",
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -2575,15 +3032,32 @@
               "type": "integer",
               "format": "int32"
             }
-          },
-          {
-            "name": "orderItemDelta",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/OrderItemDtoDelta"
-            }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderItemDtoDelta"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderItemDtoDelta"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderItemDtoDelta"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderItemDtoDelta"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Success",
@@ -3011,15 +3485,32 @@
               "type": "integer",
               "format": "int32"
             }
-          },
-          {
-            "name": "orderItemDelta",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/OrderItemDtoDelta"
-            }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderItemDtoDelta"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderItemDtoDelta"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderItemDtoDelta"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderItemDtoDelta"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Success",
@@ -3223,10 +3714,90 @@
         "operationId": "GetOrders",
         "parameters": [
           {
-            "name": "parameters",
+            "name": "Ids",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/OrdersParametersModel"
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          },
+          {
+            "name": "Limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "SinceId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Fields",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "CreatedAtMin",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "CreatedAtMax",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "Status",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/OrderStatus"
+            }
+          },
+          {
+            "name": "PaymentStatus",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/PaymentStatus"
+            }
+          },
+          {
+            "name": "ShippingStatus",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/ShippingStatus"
+            }
+          },
+          {
+            "name": "CustomerId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
             }
           }
         ],
@@ -3434,10 +4005,48 @@
         "operationId": "GetOrdersCount",
         "parameters": [
           {
-            "name": "parameters",
+            "name": "CreatedAtMin",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/OrdersCountParametersModel"
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "CreatedAtMax",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "Status",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/OrderStatus"
+            }
+          },
+          {
+            "name": "PaymentStatus",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/PaymentStatus"
+            }
+          },
+          {
+            "name": "ShippingStatus",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/ShippingStatus"
+            }
+          },
+          {
+            "name": "CustomerId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
             }
           }
         ],
@@ -4008,10 +4617,34 @@
         "operationId": "GetProductAttributes",
         "parameters": [
           {
-            "name": "parameters",
+            "name": "Limit",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/ProductAttributesParametersModel"
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "SinceId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Fields",
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -4083,15 +4716,30 @@
           "ProductAttributes"
         ],
         "operationId": "CreateProductAttribute",
-        "parameters": [
-          {
-            "name": "productAttributeDelta",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/ProductAttributeDtoDelta"
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductAttributeDtoDelta"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductAttributeDtoDelta"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductAttributeDtoDelta"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductAttributeDtoDelta"
+              }
             }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "Success",
@@ -4341,13 +4989,6 @@
         "operationId": "UpdateProductAttribute",
         "parameters": [
           {
-            "name": "productAttributeDelta",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/ProductAttributeDtoDelta"
-            }
-          },
-          {
             "name": "id",
             "in": "path",
             "required": true,
@@ -4356,6 +4997,30 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductAttributeDtoDelta"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductAttributeDtoDelta"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductAttributeDtoDelta"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductAttributeDtoDelta"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Success",
@@ -4570,10 +5235,50 @@
         "operationId": "GetProductCategoryMappings",
         "parameters": [
           {
-            "name": "parameters",
+            "name": "SinceId",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/ProductCategoryMappingsParametersModel"
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Fields",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ProductId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "CategoryId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
             }
           }
         ],
@@ -4645,15 +5350,30 @@
           "ProductCategoryMappings"
         ],
         "operationId": "CreateProductCategoryMapping",
-        "parameters": [
-          {
-            "name": "productCategoryDelta",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/ProductCategoryMappingDtoDelta"
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductCategoryMappingDtoDelta"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductCategoryMappingDtoDelta"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductCategoryMappingDtoDelta"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductCategoryMappingDtoDelta"
+              }
             }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "Success",
@@ -4766,10 +5486,19 @@
         "operationId": "GetProductCategoryMappingsCount",
         "parameters": [
           {
-            "name": "parameters",
+            "name": "ProductId",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/ProductCategoryMappingsCountParametersModel"
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "CategoryId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
             }
           }
         ],
@@ -4952,13 +5681,6 @@
         "operationId": "UpdateProductCategoryMapping",
         "parameters": [
           {
-            "name": "productCategoryDelta",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/ProductCategoryMappingDtoDelta"
-            }
-          },
-          {
             "name": "id",
             "in": "path",
             "required": true,
@@ -4967,6 +5689,30 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductCategoryMappingDtoDelta"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductCategoryMappingDtoDelta"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductCategoryMappingDtoDelta"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductCategoryMappingDtoDelta"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Success",
@@ -5161,10 +5907,50 @@
         "operationId": "GetProductManufacturerMappings",
         "parameters": [
           {
-            "name": "parameters",
+            "name": "SinceId",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/ProductManufacturerMappingsParametersModel"
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Fields",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ProductId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "ManufacturerId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
             }
           }
         ],
@@ -5236,15 +6022,30 @@
           "ProductManufacturerMappings"
         ],
         "operationId": "CreateProductManufacturerMapping",
-        "parameters": [
-          {
-            "name": "productManufacturerDelta",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/ProductManufacturerMappingsDtoDelta"
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductManufacturerMappingsDtoDelta"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductManufacturerMappingsDtoDelta"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductManufacturerMappingsDtoDelta"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductManufacturerMappingsDtoDelta"
+              }
             }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "Success",
@@ -5357,10 +6158,19 @@
         "operationId": "GetProductManufacturerMappingsCount",
         "parameters": [
           {
-            "name": "parameters",
+            "name": "ProductId",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/ProductManufacturerMappingsCountParametersModel"
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "ManufacturerId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
             }
           }
         ],
@@ -5543,13 +6353,6 @@
         "operationId": "UpdateProductManufacturerMapping",
         "parameters": [
           {
-            "name": "productManufacturerDelta",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/ProductManufacturerMappingsDtoDelta"
-            }
-          },
-          {
             "name": "id",
             "in": "path",
             "required": true,
@@ -5558,6 +6361,30 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductManufacturerMappingsDtoDelta"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductManufacturerMappingsDtoDelta"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductManufacturerMappingsDtoDelta"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductManufacturerMappingsDtoDelta"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Success",
@@ -5752,10 +6579,116 @@
         "operationId": "GetProducts",
         "parameters": [
           {
-            "name": "parameters",
+            "name": "Ids",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/ProductsParametersModel"
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          },
+          {
+            "name": "Limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "SinceId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Fields",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ManufacturerPartNumbers",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "IsDownload",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "CreatedAtMin",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "CreatedAtMax",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "UpdatedAtMin",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "UpdatedAtMax",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "PublishedStatus",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "VendorName",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "CategoryId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
             }
           }
         ],
@@ -5827,15 +6760,30 @@
           "Products"
         ],
         "operationId": "CreateProduct",
-        "parameters": [
-          {
-            "name": "productDelta",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/ProductDtoDelta"
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductDtoDelta"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductDtoDelta"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductDtoDelta"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductDtoDelta"
+              }
             }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "Success",
@@ -5908,10 +6856,64 @@
         "operationId": "GetProductsCount",
         "parameters": [
           {
-            "name": "parameters",
+            "name": "IsDownload",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/ProductsCountParametersModel"
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "CreatedAtMin",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "CreatedAtMax",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "UpdatedAtMin",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "UpdatedAtMax",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "PublishedStatus",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "VendorName",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "CategoryId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
             }
           }
         ],
@@ -6094,13 +7096,6 @@
         "operationId": "UpdateProduct",
         "parameters": [
           {
-            "name": "productDelta",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/ProductDtoDelta"
-            }
-          },
-          {
             "name": "id",
             "in": "path",
             "required": true,
@@ -6109,6 +7104,30 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductDtoDelta"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductDtoDelta"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductDtoDelta"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductDtoDelta"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Success",
@@ -6303,10 +7322,64 @@
         "operationId": "GetProductSpecificationAttributes",
         "parameters": [
           {
-            "name": "parameters",
+            "name": "ProductId",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/ProductSpecificationAttributesParametersModel"
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "SpecificationAttributeOptionId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "AllowFiltering",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "ShowOnProductPage",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "Limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "SinceId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Fields",
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -6378,15 +7451,30 @@
           "ProductSpecificationAttributes"
         ],
         "operationId": "CreateProductSpecificationAttribute",
-        "parameters": [
-          {
-            "name": "productSpecificaitonAttributeDelta",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/ProductSpecificationAttributeDtoDelta"
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductSpecificationAttributeDtoDelta"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductSpecificationAttributeDtoDelta"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductSpecificationAttributeDtoDelta"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductSpecificationAttributeDtoDelta"
+              }
             }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "Success",
@@ -6499,10 +7587,19 @@
         "operationId": "GetProductSpecificationAttributesCount",
         "parameters": [
           {
-            "name": "parameters",
+            "name": "ProductId",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/ProductSpecificationAttributesCountParametersModel"
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "SpecificationAttributeOptionId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
             }
           }
         ],
@@ -6685,13 +7782,6 @@
         "operationId": "UpdateProductSpecificationAttribute",
         "parameters": [
           {
-            "name": "productSpecificationAttributeDelta",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/ProductSpecificationAttributeDtoDelta"
-            }
-          },
-          {
             "name": "id",
             "in": "path",
             "required": true,
@@ -6700,6 +7790,30 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductSpecificationAttributeDtoDelta"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductSpecificationAttributeDtoDelta"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductSpecificationAttributeDtoDelta"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductSpecificationAttributeDtoDelta"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Success",
@@ -6914,10 +8028,73 @@
         "operationId": "GetShoppingCartItems",
         "parameters": [
           {
-            "name": "parameters",
+            "name": "CreatedAtMin",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/ShoppingCartItemsParametersModel"
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "CreatedAtMax",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "UpdatedAtMin",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "UpdatedAtMax",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "Limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Fields",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ShoppingCartType",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/ShoppingCartType"
+            }
+          },
+          {
+            "name": "CustomerId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
             }
           }
         ],
@@ -7351,10 +8528,34 @@
         "operationId": "GetSpecificationAttributes",
         "parameters": [
           {
-            "name": "parameters",
+            "name": "Limit",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/SpecificationAttributesParametersModel"
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Fields",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "SinceId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
             }
           }
         ],
@@ -7733,13 +8934,6 @@
         "operationId": "UpdateSpecificationAttribute",
         "parameters": [
           {
-            "name": "specificationAttributeDelta",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/SpecificationAttributeDtoDelta"
-            }
-          },
-          {
             "name": "id",
             "in": "path",
             "required": true,
@@ -7748,6 +8942,30 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/SpecificationAttributeDtoDelta"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SpecificationAttributeDtoDelta"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SpecificationAttributeDtoDelta"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/SpecificationAttributeDtoDelta"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Success",
@@ -8304,30 +9522,50 @@
           "Topics"
         ],
         "operationId": "GetTopics",
-        "requestBody": {
-          "content": {
-            "application/json-patch+json": {
-              "schema": {
-                "$ref": "#/components/schemas/TopicsParametersModel"
-              }
-            },
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/TopicsParametersModel"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/TopicsParametersModel"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/TopicsParametersModel"
+        "parameters": [
+          {
+            "name": "Ids",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "format": "int32"
               }
             }
+          },
+          {
+            "name": "Limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "SinceId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Fields",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
-        },
+        ],
         "responses": {
           "200": {
             "description": "Success",
@@ -8396,15 +9634,30 @@
           "Topics"
         ],
         "operationId": "CreateTopic",
-        "parameters": [
-          {
-            "name": "topicDelta",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/TopicDtoDelta"
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TopicDtoDelta"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TopicDtoDelta"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TopicDtoDelta"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TopicDtoDelta"
+              }
             }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "Success",
@@ -8624,13 +9877,6 @@
         "operationId": "UpdateTopic",
         "parameters": [
           {
-            "name": "topicDelta",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/TopicDtoDelta"
-            }
-          },
-          {
             "name": "id",
             "in": "path",
             "required": true,
@@ -8639,6 +9885,30 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TopicDtoDelta"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TopicDtoDelta"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TopicDtoDelta"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TopicDtoDelta"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Success",
@@ -8948,106 +10218,12 @@
         },
         "additionalProperties": false
       },
-      "CategoriesCountParametersModel": {
-        "type": "object",
-        "properties": {
-          "created_at_min": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "created_at_max": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "updated_at_min": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "updated_at_max": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "published_status": {
-            "type": "boolean",
-            "nullable": true
-          },
-          "product_id": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
       "CategoriesCountRootObject": {
         "type": "object",
         "properties": {
           "count": {
             "type": "integer",
             "format": "int32"
-          }
-        },
-        "additionalProperties": false
-      },
-      "CategoriesParametersModel": {
-        "type": "object",
-        "properties": {
-          "ids": {
-            "type": "array",
-            "items": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "nullable": true
-          },
-          "limit": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "page": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "since_id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "fields": {
-            "type": "string",
-            "nullable": true
-          },
-          "created_at_min": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "created_at_max": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "updated_at_min": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "updated_at_max": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "published_status": {
-            "type": "boolean",
-            "nullable": true
-          },
-          "product_id": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
           }
         },
         "additionalProperties": false
@@ -9578,38 +10754,6 @@
         },
         "additionalProperties": false
       },
-      "CustomersParametersModel": {
-        "type": "object",
-        "properties": {
-          "limit": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "page": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "since_id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "fields": {
-            "type": "string",
-            "nullable": true
-          },
-          "created_at_min": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "created_at_max": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
       "CustomersRootObject": {
         "type": "object",
         "properties": {
@@ -9618,32 +10762,6 @@
             "items": {
               "$ref": "#/components/schemas/CustomerDto"
             },
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "CustomersSearchParametersModel": {
-        "type": "object",
-        "properties": {
-          "order": {
-            "type": "string",
-            "nullable": true
-          },
-          "query": {
-            "type": "string",
-            "nullable": true
-          },
-          "page": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "limit": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "fields": {
-            "type": "string",
             "nullable": true
           }
         },
@@ -9918,111 +11036,12 @@
         },
         "additionalProperties": false
       },
-      "ManufacturersCountParametersModel": {
-        "type": "object",
-        "properties": {
-          "created_at_min": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "created_at_max": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "updated_at_min": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "updated_at_max": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "published_status": {
-            "type": "boolean",
-            "nullable": true
-          },
-          "product_id": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
       "ManufacturersCountRootObject": {
         "type": "object",
         "properties": {
           "count": {
             "type": "integer",
             "format": "int32"
-          }
-        },
-        "additionalProperties": false
-      },
-      "ManufacturersParametersModel": {
-        "type": "object",
-        "properties": {
-          "ids": {
-            "type": "array",
-            "items": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "nullable": true
-          },
-          "limit": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "page": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "since_id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "fields": {
-            "type": "string",
-            "nullable": true
-          },
-          "languageid": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "created_at_min": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "created_at_max": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "updated_at_min": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "updated_at_max": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "published_status": {
-            "type": "boolean",
-            "nullable": true
-          },
-          "product_id": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
           }
         },
         "additionalProperties": false
@@ -10062,42 +11081,6 @@
           "id": {
             "type": "integer",
             "format": "int32"
-          }
-        },
-        "additionalProperties": false
-      },
-      "NewsLetterSubscriptionsParametersModel": {
-        "type": "object",
-        "properties": {
-          "limit": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "page": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "since_id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "fields": {
-            "type": "string",
-            "nullable": true
-          },
-          "created_at_min": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "created_at_max": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "only_active": {
-            "type": "boolean",
-            "nullable": true
           }
         },
         "additionalProperties": false
@@ -10571,28 +11554,6 @@
         },
         "additionalProperties": false
       },
-      "OrderItemsParametersModel": {
-        "type": "object",
-        "properties": {
-          "limit": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "page": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "since_id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "fields": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
       "OrderItemsRootObject": {
         "type": "object",
         "properties": {
@@ -10606,96 +11567,12 @@
         },
         "additionalProperties": false
       },
-      "OrdersCountParametersModel": {
-        "type": "object",
-        "properties": {
-          "created_at_min": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "created_at_max": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "status": {
-            "$ref": "#/components/schemas/OrderStatus"
-          },
-          "payment_status": {
-            "$ref": "#/components/schemas/PaymentStatus"
-          },
-          "shipping_status": {
-            "$ref": "#/components/schemas/ShippingStatus"
-          },
-          "customer_id": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
       "OrdersCountRootObject": {
         "type": "object",
         "properties": {
           "count": {
             "type": "integer",
             "format": "int32"
-          }
-        },
-        "additionalProperties": false
-      },
-      "OrdersParametersModel": {
-        "type": "object",
-        "properties": {
-          "ids": {
-            "type": "array",
-            "items": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "nullable": true
-          },
-          "limit": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "page": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "since_id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "fields": {
-            "type": "string",
-            "nullable": true
-          },
-          "created_at_min": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "created_at_max": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "status": {
-            "$ref": "#/components/schemas/OrderStatus"
-          },
-          "payment_status": {
-            "$ref": "#/components/schemas/PaymentStatus"
-          },
-          "shipping_status": {
-            "$ref": "#/components/schemas/ShippingStatus"
-          },
-          "customer_id": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
           }
         },
         "additionalProperties": false
@@ -10866,28 +11743,6 @@
         },
         "additionalProperties": false
       },
-      "ProductAttributesParametersModel": {
-        "type": "object",
-        "properties": {
-          "limit": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "page": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "since_id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "fields": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
       "ProductAttributesRootObjectDto": {
         "type": "object",
         "properties": {
@@ -11013,60 +11868,12 @@
         },
         "additionalProperties": false
       },
-      "ProductCategoryMappingsCountParametersModel": {
-        "type": "object",
-        "properties": {
-          "product_id": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "category_id": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
       "ProductCategoryMappingsCountRootObject": {
         "type": "object",
         "properties": {
           "count": {
             "type": "integer",
             "format": "int32"
-          }
-        },
-        "additionalProperties": false
-      },
-      "ProductCategoryMappingsParametersModel": {
-        "type": "object",
-        "properties": {
-          "since_id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "page": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "limit": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "fields": {
-            "type": "string",
-            "nullable": true
-          },
-          "product_id": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "category_id": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
           }
         },
         "additionalProperties": false
@@ -11577,22 +12384,6 @@
         },
         "additionalProperties": false
       },
-      "ProductManufacturerMappingsCountParametersModel": {
-        "type": "object",
-        "properties": {
-          "product_id": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "manufacturer_id": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
       "ProductManufacturerMappingsCountRootObject": {
         "type": "object",
         "properties": {
@@ -11646,38 +12437,6 @@
         },
         "additionalProperties": false
       },
-      "ProductManufacturerMappingsParametersModel": {
-        "type": "object",
-        "properties": {
-          "since_id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "page": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "limit": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "fields": {
-            "type": "string",
-            "nullable": true
-          },
-          "product_id": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "manufacturer_id": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
       "ProductManufacturerMappingsRootObject": {
         "type": "object",
         "properties": {
@@ -11691,132 +12450,12 @@
         },
         "additionalProperties": false
       },
-      "ProductsCountParametersModel": {
-        "type": "object",
-        "properties": {
-          "is_download": {
-            "type": "boolean",
-            "nullable": true
-          },
-          "created_at_min": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "created_at_max": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "updated_at_min": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "updated_at_max": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "published_status": {
-            "type": "boolean",
-            "nullable": true
-          },
-          "vendor_name": {
-            "type": "string",
-            "nullable": true
-          },
-          "category_id": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
       "ProductsCountRootObject": {
         "type": "object",
         "properties": {
           "count": {
             "type": "integer",
             "format": "int32"
-          }
-        },
-        "additionalProperties": false
-      },
-      "ProductsParametersModel": {
-        "type": "object",
-        "properties": {
-          "ids": {
-            "type": "array",
-            "items": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "nullable": true
-          },
-          "limit": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "page": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "since_id": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "fields": {
-            "type": "string",
-            "nullable": true
-          },
-          "manufacturer_part_numbers": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "nullable": true
-          },
-          "is_download": {
-            "type": "boolean",
-            "nullable": true
-          },
-          "created_at_min": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "created_at_max": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "updated_at_min": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "updated_at_max": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "published_status": {
-            "type": "boolean",
-            "nullable": true
-          },
-          "vendor_name": {
-            "type": "string",
-            "nullable": true
-          },
-          "category_id": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
           }
         },
         "additionalProperties": false
@@ -11878,64 +12517,12 @@
         },
         "additionalProperties": false
       },
-      "ProductSpecificationAttributesCountParametersModel": {
-        "type": "object",
-        "properties": {
-          "product_id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "specification_attribute_option_id": {
-            "type": "integer",
-            "format": "int32"
-          }
-        },
-        "additionalProperties": false
-      },
       "ProductSpecificationAttributesCountRootObject": {
         "type": "object",
         "properties": {
           "count": {
             "type": "integer",
             "format": "int32"
-          }
-        },
-        "additionalProperties": false
-      },
-      "ProductSpecificationAttributesParametersModel": {
-        "type": "object",
-        "properties": {
-          "product_id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "specification_attribute_option_id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "allow_filtering": {
-            "type": "boolean",
-            "nullable": true
-          },
-          "show_on_product_page": {
-            "type": "boolean",
-            "nullable": true
-          },
-          "limit": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "page": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "since_id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "fields": {
-            "type": "string",
-            "nullable": true
           }
         },
         "additionalProperties": false
@@ -12059,57 +12646,6 @@
         },
         "additionalProperties": false
       },
-      "ShoppingCartItemsParametersModel": {
-        "required": [
-          "customer_id"
-        ],
-        "type": "object",
-        "properties": {
-          "created_at_min": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "created_at_max": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "updated_at_min": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "updated_at_max": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "limit": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "page": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "fields": {
-            "type": "string",
-            "nullable": true
-          },
-          "shopping_cart_type": {
-            "$ref": "#/components/schemas/ShoppingCartType"
-          },
-          "customer_id": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
       "ShoppingCartItemsRootObject": {
         "type": "object",
         "properties": {
@@ -12203,28 +12739,6 @@
         "type": "object",
         "properties": {
           "count": {
-            "type": "integer",
-            "format": "int32"
-          }
-        },
-        "additionalProperties": false
-      },
-      "SpecificationAttributesParametersModel": {
-        "type": "object",
-        "properties": {
-          "limit": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "page": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "fields": {
-            "type": "string",
-            "nullable": true
-          },
-          "since_id": {
             "type": "integer",
             "format": "int32"
           }
@@ -12477,36 +12991,6 @@
           },
           "topic": {
             "$ref": "#/components/schemas/TopicDto"
-          }
-        },
-        "additionalProperties": false
-      },
-      "TopicsParametersModel": {
-        "type": "object",
-        "properties": {
-          "ids": {
-            "type": "array",
-            "items": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "nullable": true
-          },
-          "limit": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "page": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "since_id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "fields": {
-            "type": "string",
-            "nullable": true
           }
         },
         "additionalProperties": false

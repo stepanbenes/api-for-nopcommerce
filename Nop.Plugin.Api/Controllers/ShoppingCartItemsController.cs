@@ -95,7 +95,7 @@ namespace Nop.Plugin.Api.Controllers
 		[ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
 		[ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
 		[GetRequestsErrorInterceptorActionFilter]
-		public async Task<IActionResult> GetShoppingCartItems([FromQueryJson] ShoppingCartItemsParametersModel parameters)
+		public async Task<IActionResult> GetShoppingCartItems([FromQuery] ShoppingCartItemsParametersModel parameters)
 		{
 			if (parameters.Limit.HasValue && (parameters.Limit < Constants.Configurations.MinLimit || parameters.Limit > Constants.Configurations.MaxLimit))
 			{
@@ -223,7 +223,8 @@ namespace Nop.Plugin.Api.Controllers
 		[ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
 		[ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
 		[ProducesResponseType(typeof(ErrorsRootObject), 422)]
-		public async Task<IActionResult> UpdateShoppingCartItem([FromBody]
+		public async Task<IActionResult> UpdateShoppingCartItem(
+			[FromBody]
 			[ModelBinder(typeof(JsonModelBinder<ShoppingCartItemDto>))]
 			Delta<ShoppingCartItemDto> shoppingCartItemDelta) // NOTE: id parameter is missing intentionally to fix the generation of swagger json
 		{
