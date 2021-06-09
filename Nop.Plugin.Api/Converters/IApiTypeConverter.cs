@@ -9,7 +9,8 @@ namespace Nop.Plugin.Api.Converters
         int ToInt(string value);
         int? ToIntNullable(string value);
         IList<int> ToListOfInts(string value);
-        bool? ToStatus(string value);
+        IList<string> ToListOfStrings(string value);
+        bool? ToBoolean(string value);
         object ToEnumNullable(string value, Type type);
     }
 }

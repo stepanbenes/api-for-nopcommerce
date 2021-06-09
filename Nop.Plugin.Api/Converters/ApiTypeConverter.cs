@@ -87,7 +87,17 @@ namespace Nop.Plugin.Api.Converters
             return null;
         }
 
-        public bool? ToStatus(string value)
+        public IList<string> ToListOfStrings(string value)
+        {
+            if (!string.IsNullOrEmpty(value))
+            {
+                var stringValues = value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+                return stringValues;
+            }
+            return null;
+        }
+
+        public bool? ToBoolean(string value)
         {
             if (!string.IsNullOrEmpty(value))
             {

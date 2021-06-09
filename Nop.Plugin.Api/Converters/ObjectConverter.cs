@@ -55,10 +55,13 @@ namespace Nop.Plugin.Api.Converters
             {
                 return _apiTypeConverter.ToListOfInts(value);
             }
+            if (type == typeof(List<string>))
+            {
+                return _apiTypeConverter.ToListOfStrings(value);
+            }
             if (type == typeof(bool?))
             {
-                // Because currently status is the only boolean and we need to accept published and unpublished statuses.
-                return _apiTypeConverter.ToStatus(value);
+                return _apiTypeConverter.ToBoolean(value);
             }
             if (IsNullableEnum(type))
             {
