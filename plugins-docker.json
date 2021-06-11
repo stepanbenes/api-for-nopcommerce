@@ -1,0 +1,14 @@
+﻿{
+  "InstalledPluginNames": [
+    "Obsolete field, using only for compatibility"
+  ],
+  "InstalledPlugins": [
+    {
+      "SystemName": "Nop.Plugin.Api",
+      "Version": "4.4.0"
+    }
+  ],
+  "PluginNamesToUninstall": [],
+  "PluginNamesToDelete": [],
+  "PluginNamesToInstall": []
+}
