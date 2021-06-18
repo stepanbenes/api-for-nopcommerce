@@ -319,8 +319,8 @@ namespace Nop.Plugin.Api.Services
             //      attribute that contains the last name of customer 2
             // etc.
 
-            var allRecordsGroupedByCustomerId =
-                (from customer in query
+            var allRecords =
+                 from customer in query
                  from attribute in _genericAttributeRepository.Table
                                                               .Where(attr => attr.EntityId == customer.Id &&
                                                                              attr.KeyGroup == "Customer").DefaultIfEmpty()
@@ -328,35 +328,40 @@ namespace Nop.Plugin.Api.Services
                  {
                      Attribute = attribute,
                      Customer = customer
-                 }).GroupBy(x => x.Customer.Id);
+                 };
 
             if (searchParams != null && searchParams.Count > 0)
             {
                 if (searchParams.ContainsKey(FIRST_NAME))
                 {
-                    allRecordsGroupedByCustomerId = GetCustomerAttributesMappingsByKey(allRecordsGroupedByCustomerId, FIRST_NAME, searchParams[FIRST_NAME]);
+                    allRecords = GetCustomerAttributesMappingsByKey(allRecords, FIRST_NAME, searchParams[FIRST_NAME]);
                 }
 
                 if (searchParams.ContainsKey(LAST_NAME))
                 {
-                    allRecordsGroupedByCustomerId = GetCustomerAttributesMappingsByKey(allRecordsGroupedByCustomerId, LAST_NAME, searchParams[LAST_NAME]);
+                    allRecords = GetCustomerAttributesMappingsByKey(allRecords, LAST_NAME, searchParams[LAST_NAME]);
                 }
 
                 if (searchParams.ContainsKey(LANGUAGE_ID))
                 {
-                    allRecordsGroupedByCustomerId = GetCustomerAttributesMappingsByKey(allRecordsGroupedByCustomerId, LANGUAGE_ID, searchParams[LANGUAGE_ID]);
+                    allRecords = GetCustomerAttributesMappingsByKey(allRecords, LANGUAGE_ID, searchParams[LANGUAGE_ID]);
                 }
 
                 if (searchParams.ContainsKey(DATE_OF_BIRTH))
                 {
-                    allRecordsGroupedByCustomerId = GetCustomerAttributesMappingsByKey(allRecordsGroupedByCustomerId, DATE_OF_BIRTH, searchParams[DATE_OF_BIRTH]);
+                    allRecords = GetCustomerAttributesMappingsByKey(allRecords, DATE_OF_BIRTH, searchParams[DATE_OF_BIRTH]);
                 }
 
                 if (searchParams.ContainsKey(GENDER))
                 {
-                    allRecordsGroupedByCustomerId = GetCustomerAttributesMappingsByKey(allRecordsGroupedByCustomerId, GENDER, searchParams[GENDER]);
+                    allRecords = GetCustomerAttributesMappingsByKey(allRecords, GENDER, searchParams[GENDER]);
                 }
             }
+
+            var allRecordsGroupedByCustomerId = allRecords
+                .AsEnumerable<CustomerAttributeMappingDto>() // convert to IEnumerable (materialize the query) as LinqToDb does not support GroupBy
+                .GroupBy(x => x.Customer.Id) // do grouping in memory on materialized sequence
+                .AsQueryable(); // convert back to queryable just to be accepted by a following method
 
             var result = await GetFullCustomerDtosAsync(allRecordsGroupedByCustomerId, page, limit, order);
 
@@ -446,17 +451,15 @@ namespace Nop.Plugin.Api.Services
             return customerDto;
         }
 
-        private IQueryable<IGrouping<int, CustomerAttributeMappingDto>> GetCustomerAttributesMappingsByKey(
-            IQueryable<IGrouping<int, CustomerAttributeMappingDto>> customerAttributesGroups, string key, string value)
+        private IQueryable<CustomerAttributeMappingDto> GetCustomerAttributesMappingsByKey(
+            IQueryable<CustomerAttributeMappingDto> customerAttributes, string key, string value)
         {
             // Here we filter the customerAttributesGroups to be only the ones that have the passed key parameter as a key.
-            var customerAttributesMappingByKey = from @group in customerAttributesGroups
-                                                 where @group.Select(x => x.Attribute)
-                                                             .Any(x => x.Key.Equals(key, StringComparison.InvariantCultureIgnoreCase) &&
-                                                                       x.Value.Equals(value, StringComparison.InvariantCultureIgnoreCase))
-                                                 select @group;
+            var filteredCustomerAttributes = from a in customerAttributes
+                                                 where a.Attribute.Key.Equals(key) && a.Attribute.Value.Equals(value)
+                                                 select a;
 
-            return customerAttributesMappingByKey;
+            return filteredCustomerAttributes;
         }
 
         private IQueryable<Customer> GetCustomersQuery(DateTime? createdAtMin = null, DateTime? createdAtMax = null, int sinceId = 0)
