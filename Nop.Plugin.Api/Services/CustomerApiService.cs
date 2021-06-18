@@ -320,7 +320,7 @@ namespace Nop.Plugin.Api.Services
             // etc.
 
             var allRecords =
-                (from customer in query
+                 from customer in query
                  from attribute in _genericAttributeRepository.Table
                                                               .Where(attr => attr.EntityId == customer.Id &&
                                                                              attr.KeyGroup == "Customer").DefaultIfEmpty()
@@ -328,7 +328,7 @@ namespace Nop.Plugin.Api.Services
                  {
                      Attribute = attribute,
                      Customer = customer
-                 });
+                 };
 
             if (searchParams != null && searchParams.Count > 0)
             {
@@ -456,8 +456,7 @@ namespace Nop.Plugin.Api.Services
         {
             // Here we filter the customerAttributesGroups to be only the ones that have the passed key parameter as a key.
             var filteredCustomerAttributes = from a in customerAttributes
-                                                 where a.Attribute.Key.Equals(key, StringComparison.InvariantCultureIgnoreCase) &&
-                                                       a.Attribute.Value.Equals(value, StringComparison.InvariantCultureIgnoreCase)
+                                                 where a.Attribute.Key.Equals(key) && a.Attribute.Value.Equals(value)
                                                  select a;
 
             return filteredCustomerAttributes;
