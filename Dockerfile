@@ -22,8 +22,8 @@ WORKDIR /nopCommerce/src/Presentation/Nop.Web
 # build project
 RUN dotnet build Nop.Web.csproj -c Release
 
-# build plugins
-WORKDIR /nopCommerce/src/Plugins/Nop.Plugin.Api
+# build api plugin
+WORKDIR /api-for-nopcommerce/Nop.Plugin.Api
 RUN dotnet build Nop.Plugin.Api.csproj -c Release
 
 # publish project
