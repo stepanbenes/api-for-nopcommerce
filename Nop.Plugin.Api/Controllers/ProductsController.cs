@@ -207,7 +207,7 @@ namespace Nop.Plugin.Api.Controllers
 
             await UpdateProductPicturesAsync(product, productDelta.Dto.Images);
 
-            await _productTagService.UpdateProductTagsAsync(product, productDelta.Dto.Tags.ToArray());
+            await _productTagService.UpdateProductTagsAsync(product, productDelta.Dto.Tags?.ToArray() ?? Array.Empty<string>());
 
             await UpdateProductManufacturersAsync(product, productDelta.Dto.ManufacturerIds);
 
