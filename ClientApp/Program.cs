@@ -91,7 +91,11 @@ namespace ClientApp
 				{
 					Console.WriteLine("Deleting shopping cart item...");
 					await nopApiClient.DeleteShoppingCartItem(newShoppingCartItem.Id);
+					//await nopApiClient.DeleteShoppingCartItems(Ids: new[] { newShoppingCartItem.Id });
 				}
+
+
+				result = await nopApiClient.GetShoppingCartItems(CustomerId: tokenResponse?.CustomerId);
 
 				if (newProduct is not null)
 				{

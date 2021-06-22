@@ -289,7 +289,6 @@ namespace Nop.Plugin.Api.Controllers
 		[ProducesResponseType(typeof(void), (int)HttpStatusCode.OK)]
 		[ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
 		[ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
-		[ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
 		[GetRequestsErrorInterceptorActionFilter]
 		public async Task<IActionResult> DeleteShoppingCartItem([FromRoute] int id)
 		{
@@ -299,11 +298,6 @@ namespace Nop.Plugin.Api.Controllers
 			}
 
 			var shoppingCartItemForDelete = await _shoppingCartItemApiService.GetShoppingCartItemAsync(id);
-
-			if (shoppingCartItemForDelete == null)
-			{
-				return Error(HttpStatusCode.NotFound, "shopping_cart_item", "not found");
-			}
 
 			if (!await CheckPermissions(shoppingCartItemForDelete.CustomerId, shoppingCartItemForDelete.ShoppingCartType))
 			{
@@ -316,6 +310,69 @@ namespace Nop.Plugin.Api.Controllers
 			await CustomerActivityService.InsertActivityAsync("DeleteShoppingCartItem", await LocalizationService.GetResourceAsync("ActivityLog.DeleteShoppingCartItem"), shoppingCartItemForDelete);
 
 			return new RawJsonActionResult("{}");
+		}
+
+		[HttpDelete]
+		[Route("/api/shopping_cart_items", Name = "DeleteShoppingCartItems")]
+		[ProducesResponseType(typeof(void), (int)HttpStatusCode.OK)]
+		[ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
+		[ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
+		[GetRequestsErrorInterceptorActionFilter]
+		public async Task<IActionResult> DeleteShoppingCartItems([FromQuery] ShoppingCartItemsDeleteParametersModel parameters)
+		{
+			ShoppingCartType? shoppingCartType = null;
+
+			if (parameters.ShoppingCartType.HasValue && Enum.IsDefined(parameters.ShoppingCartType.Value))
+			{
+				shoppingCartType = (ShoppingCartType)parameters.ShoppingCartType.Value;
+			}
+
+			int customerId;
+			if (parameters.CustomerId.HasValue)
+			{
+				customerId = parameters.CustomerId.Value;
+			}
+			else
+			{
+				var currentCustomer = await _authenticationService.GetAuthenticatedCustomerAsync();
+				if (currentCustomer is null)
+					return Unauthorized();
+				customerId = currentCustomer.Id;
+			}
+
+			if (!await CheckPermissions(customerId, shoppingCartType))
+			{
+				return AccessDenied();
+			}
+
+			if (parameters.Ids is { Count: > 0 })
+			{
+				foreach (int id in parameters.Ids)
+				{
+					var item = await _shoppingCartItemApiService.GetShoppingCartItemAsync(id);
+					if (item is not null)
+					{
+						await deleteShoppingCartItem(item);
+					}
+				}
+			}
+			else
+			{
+				var shoppingCartItemsForDelete = _shoppingCartItemApiService.GetShoppingCartItems(customerId: customerId, shoppingCartType: shoppingCartType);
+				foreach (var item in shoppingCartItemsForDelete)
+				{
+					await deleteShoppingCartItem(item);
+				}
+			}
+
+			async Task deleteShoppingCartItem(ShoppingCartItem item)
+			{
+				await _shoppingCartService.DeleteShoppingCartItemAsync(item);
+				//activity log
+				await CustomerActivityService.InsertActivityAsync("DeleteShoppingCartItem", await LocalizationService.GetResourceAsync("ActivityLog.DeleteShoppingCartItem"), item);
+			}
+
+			return Ok();
 		}
 
 		#region Private methods
