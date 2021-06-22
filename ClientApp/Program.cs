@@ -23,20 +23,21 @@ namespace ClientApp
 			var cookieContainer = new CookieContainer();
 			using var handler = new HttpClientHandler() { CookieContainer = cookieContainer, UseCookies = true };
 			using var httpClient = new HttpClient(handler) { BaseAddress = new Uri(args[0]) };
-			
+
 			INopApiClient nopApiClient = new NopApiClient(httpClient);
-
-			Console.WriteLine("Authenticating...");
-
-			var tokenResponse = await nopApiClient.RequestToken(new TokenRequest { Username = args[1], Password = args[2], RememberMe = true });
-
-			if (tokenResponse is { AccessToken: string token, TokenType: var type })
-			{
-				nopApiClient.SetAuthorizationHeader(type ?? "Bearer", token);
-			}
 
 			try
 			{
+				Console.WriteLine("Authenticating...");
+
+				var tokenResponse = await nopApiClient.RequestToken(new TokenRequest { Username = args[1], Password = args[2], RememberMe = true });
+
+				if (tokenResponse is { AccessToken: string token, TokenType: var type })
+				{
+					nopApiClient.SetAuthorizationHeader(type ?? "Bearer", token);
+					//nopApiClient.RemoveAuthorizationHeader();
+				}
+
 				Console.WriteLine("Requesting categories...");
 				var categories = await nopApiClient.GetCategories();
 
@@ -47,7 +48,6 @@ namespace ClientApp
 						Console.WriteLine(category.ToString());
 					}
 				}
-
 				Console.WriteLine("Requesting countries...");
 				var countries = await nopApiClient.GetCountries();
 
@@ -59,25 +59,45 @@ namespace ClientApp
 					}
 				}
 
-				//nopApiClient.RemoveAuthorizationHeader();
+				Console.WriteLine("Adding product...");
+				var createProductResult = await nopApiClient.CreateProduct(new ProductDtoDelta { Product = new ProductDto { Name = "Test product", ShortDescription = "The best product" } });
 
+				var newProduct = createProductResult?.Products?.SingleOrDefault();
+
+				Console.WriteLine("Creating shopping cart item...");
 				var result = await nopApiClient.CreateShoppingCartItem(new ShoppingCartItemDtoDelta
 				{
 					ShoppingCartItem = new ShoppingCartItemDto(ShoppingCartType.ShoppingCart)
 					{
 						CustomerId = tokenResponse?.CustomerId,
-						ProductId = 1,
-						Quantity = 1
+						ProductId = newProduct?.Id,
+						Quantity = 2
 					}
 				});
 
-				var item = result?.ShoppingCarts?.SingleOrDefault();
-				if (item != null)
+				var newShoppingCartItem = result?.ShoppingCarts?.SingleOrDefault();
+
+				result = await nopApiClient.GetShoppingCartItems(CustomerId: tokenResponse?.CustomerId);
+
+				if (newShoppingCartItem is not null)
 				{
-					_ = await nopApiClient.UpdateShoppingCartItem(new ShoppingCartItemDtoDelta { ShoppingCartItem = item }, item.Id.ToString());
+					Console.WriteLine("Updating shopping cart item...");
+					_ = await nopApiClient.UpdateShoppingCartItem(new ShoppingCartItemDtoDelta { ShoppingCartItem = newShoppingCartItem with { Quantity = 3 }, }, newShoppingCartItem.Id.ToString());
 				}
 
 				result = await nopApiClient.GetShoppingCartItems(CustomerId: tokenResponse?.CustomerId);
+
+				if (newShoppingCartItem is not null)
+				{
+					Console.WriteLine("Deleting shopping cart item...");
+					await nopApiClient.DeleteShoppingCartItem(newShoppingCartItem.Id);
+				}
+
+				if (newProduct is not null)
+				{
+					Console.WriteLine("Deleting product...");
+					await nopApiClient.DeleteProduct(newProduct.Id);
+				}
 
 				//var invoiceDocument = await nopApiClient.GetPdfInvoice(orderId: 1);
 			}
