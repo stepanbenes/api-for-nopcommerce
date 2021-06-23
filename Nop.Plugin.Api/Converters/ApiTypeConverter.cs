@@ -99,18 +99,10 @@ namespace Nop.Plugin.Api.Converters
 
         public bool? ToBoolean(string value)
         {
-            if (!string.IsNullOrEmpty(value))
+            if (bool.TryParse(value, out bool result)) // should be case-insensitive
             {
-                if (value.Equals("published", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    return true;
-                }
-                if (value.Equals("unpublished", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    return false;
-                }
+                return result;
             }
-
             return null;
         }
 
