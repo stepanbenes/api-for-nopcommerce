@@ -14,6 +14,7 @@ namespace Nop.Plugin.Api.Models.CategoriesParameters
             UpdatedAtMin = null;
             UpdatedAtMax = null;
             PublishedStatus = null;
+            ParentCategoryId = null;
         }
 
         /// <summary>
@@ -55,5 +56,11 @@ namespace Nop.Plugin.Api.Models.CategoriesParameters
         /// </summary>
         [JsonProperty("product_id")]
         public int? ProductId { get; set; }
+
+        /// <summary>
+        ///     A root category of a category to return. Can be null.
+        /// </summary>
+        [JsonProperty("parent_category_id")]
+        public int? ParentCategoryId { get; set; }
     }
 }

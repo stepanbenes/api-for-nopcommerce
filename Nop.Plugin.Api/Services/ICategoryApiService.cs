@@ -15,10 +15,10 @@ namespace Nop.Plugin.Api.Services
             DateTime? createdAtMin = null, DateTime? createdAtMax = null, DateTime? updatedAtMin = null, DateTime? updatedAtMax = null,
             int limit = Constants.Configurations.DefaultLimit, int page = Constants.Configurations.DefaultPageValue,
             int sinceId = Constants.Configurations.DefaultSinceId,
-            int? productId = null, bool? publishedStatus = null);
+            int? productId = null, bool? publishedStatus = null, int? parentCategoryId = null);
 
         Task<int> GetCategoriesCountAsync(
             DateTime? createdAtMin = null, DateTime? createdAtMax = null, DateTime? updatedAtMin = null, DateTime? updatedAtMax = null,
-            bool? publishedStatus = null, int? productId = null);
+            bool? publishedStatus = null, int? productId = null, int? parentCategoryId = null);
     }
 }
