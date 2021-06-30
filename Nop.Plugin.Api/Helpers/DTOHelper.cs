@@ -103,7 +103,7 @@ namespace Nop.Plugin.Api.Helpers
             _orderService = orderService;
             _productAttributeConverter = productAttributeConverter;
             _shoppingCartService = shoppingCartService;
-			this._addressService = addressService;
+			_addressService = addressService;
 		}
 
         public async Task<ProductDto> PrepareProductDTOAsync(Product product)
@@ -139,6 +139,8 @@ namespace Nop.Plugin.Api.Helpers
             }
 
             productDto.RequiredProductIds = _productService.ParseRequiredProductIds(product);
+
+            await PrepareProductAttributesAsync(productDto);
 
             return productDto;
         }
@@ -376,10 +378,10 @@ namespace Nop.Plugin.Api.Helpers
             return image;
         }
 
-        private async Task PrepareProductAttributesAsync(
-            IEnumerable<ProductAttributeMapping> productAttributeMappings,
-            ProductDto productDto)
+        private async Task PrepareProductAttributesAsync(ProductDto productDto)
         {
+            var productAttributeMappings = await _productAttributeService.GetProductAttributeMappingsByProductIdAsync(productDto.Id);
+
             if (productDto.ProductAttributeMappings == null)
             {
                 productDto.ProductAttributeMappings = new List<ProductAttributeMappingDto>();

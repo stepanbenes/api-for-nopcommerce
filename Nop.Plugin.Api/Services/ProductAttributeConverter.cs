@@ -21,8 +21,7 @@ namespace Nop.Plugin.Api.Services
         public ProductAttributeConverter(
             IProductAttributeService productAttributeService,
             IProductAttributeParser productAttributeParser,
-            IDownloadService downloadService,
-            IApiTypeConverter apiTypeConverter)
+            IDownloadService downloadService)
         {
             _productAttributeService = productAttributeService;
             _productAttributeParser = productAttributeParser;
@@ -33,7 +32,7 @@ namespace Nop.Plugin.Api.Services
         {
             var attributesXml = "";
 
-            if (attributeDtos == null)
+            if (attributeDtos is not { Count: > 0 })
             {
                 return attributesXml;
             }
