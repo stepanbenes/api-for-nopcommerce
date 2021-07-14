@@ -5,6 +5,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Nop.Core;
+using Nop.Core.Domain.Catalog;
 using Nop.Core.Domain.Orders;
 using Nop.Plugin.Api.Attributes;
 using Nop.Plugin.Api.Delta;
@@ -142,13 +143,40 @@ namespace Nop.Plugin.Api.Controllers
 			return new RawJsonActionResult(json);
 		}
 
+		[HttpGet]
+		[Route("/api/shopping_cart_items/me", Name = "GetCurrentShoppingCart")]
+		[ProducesResponseType(typeof(ShoppingCartItemsRootObject), (int)HttpStatusCode.OK)]
+		[ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
+		public async Task<IActionResult> GetCurrentShoppingCart()
+		{
+			var customer = await _authenticationService.GetAuthenticatedCustomerAsync();
+
+			if (customer is null)
+			{
+				return Error(HttpStatusCode.Unauthorized);
+			}
+
+			var shoppingCartType = ShoppingCartType.ShoppingCart;
+
+			if (!await CheckPermissions(customer.Id, shoppingCartType))
+			{
+				return AccessDenied();
+			}
+
+			// load current shopping cart and return it as result of request
+			var shoppingCartsRootObject = await LoadCurrentShoppingCartItems(shoppingCartType, customer);
+
+			var json = JsonFieldsSerializer.Serialize(shoppingCartsRootObject, string.Empty);
+
+			return new RawJsonActionResult(json);
+		}
+
 		[HttpPost]
 		[Route("/api/shopping_cart_items", Name = "CreateShoppingCartItem")]
 		[ProducesResponseType(typeof(ShoppingCartItemsRootObject), (int)HttpStatusCode.OK)]
 		[ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
 		[ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
 		[ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-		[ProducesResponseType(typeof(string), 422)]
 		public async Task<IActionResult> CreateShoppingCartItem(
 			[FromBody]
 			[ModelBinder(typeof(JsonModelBinder<ShoppingCartItemDto>))]
@@ -201,15 +229,83 @@ namespace Nop.Plugin.Api.Controllers
 
 				return Error(HttpStatusCode.BadRequest);
 			}
-			// the newly added shopping cart item should be the last one
-			newShoppingCartItem = (await _shoppingCartService.GetShoppingCartAsync(customer, ShoppingCartType.ShoppingCart)).LastOrDefault();
 
-			// Preparing the result dto of the new product category mapping
-			var newShoppingCartItemDto = await _dtoHelper.PrepareShoppingCartItemDTOAsync(newShoppingCartItem);
+			// load current shopping cart and return it as result of request
+			var shoppingCartsRootObject = await LoadCurrentShoppingCartItems((ShoppingCartType)shoppingCartItemDelta.Dto.ShoppingCartType, customer);
 
-			var shoppingCartsRootObject = new ShoppingCartItemsRootObject();
+			var json = JsonFieldsSerializer.Serialize(shoppingCartsRootObject, string.Empty);
 
-			shoppingCartsRootObject.ShoppingCartItems.Add(newShoppingCartItemDto);
+			return new RawJsonActionResult(json);
+		}
+
+		[HttpPost]
+		[Route("/api/shopping_cart_items/batch", Name = "BatchCreateShoppingCartItems")]
+		[ProducesResponseType(typeof(ShoppingCartItemsRootObject), (int)HttpStatusCode.OK)]
+		[ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
+		[ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
+		[ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
+		public async Task<IActionResult> BatchCreateShoppingCartItems(
+			[FromBody]
+			[ModelBinder(typeof(JsonModelBinder<ShoppingCartItemsCreateParametersModel>))]
+			Delta<ShoppingCartItemsCreateParametersModel> parameters)
+		{
+			var customer = await CustomerService.GetCustomerByIdAsync(parameters.Dto.CustomerId);
+
+			if (customer == null)
+			{
+				return Error(HttpStatusCode.NotFound, "customer", "not found");
+			}
+
+			if (!await CheckPermissions(parameters.Dto.CustomerId, (ShoppingCartType)parameters.Dto.ShoppingCartType))
+			{
+				return AccessDenied();
+			}
+
+			List<string> allWarnings = new();
+
+			// add all items to cart
+			foreach (var shoppingCartItemDto in parameters.Dto.Items)
+			{
+				Product product = null;
+				if (shoppingCartItemDto.ProductId.HasValue)
+				{
+					product = await _productService.GetProductByIdAsync(shoppingCartItemDto.ProductId.Value);
+				}
+
+				if (product == null)
+				{
+					return Error(HttpStatusCode.NotFound, "product", "not found");
+				}
+
+				if (!product.IsRental)
+				{
+					shoppingCartItemDto.RentalStartDateUtc = null;
+					shoppingCartItemDto.RentalEndDateUtc = null;
+				}
+
+				var attributesXml = await _productAttributeConverter.ConvertToXmlAsync(shoppingCartItemDto.Attributes, product.Id);
+
+				var currentStoreId = _storeContext.GetCurrentStore().Id;
+
+				var warnings = await _shoppingCartService.AddToCartAsync(customer, product, (ShoppingCartType)parameters.Dto.ShoppingCartType, currentStoreId, attributesXml, 0M,
+															  shoppingCartItemDto.RentalStartDateUtc, shoppingCartItemDto.RentalEndDateUtc,
+															  shoppingCartItemDto.Quantity ?? 1);
+				allWarnings.AddRange(warnings);
+			}
+
+			// report warnings if any
+			if (allWarnings.Count > 0)
+			{
+				foreach (var warning in allWarnings)
+				{
+					ModelState.AddModelError("shopping cart item", warning);
+				}
+
+				return Error(HttpStatusCode.BadRequest);
+			}
+
+			// load current shopping cart and return it as result of request
+			var shoppingCartsRootObject = await LoadCurrentShoppingCartItems((ShoppingCartType)parameters.Dto.ShoppingCartType, customer);
 
 			var json = JsonFieldsSerializer.Serialize(shoppingCartsRootObject, string.Empty);
 
@@ -222,7 +318,6 @@ namespace Nop.Plugin.Api.Controllers
 		[ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
 		[ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
 		[ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-		[ProducesResponseType(typeof(ErrorsRootObject), 422)]
 		public async Task<IActionResult> UpdateShoppingCartItem(
 			[FromBody]
 			[ModelBinder(typeof(JsonModelBinder<ShoppingCartItemDto>))]
@@ -398,6 +493,21 @@ namespace Nop.Plugin.Api.Controllers
 			}
 			// if I want to handle other customer's shopping carts, check admin permission
 			return await _permissionService.AuthorizeAsync(StandardPermissionProvider.ManageCurrentCarts, currentCustomer);
+		}
+
+		private async Task<ShoppingCartItemsRootObject> LoadCurrentShoppingCartItems(ShoppingCartType shoppingCartType, Core.Domain.Customers.Customer customer)
+		{
+			var updatedShoppingCart = await _shoppingCartService.GetShoppingCartAsync(customer, shoppingCartType);
+
+			var shoppingCartsRootObject = new ShoppingCartItemsRootObject();
+
+			foreach (var newShoppingCartItem in updatedShoppingCart)
+			{
+				var newShoppingCartItemDto = await _dtoHelper.PrepareShoppingCartItemDTOAsync(newShoppingCartItem);
+				shoppingCartsRootObject.ShoppingCartItems.Add(newShoppingCartItemDto);
+			}
+
+			return shoppingCartsRootObject;
 		}
 
 		#endregion
