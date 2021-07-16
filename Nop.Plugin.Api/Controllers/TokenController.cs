@@ -27,6 +27,7 @@ namespace Nop.Plugin.Api.Controllers
 	public class TokenController : Controller
 	{
 		private readonly ApiConfiguration _apiConfiguration;
+		private readonly ICustomerApiService _customerApiService;
 		private readonly ApiSettings _apiSettings;
 		private readonly ICustomerActivityService _customerActivityService;
 		private readonly IShoppingCartService _shoppingCartService;
@@ -43,7 +44,8 @@ namespace Nop.Plugin.Api.Controllers
 			IAuthenticationService authenticationService,
 			CustomerSettings customerSettings,
 			ApiSettings apiSettings,
-			ApiConfiguration apiConfiguration)
+			ApiConfiguration apiConfiguration,
+			ICustomerApiService customerApiService)
 		{
 			_customerService = customerService;
 			_customerRegistrationService = customerRegistrationService;
@@ -53,6 +55,7 @@ namespace Nop.Plugin.Api.Controllers
 			_customerSettings = customerSettings;
 			_apiSettings = apiSettings;
 			_apiConfiguration = apiConfiguration;
+			_customerApiService = customerApiService;
 		}
 
 		[HttpPost]
@@ -104,7 +107,9 @@ namespace Nop.Plugin.Api.Controllers
 				await _shoppingCartService.MigrateShoppingCartAsync(oldCustomer, newCustomer, true); // migrate shopping cart items to newly logged in customer
 			}
 
-			var tokenResponse = GenerateToken(newCustomer);
+			var customerLanguage = await _customerApiService.GetCustomerLanguageAsync(newCustomer);
+
+			var tokenResponse = GenerateToken(newCustomer, customerLanguage?.Id);
 
 			await _authenticationService.SignInAsync(newCustomer, model.RememberMe); // update cookie-based authentication - not needed for api, avoids automatic generation of guest customer with each request to api
 
@@ -152,7 +157,7 @@ namespace Nop.Plugin.Api.Controllers
 					   : _apiSettings.TokenExpiryInDays;
 		}
 
-		private TokenResponse GenerateToken(Customer customer)
+		private TokenResponse GenerateToken(Customer customer, int? customerLanguageId)
 		{
 			var currentTime = DateTimeOffset.Now;
 			var expirationTime = currentTime.AddDays(GetTokenExpiryInDays());
@@ -189,12 +194,15 @@ namespace Nop.Plugin.Api.Controllers
 			var token = new JwtSecurityToken(new JwtHeader(signingCredentials), new JwtPayload(claims));
 			var accessToken = new JwtSecurityTokenHandler().WriteToken(token);
 
+			
+
 			return new TokenResponse(accessToken, currentTime.UtcDateTime, expirationTime.UtcDateTime)
 			{
 				CustomerId = customer.Id,
 				CustomerGuid = customer.CustomerGuid,
 				Username = _customerSettings.UsernamesEnabled ? customer.Username : customer.Email,
-				TokenType = "Bearer"
+				TokenType = "Bearer",
+				CustomerLanguageId = customerLanguageId,
 			};
 		}
 

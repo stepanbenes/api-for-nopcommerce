@@ -1952,11 +1952,18 @@
         "operationId": "GetAllLanguages",
         "parameters": [
           {
+            "name": "storeId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
             "name": "fields",
             "in": "query",
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           }
         ],
@@ -2050,6 +2057,9 @@
                 }
               }
             }
+          },
+          "204": {
+            "description": "Success"
           },
           "401": {
             "description": "Unauthorized",
@@ -13239,6 +13249,11 @@
           "customer_guid": {
             "type": "string",
             "format": "uuid"
+          },
+          "customer_language_id": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
           }
         },
         "additionalProperties": false
