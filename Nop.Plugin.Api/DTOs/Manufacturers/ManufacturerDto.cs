@@ -17,13 +17,6 @@ namespace Nop.Plugin.Api.DTO.Manufacturers
         [JsonProperty("name")]
         public string Name { get; set; }
 
-
-        /// <summary>
-        ///     Gets or sets the localized names
-        /// </summary>
-        [JsonProperty("localized_names")]
-        public List<LocalizedNameDto> LocalizedNames { get; set; }
-
         /// <summary>
         ///     Gets or sets the description
         /// </summary>

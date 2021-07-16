@@ -71,11 +71,11 @@ namespace Nop.Plugin.Api.Controllers
 		[ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
 		[ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
 		[GetRequestsErrorInterceptorActionFilter]
-		public async Task<IActionResult> GetAllLanguages([FromQuery] string fields = "")
+		public async Task<IActionResult> GetAllLanguages([FromQuery] int? storeId = null, [FromQuery] string fields = null)
 		{
 			// no permissions required
 
-			var allLanguages = await _languageService.GetAllLanguagesAsync();
+			var allLanguages = await _languageService.GetAllLanguagesAsync(storeId: storeId ?? 0);
 
 			IList<LanguageDto> languagesAsDto = await allLanguages.SelectAwait(async language => await _dtoHelper.PrepareLanguageDtoAsync(language)).ToListAsync();
 
@@ -84,7 +84,7 @@ namespace Nop.Plugin.Api.Controllers
 				Languages = languagesAsDto
 			};
 
-			var json = JsonFieldsSerializer.Serialize(languagesRootObject, fields);
+			var json = JsonFieldsSerializer.Serialize(languagesRootObject, fields ?? "");
 
 			return new RawJsonActionResult(json);
 		}
@@ -92,6 +92,7 @@ namespace Nop.Plugin.Api.Controllers
 		[HttpGet]
 		[Route("/api/languages/current", Name = "GetCurrentLanguage")]
 		[ProducesResponseType(typeof(LanguageDto), (int)HttpStatusCode.OK)]
+		[ProducesResponseType(typeof(void), (int)HttpStatusCode.NoContent)]
 		[ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.Unauthorized)]
 		public async Task<IActionResult> GetCurrentLanguage()
 		{
@@ -100,6 +101,8 @@ namespace Nop.Plugin.Api.Controllers
 				return Error(HttpStatusCode.Unauthorized);
 			// no permissions required
 			var language = await _customerApiService.GetCustomerLanguageAsync(customer);
+			if (language is null)
+				return NoContent();
 			var languageDto = await _dtoHelper.PrepareLanguageDtoAsync(language);
 			return Ok(languageDto);
 		}

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Nop.Core.Domain.Catalog;
@@ -24,6 +25,7 @@ using Nop.Plugin.Api.DTO.Stores;
 using Nop.Plugin.Api.DTOs.Topics;
 using Nop.Plugin.Api.MappingExtensions;
 using Nop.Plugin.Api.Services;
+using Nop.Services.Authentication;
 using Nop.Services.Catalog;
 using Nop.Services.Common;
 using Nop.Services.Customers;
@@ -48,7 +50,6 @@ namespace Nop.Plugin.Api.Helpers
         private readonly ILanguageService _languageService;
         private readonly ILocalizationService _localizationService;
         private readonly IPictureService _pictureService;
-        private readonly IProductAttributeParser _productAttributeParser;
         private readonly IProductAttributeService _productAttributeService;
         private readonly IProductService _productService;
         private readonly IProductTagService _productTagService;
@@ -56,11 +57,14 @@ namespace Nop.Plugin.Api.Helpers
         private readonly IManufacturerService _manufacturerService;
         private readonly IOrderService _orderService;
         private readonly IProductAttributeConverter _productAttributeConverter;
-        private readonly IShoppingCartService _shoppingCartService;
 		private readonly IAddressService _addressService;
+		private readonly IAuthenticationService _authenticationService;
+		private readonly ICustomerApiService _customerApiService;
 		private readonly IStoreMappingService _storeMappingService;
         private readonly IStoreService _storeService;
         private readonly IUrlRecordService _urlRecordService;
+
+        private readonly Lazy<Task<Language>> _customerLanguage;
 
         public DTOHelper(
             IProductService productService,
@@ -68,8 +72,7 @@ namespace Nop.Plugin.Api.Helpers
             IStoreMappingService storeMappingService,
             IPictureService pictureService,
             IProductAttributeService productAttributeService,
-            ICustomerService customerApiService,
-            IProductAttributeParser productAttributeParser,
+            ICustomerService customerService,
             ILanguageService languageService,
             ICurrencyService currencyService,
             CurrencySettings currencySettings,
@@ -81,16 +84,16 @@ namespace Nop.Plugin.Api.Helpers
             IManufacturerService manufacturerService,
             IOrderService orderService,
             IProductAttributeConverter productAttributeConverter,
-            IShoppingCartService shoppingCartService,
-            IAddressService addressService)
+            IAddressService addressService,
+            IAuthenticationService authenticationService,
+            ICustomerApiService customerApiService)
         {
             _productService = productService;
             _aclService = aclService;
             _storeMappingService = storeMappingService;
             _pictureService = pictureService;
             _productAttributeService = productAttributeService;
-            _customerService = customerApiService;
-            _productAttributeParser = productAttributeParser;
+            _customerService = customerService;
             _languageService = languageService;
             _currencyService = currencyService;
             _currencySettings = currencySettings;
@@ -102,8 +105,11 @@ namespace Nop.Plugin.Api.Helpers
             _manufacturerService = manufacturerService;
             _orderService = orderService;
             _productAttributeConverter = productAttributeConverter;
-            _shoppingCartService = shoppingCartService;
 			_addressService = addressService;
+			_authenticationService = authenticationService;
+			_customerApiService = customerApiService;
+
+            _customerLanguage = new Lazy<Task<Language>>(GetAuthenticatedCustomerLanguage);
 		}
 
         public async Task<ProductDto> PrepareProductDTOAsync(Product product)
@@ -125,22 +131,17 @@ namespace Nop.Plugin.Api.Helpers
 
             var allLanguages = await _languageService.GetAllLanguagesAsync();
 
-            productDto.LocalizedNames = new List<LocalizedNameDto>();
-
-            foreach (var language in allLanguages)
-            {
-                var localizedNameDto = new LocalizedNameDto
-                {
-                    LanguageId = language.Id,
-                    LocalizedName = await _localizationService.GetLocalizedAsync(product, x => x.Name, language.Id)
-                };
-
-                productDto.LocalizedNames.Add(localizedNameDto);
-            }
-
             productDto.RequiredProductIds = _productService.ParseRequiredProductIds(product);
 
             await PrepareProductAttributesAsync(productDto);
+
+            // localization
+            if (await _customerLanguage.Value is { Id: var languageId })
+            {
+                productDto.Name = await _localizationService.GetLocalizedAsync(product, x => x.Name, languageId);
+                productDto.ShortDescription = await _localizationService.GetLocalizedAsync(product, x => x.ShortDescription, languageId);
+                productDto.FullDescription = await _localizationService.GetLocalizedAsync(product, x => x.FullDescription, languageId);
+            }
 
             return productDto;
         }
@@ -163,19 +164,11 @@ namespace Nop.Plugin.Api.Helpers
             categoryDto.StoreIds = (await _storeMappingService.GetStoreMappingsAsync(category)).Select(mapping => mapping.StoreId)
                                                        .ToList();
 
-            var allLanguages = await _languageService.GetAllLanguagesAsync();
-
-            categoryDto.LocalizedNames = new List<LocalizedNameDto>();
-
-            foreach (var language in allLanguages)
+            // localization
+            if (await _customerLanguage.Value is { Id: var languageId })
             {
-                var localizedNameDto = new LocalizedNameDto
-                {
-                    LanguageId = language.Id,
-                    LocalizedName = await _localizationService.GetLocalizedAsync(category, x => x.Name, language.Id)
-                };
-
-                categoryDto.LocalizedNames.Add(localizedNameDto);
+                categoryDto.Name = await _localizationService.GetLocalizedAsync(category, x => x.Name, languageId);
+                categoryDto.Description = await _localizationService.GetLocalizedAsync(category, x => x.Description, languageId);
             }
 
             return categoryDto;
@@ -288,17 +281,11 @@ namespace Nop.Plugin.Api.Helpers
 
             var allLanguages = await _languageService.GetAllLanguagesAsync();
 
-            manufacturerDto.LocalizedNames = new List<LocalizedNameDto>();
-
-            foreach (var language in allLanguages)
+            // localization
+            if (await _customerLanguage.Value is { Id: var languageId })
             {
-                var localizedNameDto = new LocalizedNameDto
-                {
-                    LanguageId = language.Id,
-                    LocalizedName = await _localizationService.GetLocalizedAsync(manufacturer, x => x.Name, language.Id)
-                };
-
-                manufacturerDto.LocalizedNames.Add(localizedNameDto);
+                manufacturerDto.Name = await _localizationService.GetLocalizedAsync(manufacturer, x => x.Name, languageId);
+                manufacturerDto.Description = await _localizationService.GetLocalizedAsync(manufacturer, x => x.Description, languageId);
             }
 
             return manufacturerDto;
@@ -476,6 +463,12 @@ namespace Nop.Plugin.Api.Helpers
         private ProductAttributeCombinationDto PrepareProductAttributeCombinationDto(ProductAttributeCombination productAttributeCombination)
         {
             return productAttributeCombination.ToDto();
+        }
+
+        private async Task<Language> GetAuthenticatedCustomerLanguage()
+        {
+            var customer = await _authenticationService.GetAuthenticatedCustomerAsync();
+            return (customer is not null) ? await _customerApiService.GetCustomerLanguageAsync(customer) : null;
         }
 
         #endregion

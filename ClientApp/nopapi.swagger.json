@@ -13,6 +13,13 @@
         "operationId": "GetCategories",
         "parameters": [
           {
+            "name": "PublishedStatus",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "Ids",
             "in": "query",
             "schema": {
@@ -84,13 +91,6 @@
             "schema": {
               "type": "string",
               "format": "date-time"
-            }
-          },
-          {
-            "name": "PublishedStatus",
-            "in": "query",
-            "schema": {
-              "type": "boolean"
             }
           },
           {
@@ -1952,11 +1952,18 @@
         "operationId": "GetAllLanguages",
         "parameters": [
           {
+            "name": "storeId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
             "name": "fields",
             "in": "query",
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
             }
           }
         ],
@@ -2050,6 +2057,9 @@
                 }
               }
             }
+          },
+          "204": {
+            "description": "Success"
           },
           "401": {
             "description": "Unauthorized",
@@ -6706,6 +6716,21 @@
         "operationId": "GetProducts",
         "parameters": [
           {
+            "name": "PublishedStatus",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "CategoryId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
             "name": "Ids",
             "in": "query",
             "schema": {
@@ -6797,25 +6822,10 @@
             }
           },
           {
-            "name": "PublishedStatus",
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
             "name": "VendorName",
             "in": "query",
             "schema": {
               "type": "string"
-            }
-          },
-          {
-            "name": "CategoryId",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
             }
           }
         ],
@@ -10558,13 +10568,6 @@
             "type": "string",
             "nullable": true
           },
-          "localized_names": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/LocalizedNameDto"
-            },
-            "nullable": true
-          },
           "description": {
             "type": "string",
             "nullable": true
@@ -11202,33 +11205,11 @@
         },
         "additionalProperties": false
       },
-      "LocalizedNameDto": {
-        "type": "object",
-        "properties": {
-          "language_id": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "localized_name": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
       "ManufacturerDto": {
         "type": "object",
         "properties": {
           "name": {
             "type": "string",
-            "nullable": true
-          },
-          "localized_names": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/LocalizedNameDto"
-            },
             "nullable": true
           },
           "description": {
@@ -12210,13 +12191,6 @@
           },
           "name": {
             "type": "string",
-            "nullable": true
-          },
-          "localized_names": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/LocalizedNameDto"
-            },
             "nullable": true
           },
           "short_description": {
@@ -13239,6 +13213,10 @@
           "customer_guid": {
             "type": "string",
             "format": "uuid"
+          },
+          "customer_culture": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
