@@ -604,32 +604,37 @@ namespace Nop.Plugin.Api.Services
             //get current customer language identifier
             var customerLanguageId = await _genericAttributeService.GetAttributeAsync<int>(customer, NopCustomerDefaults.LanguageIdAttribute, store.Id);
 
-            var allStoreLanguages = await _languageService.GetAllLanguagesAsync(storeId: store.Id);
-
-            //check customer language availability
-            var customerLanguage = allStoreLanguages.FirstOrDefault(language => language.Id == customerLanguageId);
-            if (customerLanguage == null)
-            {
-                //it not found, then try to get the default language for the current store (if specified)
-                customerLanguage = allStoreLanguages.FirstOrDefault(language => language.Id == store.DefaultLanguageId);
-            }
-
-            //if the default language for the current store not found, then try to get the first one
-            if (customerLanguage == null)
-            {
-                customerLanguage = allStoreLanguages.FirstOrDefault();
-            }
-
-            //if there are no languages for the current store try to get the first one regardless of the store
-            if (customerLanguage == null)
-            {
-                customerLanguage = (await _languageService.GetAllLanguagesAsync()).FirstOrDefault();
-            }
-
+            var customerLanguage = await _languageService.GetLanguageByIdAsync(customerLanguageId);
             return customerLanguage;
+
+            // the following code tries to find the default language if attribute is not found >>>
+
+            //var allStoreLanguages = await _languageService.GetAllLanguagesAsync(storeId: store.Id);
+
+            ////check customer language availability
+            //var customerLanguage = allStoreLanguages.FirstOrDefault(language => language.Id == customerLanguageId);
+            //if (customerLanguage == null)
+            //{
+            //    //it not found, then try to get the default language for the current store (if specified)
+            //    customerLanguage = allStoreLanguages.FirstOrDefault(language => language.Id == store.DefaultLanguageId);
+            //}
+
+            ////if the default language for the current store not found, then try to get the first one
+            //if (customerLanguage == null)
+            //{
+            //    customerLanguage = allStoreLanguages.FirstOrDefault();
+            //}
+
+            ////if there are no languages for the current store try to get the first one regardless of the store
+            //if (customerLanguage == null)
+            //{
+            //    customerLanguage = (await _languageService.GetAllLanguagesAsync()).FirstOrDefault();
+            //}
+
+            //return customerLanguage;
         }
 
-		public async Task SetCustomerLanguageAsync(Customer customer, Language language)
+        public async Task SetCustomerLanguageAsync(Customer customer, Language language)
 		{
             var store = await _storeContext.GetCurrentStoreAsync();
             await _genericAttributeService.SaveAttributeAsync(customer, NopCustomerDefaults.LanguageIdAttribute, language?.Id ?? 0, store.Id);
@@ -642,30 +647,35 @@ namespace Nop.Plugin.Api.Services
             //find a currency previously selected by a customer
             var customerCurrencyId = await _genericAttributeService.GetAttributeAsync<int>(customer, NopCustomerDefaults.CurrencyIdAttribute, store.Id);
 
-            var allStoreCurrencies = await _currencyService.GetAllCurrenciesAsync(storeId: store.Id);
-
-            //check customer currency availability
-            var customerCurrency = allStoreCurrencies.FirstOrDefault(currency => currency.Id == customerCurrencyId);
-            if (customerCurrency == null)
-            {
-                //it not found, then try to get the default currency for the current language (if specified)
-                var language = await GetCustomerLanguageAsync(customer);
-                customerCurrency = allStoreCurrencies.FirstOrDefault(currency => currency.Id == language.DefaultCurrencyId);
-            }
-
-            //if the default currency for the current store not found, then try to get the first one
-            if (customerCurrency == null)
-            {
-                customerCurrency = allStoreCurrencies.FirstOrDefault();
-            }
-
-            //if there are no currencies for the current store try to get the first one regardless of the store
-            if (customerCurrency == null)
-            {
-                customerCurrency = (await _currencyService.GetAllCurrenciesAsync()).FirstOrDefault();
-            }
-
+            var customerCurrency = await _currencyService.GetCurrencyByIdAsync(customerCurrencyId);
             return customerCurrency;
+
+            // the following code tries to find the default currency if attribute is not found >>>
+
+            //var allStoreCurrencies = await _currencyService.GetAllCurrenciesAsync(storeId: store.Id);
+
+            ////check customer currency availability
+            //var customerCurrency = allStoreCurrencies.FirstOrDefault(currency => currency.Id == customerCurrencyId);
+            //if (customerCurrency == null)
+            //{
+            //    //it not found, then try to get the default currency for the current language (if specified)
+            //    var language = await GetCustomerLanguageAsync(customer);
+            //    customerCurrency = allStoreCurrencies.FirstOrDefault(currency => currency.Id == language.DefaultCurrencyId);
+            //}
+
+            ////if the default currency for the current store not found, then try to get the first one
+            //if (customerCurrency == null)
+            //{
+            //    customerCurrency = allStoreCurrencies.FirstOrDefault();
+            //}
+
+            ////if there are no currencies for the current store try to get the first one regardless of the store
+            //if (customerCurrency == null)
+            //{
+            //    customerCurrency = (await _currencyService.GetAllCurrenciesAsync()).FirstOrDefault();
+            //}
+
+            //return customerCurrency;
         }
 
 		public async Task SetCustomerCurrencyAsync(Customer customer, Currency currency)
