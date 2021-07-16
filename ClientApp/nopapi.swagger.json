@@ -13250,9 +13250,8 @@
             "type": "string",
             "format": "uuid"
           },
-          "customer_language_id": {
-            "type": "integer",
-            "format": "int32",
+          "customer_culture": {
+            "type": "string",
             "nullable": true
           }
         },

@@ -109,7 +109,7 @@ namespace Nop.Plugin.Api.Controllers
 
 			var customerLanguage = await _customerApiService.GetCustomerLanguageAsync(newCustomer);
 
-			var tokenResponse = GenerateToken(newCustomer, customerLanguage?.Id);
+			var tokenResponse = GenerateToken(newCustomer, customerLanguage?.LanguageCulture);
 
 			await _authenticationService.SignInAsync(newCustomer, model.RememberMe); // update cookie-based authentication - not needed for api, avoids automatic generation of guest customer with each request to api
 
@@ -157,7 +157,7 @@ namespace Nop.Plugin.Api.Controllers
 					   : _apiSettings.TokenExpiryInDays;
 		}
 
-		private TokenResponse GenerateToken(Customer customer, int? customerLanguageId)
+		private TokenResponse GenerateToken(Customer customer, string customerCulture)
 		{
 			var currentTime = DateTimeOffset.Now;
 			var expirationTime = currentTime.AddDays(GetTokenExpiryInDays());
@@ -202,7 +202,7 @@ namespace Nop.Plugin.Api.Controllers
 				CustomerGuid = customer.CustomerGuid,
 				Username = _customerSettings.UsernamesEnabled ? customer.Username : customer.Email,
 				TokenType = "Bearer",
-				CustomerLanguageId = customerLanguageId,
+				CustomerCulture = customerCulture,
 			};
 		}
 

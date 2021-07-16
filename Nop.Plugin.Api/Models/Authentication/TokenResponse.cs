@@ -33,7 +33,7 @@ namespace Nop.Plugin.Api.Models.Authentication
         [JsonProperty("customer_guid")]
         public Guid CustomerGuid { get; init; }
 
-        [JsonProperty("customer_language_id")]
-        public int? CustomerLanguageId { get; init; }
+        [JsonProperty("customer_culture")]
+        public string CustomerCulture { get; init; }
     }
 }
