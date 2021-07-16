@@ -20,6 +20,10 @@ using Nop.Services.Stores;
 using Nop.Services.Caching;
 using System.Threading.Tasks;
 using Nop.Services.Customers;
+using Nop.Core.Domain.Directory;
+using Nop.Core.Domain.Localization;
+using Nop.Services.Common;
+using Nop.Services.Directory;
 
 namespace Nop.Plugin.Api.Services
 {
@@ -35,6 +39,8 @@ namespace Nop.Plugin.Api.Services
         private readonly IStaticCacheManager _cacheManager;
 		private readonly IShoppingCartItemApiService _shoppingCartItemApiService;
 		private readonly IAddressApiService _addressApiService;
+		private readonly IGenericAttributeService _genericAttributeService;
+		private readonly ICurrencyService _currencyService;
 		private readonly IRepository<Customer> _customerRepository;
         private readonly IRepository<GenericAttribute> _genericAttributeRepository;
         private readonly ILanguageService _languageService;
@@ -52,7 +58,9 @@ namespace Nop.Plugin.Api.Services
             IStoreMappingService storeMappingService,
             IStaticCacheManager staticCacheManager,
             IShoppingCartItemApiService shoppingCartItemApiService,
-            IAddressApiService addressApiService)
+            IAddressApiService addressApiService,
+            IGenericAttributeService genericAttributeService,
+            ICurrencyService currencyService)
         {
             _customerRepository = customerRepository;
             _genericAttributeRepository = genericAttributeRepository;
@@ -63,6 +71,8 @@ namespace Nop.Plugin.Api.Services
             _cacheManager = staticCacheManager;
 			_shoppingCartItemApiService = shoppingCartItemApiService;
 			_addressApiService = addressApiService;
+			_genericAttributeService = genericAttributeService;
+			_currencyService = currencyService;
 		}
 
         public async Task<IList<CustomerDto>> GetCustomersDtosAsync(
@@ -586,5 +596,82 @@ namespace Nop.Plugin.Api.Services
             var items = _shoppingCartItemApiService.GetShoppingCartItems(customerId: customerDto.Id);
             customerDto.ShoppingCartItems = items.Select(entity => entity.ToDto()).ToList();
 		}
-    }
+
+		public async Task<Language> GetCustomerLanguageAsync(Customer customer)
+		{
+            var store = await _storeContext.GetCurrentStoreAsync();
+
+            //get current customer language identifier
+            var customerLanguageId = await _genericAttributeService.GetAttributeAsync<int>(customer, NopCustomerDefaults.LanguageIdAttribute, store.Id);
+
+            var allStoreLanguages = await _languageService.GetAllLanguagesAsync(storeId: store.Id);
+
+            //check customer language availability
+            var customerLanguage = allStoreLanguages.FirstOrDefault(language => language.Id == customerLanguageId);
+            if (customerLanguage == null)
+            {
+                //it not found, then try to get the default language for the current store (if specified)
+                customerLanguage = allStoreLanguages.FirstOrDefault(language => language.Id == store.DefaultLanguageId);
+            }
+
+            //if the default language for the current store not found, then try to get the first one
+            if (customerLanguage == null)
+            {
+                customerLanguage = allStoreLanguages.FirstOrDefault();
+            }
+
+            //if there are no languages for the current store try to get the first one regardless of the store
+            if (customerLanguage == null)
+            {
+                customerLanguage = (await _languageService.GetAllLanguagesAsync()).FirstOrDefault();
+            }
+
+            return customerLanguage;
+        }
+
+		public async Task SetCustomerLanguageAsync(Customer customer, Language language)
+		{
+            var store = await _storeContext.GetCurrentStoreAsync();
+            await _genericAttributeService.SaveAttributeAsync(customer, NopCustomerDefaults.LanguageIdAttribute, language?.Id ?? 0, store.Id);
+        }
+
+		public async Task<Currency> GetCustomerCurrencyAsync(Customer customer)
+		{
+            var store = await _storeContext.GetCurrentStoreAsync();
+
+            //find a currency previously selected by a customer
+            var customerCurrencyId = await _genericAttributeService.GetAttributeAsync<int>(customer, NopCustomerDefaults.CurrencyIdAttribute, store.Id);
+
+            var allStoreCurrencies = await _currencyService.GetAllCurrenciesAsync(storeId: store.Id);
+
+            //check customer currency availability
+            var customerCurrency = allStoreCurrencies.FirstOrDefault(currency => currency.Id == customerCurrencyId);
+            if (customerCurrency == null)
+            {
+                //it not found, then try to get the default currency for the current language (if specified)
+                var language = await GetCustomerLanguageAsync(customer);
+                customerCurrency = allStoreCurrencies.FirstOrDefault(currency => currency.Id == language.DefaultCurrencyId);
+            }
+
+            //if the default currency for the current store not found, then try to get the first one
+            if (customerCurrency == null)
+            {
+                customerCurrency = allStoreCurrencies.FirstOrDefault();
+            }
+
+            //if there are no currencies for the current store try to get the first one regardless of the store
+            if (customerCurrency == null)
+            {
+                customerCurrency = (await _currencyService.GetAllCurrenciesAsync()).FirstOrDefault();
+            }
+
+            return customerCurrency;
+        }
+
+		public async Task SetCustomerCurrencyAsync(Customer customer, Currency currency)
+		{
+            var store = await _storeContext.GetCurrentStoreAsync();
+            await _genericAttributeService.SaveAttributeAsync(customer, NopCustomerDefaults.CurrencyIdAttribute, currency?.Id ?? 0, store.Id);
+        }
+	}
 }

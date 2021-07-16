@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Nop.Core.Domain.Customers;
+using Nop.Core.Domain.Directory;
+using Nop.Core.Domain.Localization;
 using Nop.Plugin.Api.DTO.Customers;
 using Nop.Plugin.Api.Infrastructure;
 
@@ -25,5 +27,27 @@ namespace Nop.Plugin.Api.Services
             int page = Constants.Configurations.DefaultPageValue, int limit = Constants.Configurations.DefaultLimit);
 
         Task<Dictionary<string, string>> GetFirstAndLastNameByCustomerIdAsync(int customerId);
+
+        /// <summary>
+        /// Gets current user working language
+        /// </summary>
+        Task<Language> GetCustomerLanguageAsync(Customer customer);
+
+        /// <summary>
+        /// Sets current user working language
+        /// </summary>
+        /// <param name="language">Language</param>
+        Task SetCustomerLanguageAsync(Customer customer, Language language);
+
+        /// <summary>
+        /// Gets or sets current user working currency
+        /// </summary>
+        Task<Currency> GetCustomerCurrencyAsync(Customer customer);
+
+        /// <summary>
+        /// Sets current user working currency
+        /// </summary>
+        /// <param name="currency">Currency</param>
+        Task SetCustomerCurrencyAsync(Customer customer, Currency currency);
     }
 }
