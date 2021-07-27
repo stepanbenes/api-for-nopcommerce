@@ -13,13 +13,6 @@
         "operationId": "GetCategories",
         "parameters": [
           {
-            "name": "PublishedStatus",
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
             "name": "Ids",
             "in": "query",
             "schema": {
@@ -91,6 +84,13 @@
             "schema": {
               "type": "string",
               "format": "date-time"
+            }
+          },
+          {
+            "name": "PublishedStatus",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
             }
           },
           {
@@ -6716,21 +6716,6 @@
         "operationId": "GetProducts",
         "parameters": [
           {
-            "name": "PublishedStatus",
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "CategoryId",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
             "name": "Ids",
             "in": "query",
             "schema": {
@@ -6822,10 +6807,25 @@
             }
           },
           {
+            "name": "PublishedStatus",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "VendorName",
             "in": "query",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "CategoryId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
             }
           }
         ],
@@ -13134,10 +13134,6 @@
             "nullable": true
           },
           "company_vat": {
-            "type": "string",
-            "nullable": true
-          },
-          "primary_currency_display_locale": {
             "type": "string",
             "nullable": true
           },

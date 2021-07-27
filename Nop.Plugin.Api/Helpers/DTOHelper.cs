@@ -44,8 +44,6 @@ namespace Nop.Plugin.Api.Helpers
     public class DTOHelper : IDTOHelper
     {
         private readonly IAclService _aclService;
-        private readonly ICurrencyService _currencyService;
-        private readonly CurrencySettings _currencySettings;
         private readonly ICustomerService _customerService;
         private readonly ILanguageService _languageService;
         private readonly ILocalizationService _localizationService;
@@ -74,8 +72,6 @@ namespace Nop.Plugin.Api.Helpers
             IProductAttributeService productAttributeService,
             ICustomerService customerService,
             ILanguageService languageService,
-            ICurrencyService currencyService,
-            CurrencySettings currencySettings,
             IStoreService storeService,
             ILocalizationService localizationService,
             IUrlRecordService urlRecordService,
@@ -95,8 +91,6 @@ namespace Nop.Plugin.Api.Helpers
             _productAttributeService = productAttributeService;
             _customerService = customerService;
             _languageService = languageService;
-            _currencyService = currencyService;
-            _currencySettings = currencySettings;
             _storeService = storeService;
             _localizationService = localizationService;
             _urlRecordService = urlRecordService;
@@ -219,12 +213,7 @@ namespace Nop.Plugin.Api.Helpers
         {
             var storeDto = store.ToDto();
 
-            var primaryCurrency = await _currencyService.GetCurrencyByIdAsync(_currencySettings.PrimaryStoreCurrencyId);
-
-            if (!string.IsNullOrEmpty(primaryCurrency.DisplayLocale))
-            {
-                storeDto.PrimaryCurrencyDisplayLocale = primaryCurrency.DisplayLocale;
-            }
+            // TODO: add list of store currencies to the dto object
 
             storeDto.LanguageIds = (await _languageService.GetAllLanguagesAsync(false, store.Id)).Select(x => x.Id).ToList();
 
