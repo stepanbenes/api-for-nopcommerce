@@ -228,6 +228,12 @@ namespace Nop.Plugin.Api.Helpers
 
             storeDto.LanguageIds = (await _languageService.GetAllLanguagesAsync(false, store.Id)).Select(x => x.Id).ToList();
 
+            // localization
+            if (await _customerLanguage.Value is { Id: var languageId })
+            {
+                storeDto.Name = await _localizationService.GetLocalizedAsync(store, x => x.Name, languageId);
+            }
+
             return storeDto;
         }
 
