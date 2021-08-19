@@ -45,10 +45,16 @@ namespace Nop.Plugin.Api.DTO.Stores
         public int? DefaultLanguageId { get; set; }
 
         /// <summary>
-        ///     Gets or sets the identifier of the language IDs for this store
+        ///     Gets or sets the languages
         /// </summary>
-        [JsonProperty("language_ids")]
-        public List<int> LanguageIds { get; set; }
+        [JsonProperty("languages")]
+        public List<Languages.LanguageDto> Languages { get; set; }
+
+        /// <summary>
+        ///     Gets or sets the currencies
+        /// </summary>
+        [JsonProperty("currencies")]
+        public List<CurrencyDto> Currencies { get; set; }
 
         /// <summary>
         ///     Gets or sets the display order

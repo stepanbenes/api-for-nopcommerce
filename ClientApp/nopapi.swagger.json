@@ -9492,7 +9492,7 @@
         }
       }
     },
-    "/api/current_store": {
+    "/api/stores/current": {
       "get": {
         "tags": [
           "Store"
@@ -10734,6 +10734,57 @@
           },
           "subject_to_vat": {
             "type": "boolean"
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CurrencyDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "currency_code": {
+            "type": "string",
+            "nullable": true
+          },
+          "rate": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "display_locale": {
+            "type": "string",
+            "nullable": true
+          },
+          "custom_formatting": {
+            "type": "string",
+            "nullable": true
+          },
+          "limited_to_stores": {
+            "type": "boolean"
+          },
+          "published": {
+            "type": "boolean"
+          },
+          "display_order": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "created_on_utc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_on_utc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "rounding_type": {
+            "$ref": "#/components/schemas/RoundingType"
           },
           "id": {
             "type": "integer",
@@ -12837,6 +12888,19 @@
         },
         "additionalProperties": false
       },
+      "RoundingType": {
+        "enum": [
+          "Rounding001",
+          "Rounding005Up",
+          "Rounding005Down",
+          "Rounding01Up",
+          "Rounding01Down",
+          "Rounding05",
+          "Rounding1",
+          "Rounding1Up"
+        ],
+        "type": "string"
+      },
       "ShippingStatus": {
         "enum": [
           "ShippingNotRequired",
@@ -13108,11 +13172,17 @@
             "format": "int32",
             "nullable": true
           },
-          "language_ids": {
+          "languages": {
             "type": "array",
             "items": {
-              "type": "integer",
-              "format": "int32"
+              "$ref": "#/components/schemas/LanguageDto"
+            },
+            "nullable": true
+          },
+          "currencies": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CurrencyDto"
             },
             "nullable": true
           },

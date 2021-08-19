@@ -88,6 +88,8 @@ namespace Nop.Plugin.Api.AutoMapper
             CreateMap<Topic, TopicDto>();
 
             CreateMap<Country, CountryDto>();
+
+            CreateMap<Currency, CurrencyDto>();
         }
 
         public int Order => 0;
