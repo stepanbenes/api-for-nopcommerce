@@ -55,13 +55,9 @@ namespace Nop.Plugin.Api.Controllers
         /// <summary>
         ///     Retrieve current store.
         /// </summary>
-        /// <param name="fields">Fields from the category you want your json to contain</param>
-        /// <response code="200">OK</response>
-        /// <response code="400">Bad Request</response>
-        /// <response code="401">Unauthorized</response>
-        /// <response code="404">Not Found</response>
+        /// <param name="fields">Fields you want your json to contain</param>
         [HttpGet]
-        [Route("/api/current_store", Name = "GetCurrentStore")]
+        [Route("/api/stores/current", Name = "GetCurrentStore")]
         [AuthorizePermission("ManageStores", ignore: true)] // turn off all permission authorizations, access to this action is allowed to all authenticated customers
         [ProducesResponseType(typeof(StoresRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
@@ -91,9 +87,7 @@ namespace Nop.Plugin.Api.Controllers
         /// <summary>
         ///     Retrieve all stores
         /// </summary>
-        /// <param name="fields">Fields from the store you want your json to contain</param>
-        /// <response code="200">OK</response>
-        /// <response code="401">Unauthorized</response>
+        /// <param name="fields">Fields you want your json to contain</param>
         [HttpGet]
         [Route("/api/stores", Name = "GetAllStores")]
         [ProducesResponseType(typeof(StoresRootObject), (int)HttpStatusCode.OK)]

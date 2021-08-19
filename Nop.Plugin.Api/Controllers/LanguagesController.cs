@@ -56,7 +56,7 @@ namespace Nop.Plugin.Api.Controllers
 			_languageService = languageService;
 			_dtoHelper = dtoHelper;
 			_customerApiService = customerApiService;
-			this._authenticationService = authenticationService;
+			_authenticationService = authenticationService;
 		}
 
 		/// <summary>
