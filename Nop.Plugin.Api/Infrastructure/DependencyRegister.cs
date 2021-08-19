@@ -88,8 +88,10 @@ namespace Nop.Plugin.Api.Infrastructure
             services.AddScoped<IAddressApiService, AddressApiService>();
 
             // replace IAuthenticationService CookieAutheticationService (used in NopCommerce web) with BearerTokenOrCookieAuthenticationService that will combine Bearer token  (used in Nop api plugin) and Cookies authentication
-            // // if token is not found to be compatible with web client, then IApiWorkContext is unnecessary
             services.Replace(ServiceDescriptor.Scoped<Nop.Services.Authentication.IAuthenticationService, BearerTokenOrCookieAuthenticationService>());
+
+            // replace IStoreContext WebStoreContext with similar implementation that tries to determine host using api client provided header "NopApiClientHost"
+            services.Replace(ServiceDescriptor.Scoped<Nop.Core.IStoreContext, WebApiStoreContext>());
 		}
     }
 }
