@@ -5,6 +5,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Nop.Core.Domain.Directory;
 using Nop.Plugin.Api.Attributes;
 using Nop.Plugin.Api.DTO;
 using Nop.Plugin.Api.DTO.Errors;
@@ -87,6 +88,20 @@ namespace Nop.Plugin.Api.Controllers
 			var json = JsonFieldsSerializer.Serialize(currenciesRootObject, fields ?? "");
 
 			return new RawJsonActionResult(json);
+		}
+
+		[HttpGet]
+		[Route("/api/currencies/primary", Name = "GetPrimaryCurrency")]
+		[ProducesResponseType(typeof(CurrencyDto), (int)HttpStatusCode.OK)]
+		[ProducesResponseType(typeof(void), (int)HttpStatusCode.NoContent)]
+		[ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.Unauthorized)]
+		public async Task<IActionResult> GetPrimaryCurrency([FromServices] CurrencySettings currencySettings)
+		{
+			var primaryStoreCurrency = await _currencyService.GetCurrencyByIdAsync(currencySettings.PrimaryStoreCurrencyId);
+			if (primaryStoreCurrency is null)
+				return NoContent();
+			var currencyDto = await _dtoHelper.PrepareCurrencyDtoAsync(primaryStoreCurrency);
+			return Ok(currencyDto);
 		}
 
 		[HttpGet]
