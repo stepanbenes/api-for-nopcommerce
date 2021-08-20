@@ -44,6 +44,12 @@ namespace Nop.Plugin.Api.DTO
 
         [JsonProperty("rounding_type")]
         public RoundingType RoundingType { get; set; }
+
+        /// <summary>
+        ///     Gets or sets the store ids in which the language is enabled
+        /// </summary>
+        [JsonProperty("store_ids")]
+        public List<int> StoreIds { get; set; }
     }
 
     [JsonConverter(typeof(StringEnumConverter))]

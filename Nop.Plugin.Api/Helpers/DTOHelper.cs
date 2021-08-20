@@ -246,8 +246,7 @@ namespace Nop.Plugin.Api.Helpers
 		{
 			var languageDto = language.ToDto();
 
-			languageDto.StoreIds = (await _storeMappingService.GetStoreMappingsAsync(language)).Select(mapping => mapping.StoreId)
-													   .ToList();
+			languageDto.StoreIds = (await _storeMappingService.GetStoreMappingsAsync(language)).Select(mapping => mapping.StoreId).ToList();
 
 			if (languageDto.StoreIds.Count == 0)
 			{
@@ -255,6 +254,26 @@ namespace Nop.Plugin.Api.Helpers
 			}
 
 			return languageDto;
+		}
+
+		public async Task<CurrencyDto> PrepareCurrencyDtoAsync(Currency currency)
+		{
+			var currencyDto = currency.ToDto();
+
+			currencyDto.StoreIds = (await _storeMappingService.GetStoreMappingsAsync(currency)).Select(mapping => mapping.StoreId).ToList();
+
+			if (currencyDto.StoreIds.Count == 0)
+			{
+				currencyDto.StoreIds = (await _storeService.GetAllStoresAsync()).Select(s => s.Id).ToList();
+			}
+
+			// localization
+			if (await _customerLanguage.Value is { Id: var languageId })
+			{
+				currencyDto.Name = await _localizationService.GetLocalizedAsync(currency, x => x.Name, languageId);
+			}
+
+			return currencyDto;
 		}
 
 		public ProductAttributeDto PrepareProductAttributeDTO(ProductAttribute productAttribute)
