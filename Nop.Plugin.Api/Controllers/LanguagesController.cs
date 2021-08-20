@@ -109,7 +109,7 @@ namespace Nop.Plugin.Api.Controllers
 
 		[HttpPost]
 		[Route("/api/languages/current", Name = "SetCurrentLanguage")]
-		[ProducesResponseType(typeof(void), (int)HttpStatusCode.OK)]
+		[ProducesResponseType(typeof(void), (int)HttpStatusCode.NoContent)]
 		[ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.NotFound)]
 		[ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.Unauthorized)]
 		public async Task<IActionResult> SetCurrentLanguage([FromQuery] int id)
@@ -122,7 +122,7 @@ namespace Nop.Plugin.Api.Controllers
 			if (language is null)
 				return NotFound();
 			await _customerApiService.SetCustomerLanguageAsync(customer, language);
-			return Ok();
+			return NoContent();
 		}
 	}
 }
