@@ -20,5 +20,7 @@ namespace Nop.Plugin.Api.Services
         Task<int> GetCategoriesCountAsync(
             DateTime? createdAtMin = null, DateTime? createdAtMax = null, DateTime? updatedAtMin = null, DateTime? updatedAtMax = null,
             bool? publishedStatus = null, int? productId = null, int? parentCategoryId = null);
+
+        Task<IDictionary<int, IList<Category>>> GetProductCategories(IList<int> productIds);
     }
 }

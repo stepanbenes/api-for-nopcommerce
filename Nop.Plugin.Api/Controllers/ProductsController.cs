@@ -182,6 +182,40 @@ namespace Nop.Plugin.Api.Controllers
             return new RawJsonActionResult(json);
         }
 
+        [HttpGet]
+        [Route("/api/products/categories", Name = "GetProductCategories")]
+        [AuthorizePermission("PublicStoreAllowNavigation")]
+        [ProducesResponseType(typeof(ProductCategoriesRootObjectDto), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
+        [GetRequestsErrorInterceptorActionFilter]
+        public async Task<IActionResult> GetProductCategories([FromQuery] ProductCategoriesParametersModel parameters, [FromServices] ICategoryApiService categoryApiService)
+        {
+            if (parameters.ProductIds is null)
+            {
+                return Error(HttpStatusCode.BadRequest, "product_ids", "Product ids is null");
+            }
+
+            var productCategories = await categoryApiService.GetProductCategories(parameters.ProductIds);
+
+            var productCategoriesRootObject = new ProductCategoriesRootObjectDto
+            {
+                ProductCategories = await productCategories.SelectAwait(async prodCats => new ProductCategoriesDto
+                {
+                    ProductId = prodCats.Key,
+                    Categories = await prodCats.Value.SelectAwait(async cat => await _dtoHelper.PrepareCategoryDTOAsync(cat)).ToListAsync()
+                }).ToListAsync()
+
+                //ProductCategories = await productCategories.ToDictionaryAwaitAsync
+                //(
+                //	keySelector: prodCats => ValueTask.FromResult(prodCats.Key),
+                //	elementSelector: async prodCats => await prodCats.Value.SelectAwait(async cat => await _dtoHelper.PrepareCategoryDTOAsync(cat)).ToListAsync()
+                //)
+            };
+
+			return Ok(productCategoriesRootObject);
+        }
+
         [HttpPost]
         [Route("/api/products", Name = "CreateProduct")]
         [AuthorizePermission("ManageProducts")]

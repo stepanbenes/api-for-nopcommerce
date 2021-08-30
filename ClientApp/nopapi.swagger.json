@@ -7705,6 +7705,89 @@
         }
       }
     },
+    "/api/products/categories": {
+      "get": {
+        "tags": [
+          "Products"
+        ],
+        "operationId": "GetProductCategories",
+        "parameters": [
+          {
+            "name": "ProductIds",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductCategoriesRootObjectDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductCategoriesRootObjectDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductCategoriesRootObjectDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorsRootObject"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorsRootObject"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorsRootObject"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/productspecificationattributes": {
       "get": {
         "tags": [
@@ -12438,6 +12521,38 @@
           "id": {
             "type": "integer",
             "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ProductCategoriesDto": {
+        "required": [
+          "categories"
+        ],
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CategoryDto"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "ProductCategoriesRootObjectDto": {
+        "type": "object",
+        "properties": {
+          "product_categories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductCategoriesDto"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false

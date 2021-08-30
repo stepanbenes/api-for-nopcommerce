@@ -7,6 +7,7 @@ using Nop.Plugin.Api.DataStructures;
 using Nop.Plugin.Api.Infrastructure;
 using Nop.Services.Stores;
 using System.Threading.Tasks;
+using Nop.Services.Catalog;
 
 namespace Nop.Plugin.Api.Services
 {
@@ -15,16 +16,19 @@ namespace Nop.Plugin.Api.Services
         private readonly IRepository<Category> _categoryRepository;
         private readonly IRepository<ProductCategory> _productCategoryMappingRepository;
         private readonly IStoreMappingService _storeMappingService;
+		private readonly ICategoryService _categoryService;
 
-        public CategoryApiService(
+		public CategoryApiService(
             IRepository<Category> categoryRepository,
             IRepository<ProductCategory> productCategoryMappingRepository,
-            IStoreMappingService storeMappingService)
+            IStoreMappingService storeMappingService,
+            ICategoryService categoryService)
         {
             _categoryRepository = categoryRepository;
             _productCategoryMappingRepository = productCategoryMappingRepository;
             _storeMappingService = storeMappingService;
-        }
+			this._categoryService = categoryService;
+		}
 
         public IList<Category> GetCategories(
             IList<int> ids = null,
@@ -65,6 +69,12 @@ namespace Nop.Plugin.Api.Services
             var query = GetCategoriesQuery(createdAtMin, createdAtMax, updatedAtMin, updatedAtMax, publishedStatus, productId, ids: null, parentCategoryId);
 
             return await query.WhereAwait(async c => await _storeMappingService.AuthorizeAsync(c)).CountAsync();
+        }
+
+        public async Task<IDictionary<int, IList<Category>>> GetProductCategories(IList<int> productIds)
+        {
+            var productCategories = await _categoryService.GetProductCategoryIdsAsync(productIds.ToArray());
+            return productCategories.ToDictionary(prodCat => prodCat.Key, prodCat => prodCat.Value.Select(catId => GetCategoryById(catId)).ToList() as IList<Category>);
         }
 
         private IQueryable<Category> GetCategoriesQuery(
@@ -125,5 +135,5 @@ namespace Nop.Plugin.Api.Services
 
             return query;
         }
-    }
+	}
 }
