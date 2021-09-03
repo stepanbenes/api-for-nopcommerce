@@ -32,6 +32,7 @@ namespace Nop.Plugin.Api.Services
         private static readonly string FIRST_NAME = NopCustomerDefaults.FirstNameAttribute.ToLowerInvariant();
         private static readonly string LAST_NAME = NopCustomerDefaults.LastNameAttribute.ToLowerInvariant();
         private static readonly string LANGUAGE_ID = NopCustomerDefaults.LanguageIdAttribute.ToLowerInvariant();
+        private static readonly string CURRENCY_ID = NopCustomerDefaults.CurrencyIdAttribute.ToLowerInvariant();
         private static readonly string DATE_OF_BIRTH = NopCustomerDefaults.DateOfBirthAttribute.ToLowerInvariant();
         private static readonly string GENDER = NopCustomerDefaults.GenderAttribute.ToLowerInvariant();
 
@@ -215,6 +216,10 @@ namespace Nop.Plugin.Api.Services
                         else if (mapping.Attribute.Key.Equals(LANGUAGE_ID, StringComparison.InvariantCultureIgnoreCase))
                         {
                             customerDto.LanguageId = mapping.Attribute.Value;
+                        }
+                        else if (mapping.Attribute.Key.Equals(CURRENCY_ID, StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            customerDto.CurrencyId = mapping.Attribute.Value;
                         }
                         else if (mapping.Attribute.Key.Equals(DATE_OF_BIRTH, StringComparison.InvariantCultureIgnoreCase))
                         {
@@ -438,6 +443,10 @@ namespace Nop.Plugin.Api.Services
                     else if (attribute.Key.Equals(LANGUAGE_ID, StringComparison.InvariantCultureIgnoreCase))
                     {
                         customerDto.LanguageId = attribute.Value;
+                    }
+                    else if (attribute.Key.Equals(CURRENCY_ID, StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        customerDto.CurrencyId = attribute.Value;
                     }
                     else if (attribute.Key.Equals(DATE_OF_BIRTH, StringComparison.InvariantCultureIgnoreCase))
                     {

@@ -11154,13 +11154,6 @@
       "CustomerDto": {
         "type": "object",
         "properties": {
-          "shopping_cart_items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ShoppingCartItemDto"
-            },
-            "nullable": true
-          },
           "billing_address": {
             "$ref": "#/components/schemas/AddressDto"
           },
@@ -11195,6 +11188,10 @@
             "nullable": true
           },
           "language_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "currency_id": {
             "type": "string",
             "nullable": true
           },
@@ -11328,6 +11325,10 @@
             "nullable": true
           },
           "language_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "currency_id": {
             "type": "string",
             "nullable": true
           },
@@ -11822,6 +11823,10 @@
             "nullable": true
           },
           "language_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "currency_id": {
             "type": "string",
             "nullable": true
           },

@@ -30,6 +30,9 @@ namespace Nop.Plugin.Api.DTO.Customers
         [JsonProperty("language_id")]
         public string LanguageId { get; set; }
 
+        [JsonProperty("currency_id")]
+        public string CurrencyId { get; set; }
+
         [JsonProperty("date_of_birth")]
         public DateTime? DateOfBirth { get; set; }
 
