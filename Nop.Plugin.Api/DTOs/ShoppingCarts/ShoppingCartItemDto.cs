@@ -71,11 +71,5 @@ namespace Nop.Plugin.Api.DTO.ShoppingCarts
 
         [JsonProperty("customer_id")]
         public int? CustomerId { get; set; }
-
-        /// <summary>
-        ///     Gets or sets the customer
-        /// </summary>
-        [JsonProperty("customer")]
-        public CustomerForShoppingCartItemDto CustomerDto { get; set; }
     }
 }

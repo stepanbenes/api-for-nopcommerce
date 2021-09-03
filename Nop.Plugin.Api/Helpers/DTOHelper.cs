@@ -177,14 +177,8 @@ namespace Nop.Plugin.Api.Helpers
 
 			orderDto.OrderItems = await (await _orderService.GetOrderItemsAsync(order.Id)).SelectAwait(async item => await PrepareOrderItemDTOAsync(item)).ToListAsync();
 
-			var customer = await _customerService.GetCustomerByIdAsync(order.CustomerId);
-
-			if (customer != null)
-			{
-				orderDto.Customer = customer.ToOrderCustomerDto();
-				orderDto.BillingAddress = (await _addressService.GetAddressByIdAsync(order.BillingAddressId))?.ToDto();
-				orderDto.ShippingAddress = (await _addressService.GetAddressByIdAsync(order.ShippingAddressId ?? 0))?.ToDto();
-			}
+			orderDto.BillingAddress = (await _addressService.GetAddressByIdAsync(order.BillingAddressId))?.ToDto();
+			orderDto.ShippingAddress = (await _addressService.GetAddressByIdAsync(order.ShippingAddressId ?? 0))?.ToDto();
 
 			return orderDto;
 		}
@@ -199,7 +193,6 @@ namespace Nop.Plugin.Api.Helpers
 		{
 			var dto = shoppingCartItem.ToDto();
 			dto.ProductDto = await PrepareProductDTOAsync(await _productService.GetProductByIdAsync(shoppingCartItem.ProductId));
-			dto.CustomerDto = (await _customerService.GetCustomerByIdAsync(shoppingCartItem.CustomerId)).ToCustomerForShoppingCartItemDto();
 			dto.Attributes = _productAttributeConverter.Parse(shoppingCartItem.AttributesXml);
 			return dto;
 		}

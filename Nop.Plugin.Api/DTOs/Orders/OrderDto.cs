@@ -233,12 +233,6 @@ namespace Nop.Plugin.Api.DTO.Orders
         [JsonProperty("created_on_utc")]
         public DateTime? CreatedOnUtc { get; set; }
 
-        /// <summary>
-        ///     Gets or sets the customer
-        /// </summary>
-        [JsonProperty("customer")]
-        public OrderCustomerDto Customer { get; set; }
-
         [JsonProperty("customer_id")]
         public int? CustomerId { get; set; }
 

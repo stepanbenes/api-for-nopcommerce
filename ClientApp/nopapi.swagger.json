@@ -11288,129 +11288,6 @@
         },
         "additionalProperties": false
       },
-      "CustomerForShoppingCartItemDto": {
-        "type": "object",
-        "properties": {
-          "billing_address": {
-            "$ref": "#/components/schemas/AddressDto"
-          },
-          "shipping_address": {
-            "$ref": "#/components/schemas/AddressDto"
-          },
-          "addresses": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/AddressDto"
-            },
-            "nullable": true
-          },
-          "customer_guid": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "username": {
-            "type": "string",
-            "nullable": true
-          },
-          "email": {
-            "type": "string",
-            "nullable": true
-          },
-          "first_name": {
-            "type": "string",
-            "nullable": true
-          },
-          "last_name": {
-            "type": "string",
-            "nullable": true
-          },
-          "language_id": {
-            "type": "string",
-            "nullable": true
-          },
-          "currency_id": {
-            "type": "string",
-            "nullable": true
-          },
-          "date_of_birth": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "gender": {
-            "type": "string",
-            "nullable": true
-          },
-          "admin_comment": {
-            "type": "string",
-            "nullable": true
-          },
-          "is_tax_exempt": {
-            "type": "boolean",
-            "nullable": true
-          },
-          "has_shopping_cart_items": {
-            "type": "boolean",
-            "nullable": true
-          },
-          "active": {
-            "type": "boolean",
-            "nullable": true
-          },
-          "deleted": {
-            "type": "boolean",
-            "nullable": true
-          },
-          "is_system_account": {
-            "type": "boolean",
-            "nullable": true
-          },
-          "system_name": {
-            "type": "string",
-            "nullable": true
-          },
-          "last_ip_address": {
-            "type": "string",
-            "nullable": true
-          },
-          "created_on_utc": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "last_login_date_utc": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "last_activity_date_utc": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "registered_in_store_id": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "subscribed_to_newsletter": {
-            "type": "boolean"
-          },
-          "role_ids": {
-            "type": "array",
-            "items": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "nullable": true
-          },
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          }
-        },
-        "additionalProperties": false
-      },
       "CustomerRoleDto": {
         "type": "object",
         "properties": {
@@ -11799,116 +11676,6 @@
         },
         "additionalProperties": false
       },
-      "OrderCustomerDto": {
-        "type": "object",
-        "properties": {
-          "customer_guid": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "username": {
-            "type": "string",
-            "nullable": true
-          },
-          "email": {
-            "type": "string",
-            "nullable": true
-          },
-          "first_name": {
-            "type": "string",
-            "nullable": true
-          },
-          "last_name": {
-            "type": "string",
-            "nullable": true
-          },
-          "language_id": {
-            "type": "string",
-            "nullable": true
-          },
-          "currency_id": {
-            "type": "string",
-            "nullable": true
-          },
-          "date_of_birth": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "gender": {
-            "type": "string",
-            "nullable": true
-          },
-          "admin_comment": {
-            "type": "string",
-            "nullable": true
-          },
-          "is_tax_exempt": {
-            "type": "boolean",
-            "nullable": true
-          },
-          "has_shopping_cart_items": {
-            "type": "boolean",
-            "nullable": true
-          },
-          "active": {
-            "type": "boolean",
-            "nullable": true
-          },
-          "deleted": {
-            "type": "boolean",
-            "nullable": true
-          },
-          "is_system_account": {
-            "type": "boolean",
-            "nullable": true
-          },
-          "system_name": {
-            "type": "string",
-            "nullable": true
-          },
-          "last_ip_address": {
-            "type": "string",
-            "nullable": true
-          },
-          "created_on_utc": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "last_login_date_utc": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "last_activity_date_utc": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "registered_in_store_id": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "subscribed_to_newsletter": {
-            "type": "boolean"
-          },
-          "role_ids": {
-            "type": "array",
-            "items": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "nullable": true
-          },
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          }
-        },
-        "additionalProperties": false
-      },
       "OrderDto": {
         "required": [
           "billing_address"
@@ -12081,9 +11848,6 @@
             "type": "string",
             "format": "date-time",
             "nullable": true
-          },
-          "customer": {
-            "$ref": "#/components/schemas/OrderCustomerDto"
           },
           "customer_id": {
             "type": "integer",
@@ -13364,9 +13128,6 @@
             "type": "integer",
             "format": "int32",
             "nullable": true
-          },
-          "customer": {
-            "$ref": "#/components/schemas/CustomerForShoppingCartItemDto"
           },
           "id": {
             "type": "integer",
