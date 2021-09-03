@@ -49,6 +49,7 @@ namespace Nop.Plugin.Api.Controllers
 		private readonly IPermissionService _permissionService;
 		private readonly IAddressService _addressService;
 		private readonly IAuthenticationService _authenticationService;
+		private readonly ICurrencyService _currencyService;
 		private readonly IMappingHelper _mappingHelper;
 		private readonly INewsLetterSubscriptionService _newsLetterSubscriptionService;
 
@@ -76,7 +77,8 @@ namespace Nop.Plugin.Api.Controllers
 			IPictureService pictureService, ILanguageService languageService,
 			IPermissionService permissionService,
 			IAddressService addressService,
-			IAuthenticationService authenticationService) :
+			IAuthenticationService authenticationService,
+			ICurrencyService currencyService) :
 			base(jsonFieldsSerializer, aclService, customerService, storeMappingService, storeService, discountService, customerActivityService,
 				 localizationService, pictureService)
 		{
@@ -89,6 +91,7 @@ namespace Nop.Plugin.Api.Controllers
 			_permissionService = permissionService;
 			_addressService = addressService;
 			_authenticationService = authenticationService;
+			_currencyService = currencyService;
 			_encryptionService = encryptionService;
 			_genericAttributeService = genericAttributeService;
 			_customerRolesHelper = customerRolesHelper;
@@ -316,10 +319,14 @@ namespace Nop.Plugin.Api.Controllers
 
 			await InsertFirstAndLastNameGenericAttributesAsync(customerDelta.Dto.FirstName, customerDelta.Dto.LastName, newCustomer);
 
-			if (!string.IsNullOrEmpty(customerDelta.Dto.LanguageId) && int.TryParse(customerDelta.Dto.LanguageId, out var languageId)
-																	&& await _languageService.GetLanguageByIdAsync(languageId) != null)
+			if (customerDelta.Dto.LanguageId is int languageId && await _languageService.GetLanguageByIdAsync(languageId) != null)
 			{
 				await _genericAttributeService.SaveAttributeAsync(newCustomer, NopCustomerDefaults.LanguageIdAttribute, languageId);
+			}
+
+			if (customerDelta.Dto.CurrencyId is int currencyId && await _currencyService.GetCurrencyByIdAsync(currencyId) != null)
+			{
+				await _genericAttributeService.SaveAttributeAsync(newCustomer, NopCustomerDefaults.CurrencyIdAttribute, currencyId);
 			}
 
 			//password
@@ -350,6 +357,7 @@ namespace Nop.Plugin.Api.Controllers
 			newCustomerDto.LastName = customerDelta.Dto.LastName;
 
 			newCustomerDto.LanguageId = customerDelta.Dto.LanguageId;
+			newCustomerDto.CurrencyId = customerDelta.Dto.CurrencyId;
 
 			//activity log
 			await CustomerActivityService.InsertActivityAsync("AddNewCustomer", await LocalizationService.GetResourceAsync("ActivityLog.AddNewCustomer"), newCustomer);
@@ -420,10 +428,14 @@ namespace Nop.Plugin.Api.Controllers
 			await InsertFirstAndLastNameGenericAttributesAsync(customerDelta.Dto.FirstName, customerDelta.Dto.LastName, currentCustomer);
 
 
-			if (!string.IsNullOrEmpty(customerDelta.Dto.LanguageId) && int.TryParse(customerDelta.Dto.LanguageId, out var languageId)
-																	&& await _languageService.GetLanguageByIdAsync(languageId) != null)
+			if (customerDelta.Dto.LanguageId is int languageId && await _languageService.GetLanguageByIdAsync(languageId) != null)
 			{
 				await _genericAttributeService.SaveAttributeAsync(currentCustomer, NopCustomerDefaults.LanguageIdAttribute, languageId);
+			}
+
+			if (customerDelta.Dto.CurrencyId is int currencyId && await _currencyService.GetCurrencyByIdAsync(currencyId) != null)
+			{
+				await _genericAttributeService.SaveAttributeAsync(currentCustomer, NopCustomerDefaults.CurrencyIdAttribute, currencyId);
 			}
 
 			//password
@@ -443,29 +455,12 @@ namespace Nop.Plugin.Api.Controllers
 			// so we do it by hand here.
 			await PopulateAddressCountryNamesAsync(updatedCustomer);
 
-			var attributes = await _genericAttributeService.GetAttributesForEntityAsync(currentCustomer.Id, typeof(Customer).Name);
-
 			// Set the fist and last name separately because they are not part of the customer entity, but are saved in the generic attributes.
-			var firstNameGenericAttribute = attributes.FirstOrDefault(x => x.Key == "FirstName");
 
-			if (firstNameGenericAttribute != null)
-			{
-				updatedCustomer.FirstName = firstNameGenericAttribute.Value;
-			}
-
-			var lastNameGenericAttribute = attributes.FirstOrDefault(x => x.Key == "LastName");
-
-			if (lastNameGenericAttribute != null)
-			{
-				updatedCustomer.LastName = lastNameGenericAttribute.Value;
-			}
-
-			var languageIdGenericAttribute = attributes.FirstOrDefault(x => x.Key == "LanguageId");
-
-			if (languageIdGenericAttribute != null)
-			{
-				updatedCustomer.LanguageId = languageIdGenericAttribute.Value;
-			}
+			updatedCustomer.FirstName = await _genericAttributeService.GetAttributeAsync<string>(currentCustomer, NopCustomerDefaults.FirstNameAttribute);
+			updatedCustomer.LastName = await _genericAttributeService.GetAttributeAsync<string>(currentCustomer, NopCustomerDefaults.LastNameAttribute);
+			updatedCustomer.LanguageId = await _genericAttributeService.GetAttributeAsync<int>(currentCustomer, NopCustomerDefaults.LanguageIdAttribute);
+			updatedCustomer.CurrencyId = await _genericAttributeService.GetAttributeAsync<int>(currentCustomer, NopCustomerDefaults.CurrencyIdAttribute);
 
 			//activity log
 			await CustomerActivityService.InsertActivityAsync("UpdateCustomer", await LocalizationService.GetResourceAsync("ActivityLog.UpdateCustomer"), currentCustomer);

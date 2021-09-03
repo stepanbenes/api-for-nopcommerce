@@ -64,9 +64,6 @@ namespace Nop.Plugin.Api.AutoMapper
             CreateShoppingCartItemMap();
 
             CreateCustomerToDTOMap();
-            CreateCustomerToOrderCustomerDTOMap();
-            CreateCustomerDTOToOrderCustomerDTOMap();
-            CreateCustomerForShoppingCartItemMapFromCustomer();
 
             CreateMap<OrderItem, OrderItemDto>();
             CreateOrderEntityToOrderDtoMap();
@@ -135,21 +132,6 @@ namespace Nop.Plugin.Api.AutoMapper
                                       .ForMember(x => x.Id, y => y.MapFrom(src => src.Id));
         }
 
-        private void CreateCustomerForShoppingCartItemMapFromCustomer()
-        {
-            AutoMapperApiConfiguration.MapperConfigurationExpression
-                                      .CreateMap<Customer, CustomerForShoppingCartItemDto>()
-                                      .IgnoreAllNonExisting()
-                                      .ForMember(x => x.Id, y => y.MapFrom(src => src.Id));
-                                      //.ForMember(x => x.BillingAddress,
-                                      //           y => y.MapFrom(src => src.BillingAddress.GetWithDefault(x => x, new Address()).ToDto()))
-                                      //.ForMember(x => x.ShippingAddress,
-                                      //           y => y.MapFrom(src => src.ShippingAddress.GetWithDefault(x => x, new Address()).ToDto()))
-                                      //.ForMember(x => x.Addresses,
-                                      //           y => y.MapFrom(src =>
-                                      //                              src.Addresses.GetWithDefault(x => x, new List<Address>()).Select(address => address.ToDto())));
-        }
-
         private void CreateCustomerToDTOMap()
         {
             AutoMapperApiConfiguration.MapperConfigurationExpression.CreateMap<Customer, CustomerDto>()
@@ -172,18 +154,6 @@ namespace Nop.Plugin.Api.AutoMapper
                                       //                             src.ShoppingCartItems.GetWithDefault(x => x, new List<ShoppingCartItem>())
                                       //                                .Select(item => item.ToDto())))
                                       //.ForMember(x => x.RoleIds, y => y.MapFrom(src => src.CustomerRoles.Select(z => z.Id)));
-        }
-
-        private void CreateCustomerToOrderCustomerDTOMap()
-        {
-            AutoMapperApiConfiguration.MapperConfigurationExpression.CreateMap<Customer, OrderCustomerDto>()
-                                      .IgnoreAllNonExisting();
-        }
-
-        private void CreateCustomerDTOToOrderCustomerDTOMap()
-        {
-            AutoMapperApiConfiguration.MapperConfigurationExpression.CreateMap<CustomerDto, OrderCustomerDto>()
-                                      .IgnoreAllNonExisting();
         }
 
         private void CreateShoppingCartItemMap()

@@ -29,15 +29,14 @@ namespace Nop.Plugin.Api.Services
 {
     public class CustomerApiService : ICustomerApiService
     {
-        private const string FIRST_NAME = "firstname";
-        private const string LAST_NAME = "lastname";
-        private const string LANGUAGE_ID = "languageid";
-        private const string DATE_OF_BIRTH = "dateofbirth";
-        private const string GENDER = "gender";
-        private const string KEY_GROUP = "customer";
+        private static readonly string FIRST_NAME = NopCustomerDefaults.FirstNameAttribute.ToLowerInvariant();
+        private static readonly string LAST_NAME = NopCustomerDefaults.LastNameAttribute.ToLowerInvariant();
+        private static readonly string LANGUAGE_ID = NopCustomerDefaults.LanguageIdAttribute.ToLowerInvariant();
+        private static readonly string CURRENCY_ID = NopCustomerDefaults.CurrencyIdAttribute.ToLowerInvariant();
+        private static readonly string DATE_OF_BIRTH = NopCustomerDefaults.DateOfBirthAttribute.ToLowerInvariant();
+        private static readonly string GENDER = NopCustomerDefaults.GenderAttribute.ToLowerInvariant();
 
         private readonly IStaticCacheManager _cacheManager;
-		private readonly IShoppingCartItemApiService _shoppingCartItemApiService;
 		private readonly IAddressApiService _addressApiService;
 		private readonly IGenericAttributeService _genericAttributeService;
 		private readonly ICurrencyService _currencyService;
@@ -57,7 +56,6 @@ namespace Nop.Plugin.Api.Services
             ILanguageService languageService,
             IStoreMappingService storeMappingService,
             IStaticCacheManager staticCacheManager,
-            IShoppingCartItemApiService shoppingCartItemApiService,
             IAddressApiService addressApiService,
             IGenericAttributeService genericAttributeService,
             ICurrencyService currencyService)
@@ -69,7 +67,6 @@ namespace Nop.Plugin.Api.Services
             _languageService = languageService;
             _storeMappingService = storeMappingService;
             _cacheManager = staticCacheManager;
-			_shoppingCartItemApiService = shoppingCartItemApiService;
 			_addressApiService = addressApiService;
 			_genericAttributeService = genericAttributeService;
 			_currencyService = currencyService;
@@ -137,7 +134,7 @@ namespace Nop.Plugin.Api.Services
         {
             return _genericAttributeRepository.Table.Where(
                                                            x =>
-                                                               x.KeyGroup == KEY_GROUP && x.EntityId == customerId &&
+                                                               x.KeyGroup == nameof(Customer) && x.EntityId == customerId &&
                                                                (x.Key == FIRST_NAME || x.Key == LAST_NAME))
                                               .ToDictionaryAsync(x => x.Key.ToLowerInvariant(), y => y.Value);
         }
@@ -161,8 +158,8 @@ namespace Nop.Plugin.Api.Services
                                              join a in _genericAttributeRepository.Table //NoTracking
                                                  on c.Id equals a.EntityId
                                              where c.Id == id &&
-                                                   a.KeyGroup == "Customer"
-                                             select new CustomerAttributeMappingDto
+                                                   a.KeyGroup == nameof(Customer)
+                                                   select new CustomerAttributeMappingDto
                                              {
                                                  Attribute = a,
                                                  Customer = c
@@ -216,9 +213,13 @@ namespace Nop.Plugin.Api.Services
                         {
                             customerDto.LastName = mapping.Attribute.Value;
                         }
-                        else if (mapping.Attribute.Key.Equals(LANGUAGE_ID, StringComparison.InvariantCultureIgnoreCase))
+                        else if (mapping.Attribute.Key.Equals(LANGUAGE_ID, StringComparison.InvariantCultureIgnoreCase) && int.TryParse(mapping.Attribute.Value, out int languageId))
                         {
-                            customerDto.LanguageId = mapping.Attribute.Value;
+                            customerDto.LanguageId = languageId;
+                        }
+                        else if (mapping.Attribute.Key.Equals(CURRENCY_ID, StringComparison.InvariantCultureIgnoreCase) && int.TryParse(mapping.Attribute.Value, out int currencyId))
+                        {
+                            customerDto.CurrencyId = currencyId;
                         }
                         else if (mapping.Attribute.Key.Equals(DATE_OF_BIRTH, StringComparison.InvariantCultureIgnoreCase))
                         {
@@ -250,8 +251,6 @@ namespace Nop.Plugin.Api.Services
             await SetNewsletterSubscriptionStatusAsync(customerDto);
 
             await SetCustomerAddressesAsync(customer, customerDto);
-
-            SetCustomerShoppingCartItems(customerDto);
 
             return customerDto;
         }
@@ -333,7 +332,7 @@ namespace Nop.Plugin.Api.Services
                  from customer in query
                  from attribute in _genericAttributeRepository.Table
                                                               .Where(attr => attr.EntityId == customer.Id &&
-                                                                             attr.KeyGroup == "Customer").DefaultIfEmpty()
+                                                                             attr.KeyGroup == nameof(Customer)).DefaultIfEmpty()
                  select new CustomerAttributeMappingDto
                  {
                      Attribute = attribute,
@@ -441,9 +440,13 @@ namespace Nop.Plugin.Api.Services
                     {
                         customerDto.LastName = attribute.Value;
                     }
-                    else if (attribute.Key.Equals(LANGUAGE_ID, StringComparison.InvariantCultureIgnoreCase))
+                    else if (attribute.Key.Equals(LANGUAGE_ID, StringComparison.InvariantCultureIgnoreCase) && int.TryParse(attribute.Value, out int languageId))
                     {
-                        customerDto.LanguageId = attribute.Value;
+                        customerDto.LanguageId = languageId;
+                    }
+                    else if (attribute.Key.Equals(CURRENCY_ID, StringComparison.InvariantCultureIgnoreCase) && int.TryParse(attribute.Value, out int currencyId))
+                    {
+                        customerDto.CurrencyId = currencyId;
                     }
                     else if (attribute.Key.Equals(DATE_OF_BIRTH, StringComparison.InvariantCultureIgnoreCase))
                     {
@@ -591,18 +594,12 @@ namespace Nop.Plugin.Api.Services
                 customerDto.ShippingAddress = null;
         }
 
-		private void SetCustomerShoppingCartItems(CustomerDto customerDto)
-		{
-            var items = _shoppingCartItemApiService.GetShoppingCartItems(customerId: customerDto.Id);
-            customerDto.ShoppingCartItems = items.Select(entity => entity.ToDto()).ToList();
-		}
-
 		public async Task<Language> GetCustomerLanguageAsync(Customer customer)
 		{
-            var store = await _storeContext.GetCurrentStoreAsync();
+            //var store = await _storeContext.GetCurrentStoreAsync();
 
             //get current customer language identifier
-            var customerLanguageId = await _genericAttributeService.GetAttributeAsync<int>(customer, NopCustomerDefaults.LanguageIdAttribute, store.Id);
+            var customerLanguageId = await _genericAttributeService.GetAttributeAsync<int>(customer, NopCustomerDefaults.LanguageIdAttribute/*, store.Id*/);
 
             var customerLanguage = await _languageService.GetLanguageByIdAsync(customerLanguageId);
             return customerLanguage;
@@ -636,16 +633,16 @@ namespace Nop.Plugin.Api.Services
 
         public async Task SetCustomerLanguageAsync(Customer customer, Language language)
 		{
-            var store = await _storeContext.GetCurrentStoreAsync();
-            await _genericAttributeService.SaveAttributeAsync(customer, NopCustomerDefaults.LanguageIdAttribute, language?.Id ?? 0, store.Id);
+            //var store = await _storeContext.GetCurrentStoreAsync();
+            await _genericAttributeService.SaveAttributeAsync(customer, NopCustomerDefaults.LanguageIdAttribute, language?.Id ?? 0/*, store.Id*/);
         }
 
 		public async Task<Currency> GetCustomerCurrencyAsync(Customer customer)
 		{
-            var store = await _storeContext.GetCurrentStoreAsync();
+            //var store = await _storeContext.GetCurrentStoreAsync();
 
             //find a currency previously selected by a customer
-            var customerCurrencyId = await _genericAttributeService.GetAttributeAsync<int>(customer, NopCustomerDefaults.CurrencyIdAttribute, store.Id);
+            var customerCurrencyId = await _genericAttributeService.GetAttributeAsync<int>(customer, NopCustomerDefaults.CurrencyIdAttribute/*, store.Id*/);
 
             var customerCurrency = await _currencyService.GetCurrencyByIdAsync(customerCurrencyId);
             return customerCurrency;
@@ -680,8 +677,8 @@ namespace Nop.Plugin.Api.Services
 
 		public async Task SetCustomerCurrencyAsync(Customer customer, Currency currency)
 		{
-            var store = await _storeContext.GetCurrentStoreAsync();
-            await _genericAttributeService.SaveAttributeAsync(customer, NopCustomerDefaults.CurrencyIdAttribute, currency?.Id ?? 0, store.Id);
+            //var store = await _storeContext.GetCurrentStoreAsync();
+            await _genericAttributeService.SaveAttributeAsync(customer, NopCustomerDefaults.CurrencyIdAttribute, currency?.Id ?? 0/*, store.Id*/);
         }
 	}
 }

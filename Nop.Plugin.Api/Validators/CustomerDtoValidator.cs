@@ -34,7 +34,6 @@ namespace Nop.Plugin.Api.Validators
             SetShippingAddressRule();
 
             SetCustomerAddressesRule();
-            SetShoppingCartItemsRule();
         }
 
         #endregion
@@ -140,31 +139,6 @@ namespace Nop.Plugin.Api.Validators
                                                                 .WithMessage("must be in guest or register role")
                                                          )
                                    );
-            }
-        }
-
-        private void SetShoppingCartItemsRule()
-        {
-            var key = "shopping_cart_items";
-            if (RequestJsonDictionary.ContainsKey(key))
-            {
-                RuleForEach(c => c.ShoppingCartItems)
-                    .Custom((shoppingCartItemDto, validationContext) =>
-                    {
-                        var shoppingCartItemJsonDictionary = GetRequestJsonDictionaryCollectionItemDictionary(key, shoppingCartItemDto);
-
-                        var validator = new ShoppingCartItemDtoValidator(HttpContextAccessor, JsonHelper, shoppingCartItemJsonDictionary);
-
-                        //force create validation for new addresses
-                        if (shoppingCartItemDto.Id == 0)
-                        {
-                            validator.HttpMethod = HttpMethod.Post;
-                        }
-
-                        var validationResult = validator.Validate(shoppingCartItemDto);
-
-                        MergeValidationResult(validationContext, validationResult);
-                    });
             }
         }
 
