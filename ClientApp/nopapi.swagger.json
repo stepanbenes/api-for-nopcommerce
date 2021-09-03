@@ -11188,11 +11188,13 @@
             "nullable": true
           },
           "language_id": {
-            "type": "string",
+            "type": "integer",
+            "format": "int32",
             "nullable": true
           },
           "currency_id": {
-            "type": "string",
+            "type": "integer",
+            "format": "int32",
             "nullable": true
           },
           "date_of_birth": {
