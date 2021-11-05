@@ -46,7 +46,7 @@ namespace Nop.Plugin.Api.DTO.Products
         ///     Gets or sets a value indicating whether to show the product on home page
         /// </summary>
         [JsonProperty("show_on_home_page")]
-        public bool? ShowOnHomePage { get; set; }
+        public bool? ShowOnHomepage { get; set; }
 
         /// <summary>
         ///     Gets or sets the meta keywords
