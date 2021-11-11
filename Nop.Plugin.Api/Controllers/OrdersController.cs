@@ -143,7 +143,9 @@ namespace Nop.Plugin.Api.Controllers
 			var orders = _orderApiService.GetOrders(parameters.Ids, parameters.CreatedAtMin,
 													parameters.CreatedAtMax,
 													parameters.Limit, parameters.Page, parameters.SinceId,
-													(Core.Domain.Orders.OrderStatus)parameters.Status, (Core.Domain.Payments.PaymentStatus)parameters.PaymentStatus, (Core.Domain.Shipping.ShippingStatus)parameters.ShippingStatus,
+													parameters.Status.HasValue ? (Core.Domain.Orders.OrderStatus)parameters.Status : null,
+													parameters.PaymentStatus.HasValue ? (Core.Domain.Payments.PaymentStatus)parameters.PaymentStatus : null,
+													parameters.ShippingStatus.HasValue ? (Core.Domain.Shipping.ShippingStatus)parameters.ShippingStatus : null,
 													parameters.CustomerId, storeId);
 
 			IList<OrderDto> ordersAsDtos = await orders.SelectAwait(async x => await _dtoHelper.PrepareOrderDTOAsync(x)).ToListAsync();
@@ -180,8 +182,11 @@ namespace Nop.Plugin.Api.Controllers
 
 			var storeId = _storeContext.GetCurrentStore().Id;
 
-			var ordersCount = _orderApiService.GetOrdersCount(parameters.CreatedAtMin, parameters.CreatedAtMax, (Core.Domain.Orders.OrderStatus)parameters.Status,
-															  (Core.Domain.Payments.PaymentStatus)parameters.PaymentStatus, (Core.Domain.Shipping.ShippingStatus)parameters.ShippingStatus, parameters.CustomerId, storeId);
+			var ordersCount = _orderApiService.GetOrdersCount(parameters.CreatedAtMin, parameters.CreatedAtMax,
+															  parameters.Status.HasValue ? (Core.Domain.Orders.OrderStatus)parameters.Status : null,
+															  parameters.PaymentStatus.HasValue ? (Core.Domain.Payments.PaymentStatus)parameters.PaymentStatus : null,
+															  parameters.ShippingStatus.HasValue ? (Core.Domain.Shipping.ShippingStatus)parameters.ShippingStatus : null,
+															  parameters.CustomerId, storeId);
 
 			var ordersCountRootObject = new OrdersCountRootObject
 			{
