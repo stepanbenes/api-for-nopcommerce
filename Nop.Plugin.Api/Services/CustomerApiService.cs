@@ -82,7 +82,12 @@ namespace Nop.Plugin.Api.Services
 
             await SetNewsletterSubscriptionStatusAsync(result);
 
-            // TODO: call SetCustomerAddressesAsync
+            foreach (CustomerDto customerDto in result)
+            {
+                var customer = await query.Where(x => x.Id == customerDto.Id).FirstOrDefaultAsync();
+
+                await SetCustomerAddressesAsync(customer, customerDto);
+            }
 
             return result;
         }
