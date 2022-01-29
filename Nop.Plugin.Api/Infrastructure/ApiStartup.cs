@@ -18,6 +18,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using Nop.Core.Configuration;
 using Nop.Core.Infrastructure;
 using Nop.Plugin.Api.Authorization.Policies;
 using Nop.Plugin.Api.Authorization.Requirements;
@@ -57,11 +58,13 @@ namespace Nop.Plugin.Api.Infrastructure
 	{
 		public void ConfigureServices(IServiceCollection services, IConfiguration configuration)
 		{
+
 			var apiConfigSection = configuration.GetSection("Api");
 
 			if (apiConfigSection != null)
 			{
-				var apiConfig = services.AddConfig<ApiConfiguration>(apiConfigSection);
+				var apiConfig = Singleton<AppSettings>.Instance.Get<ApiConfiguration>();
+
 
 				if (!string.IsNullOrEmpty(apiConfig.SecurityKey))
 				{
@@ -133,11 +136,13 @@ namespace Nop.Plugin.Api.Infrastructure
 				// TODO: options.UseAllOfToExtendReferenceSchemas(); // https://github.com/stepanbenes/api-for-nopcommerce/issues/16
 			});
 			services.AddSwaggerGenNewtonsoftSupport();
+
+
 		}
 
 		public void Configure(IApplicationBuilder app)
 		{
-			IWebHostEnvironment environment = app.ApplicationServices.GetRequiredService<IWebHostEnvironment>();
+			var environment = app.ApplicationServices.GetRequiredService<IWebHostEnvironment>();
 
 			var rewriteOptions = new RewriteOptions().AddRewrite("api/token", "/token", true);
 			app.UseRewriter(rewriteOptions);
@@ -148,7 +153,7 @@ namespace Nop.Plugin.Api.Infrastructure
 							 .AllowAnyHeader());
 
 			// Need to enable rewind so we can read the request body multiple times
-			// This should eventually be refactored, but both JsonModelBinder and all of the DTO validators need to read this stream.
+			//This should eventually be refactored, but both JsonModelBinder and all of the DTO validators need to read this stream.
 			//app.UseWhen(x => x.Request.Path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase),
 			//            builder =>
 			//            {

@@ -9,7 +9,7 @@ using Nop.Core.Domain.Customers;
 using Nop.Core.Domain.Orders;
 using Nop.Core.Domain.Topics;
 using Nop.Core.Infrastructure;
-using Nop.Core.Infrastructure.DependencyManagement;
+
 using Nop.Plugin.Api.Converters;
 using Nop.Plugin.Api.Factories;
 using Nop.Plugin.Api.Helpers;
@@ -20,27 +20,21 @@ using Nop.Plugin.Api.Services;
 using Nop.Plugin.Api.Validators;
 using Nop.Services.Topics;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 
 namespace Nop.Plugin.Api.Infrastructure
 {
-    [UsedImplicitly]
-    public class DependencyRegister : IDependencyRegistrar
+
+    public class DependencyRegister : INopStartup
     {
-        public void Register(IServiceCollection services, ITypeFinder typeFinder, AppSettings appSettings)
+        public int Order => 3000;
+
+        public void Configure(IApplicationBuilder application)
         {
-            RegisterPluginServices(services);
-            RegisterModelBinders(services);
         }
 
-        public virtual int Order => short.MaxValue;
-
-        private void RegisterModelBinders(IServiceCollection services)
-        {
-            services.AddScoped(typeof(ParametersModelBinder<>));
-            services.AddScoped(typeof(JsonModelBinder<>));
-        }
-
-        private void RegisterPluginServices(IServiceCollection services)
+        public void ConfigureServices(IServiceCollection services, IConfiguration configuration)
         {
             services.AddScoped<ICustomerApiService, CustomerApiService>();
             services.AddScoped<ICategoryApiService, CategoryApiService>();
@@ -92,6 +86,9 @@ namespace Nop.Plugin.Api.Infrastructure
 
             // replace IStoreContext WebStoreContext with similar implementation that tries to determine host using api client provided header "NopApiClientHost"
             services.Replace(ServiceDescriptor.Scoped<Nop.Core.IStoreContext, WebApiStoreContext>());
-		}
+
+            services.AddScoped(typeof(ParametersModelBinder<>));
+            services.AddScoped(typeof(JsonModelBinder<>));
+        }
     }
 }
