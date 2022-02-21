@@ -85,7 +85,22 @@ namespace Nop.Plugin.Api.Infrastructure
                 apiRole.Active = true;
                 await _customerService.UpdateCustomerRoleAsync(apiRole);
             }
+            
+            var activityLogTypeRepository = EngineContext.Current.Resolve<IRepository<ActivityLogType>>();
+            var activityLogType = (await activityLogTypeRepository.GetAllAsync(query =>
+            {
+                return query.Where(x => x.SystemKeyword == "Api.TokenRequest");
+            })).FirstOrDefault();
 
+            if (activityLogType == null)
+            {
+                await activityLogTypeRepository.InsertAsync(new ActivityLogType
+                {
+                    SystemKeyword = "Api.TokenRequest",
+                    Name = "API token request",
+                    Enabled = true
+                });
+            }
 
             await base.InstallAsync();
 
@@ -117,7 +132,17 @@ namespace Nop.Plugin.Api.Infrastructure
                 apiRole.Active = false;
                 await _customerService.UpdateCustomerRoleAsync(apiRole);
             }
-
+            
+            var activityLogTypeRepository = EngineContext.Current.Resolve<IRepository<ActivityLogType>>();
+            var activityLogType = (await activityLogTypeRepository.GetAllAsync(query =>
+            {
+                return query.Where(x => x.SystemKeyword.Equals("Api.TokenRequest"));
+            })).FirstOrDefault();
+            if (activityLogType != null)
+            {
+                activityLogType.Enabled = false;
+                await activityLogTypeRepository.UpdateAsync(activityLogType);
+            }
 
             await base.UninstallAsync();
         }
