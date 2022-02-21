@@ -1,7 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Nop.Core;
 using Nop.Core.Domain.Customers;
+using Nop.Core.Domain.Logging;
+using Nop.Core.Infrastructure;
+using Nop.Data;
 using Nop.Plugin.Api.Domain;
 using Nop.Services.Configuration;
 using Nop.Services.Customers;
