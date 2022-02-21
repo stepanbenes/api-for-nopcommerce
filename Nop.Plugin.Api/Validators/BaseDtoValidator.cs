@@ -69,7 +69,7 @@ namespace Nop.Plugin.Api.Validators
 
         #region Protected Methods
 
-        protected void MergeValidationResult(CustomContext validationContext, ValidationResult validationResult)
+        protected void MergeValidationResult(ValidationContext<T> validationContext, ValidationResult validationResult)
         {
             if (!validationResult.IsValid)
             {

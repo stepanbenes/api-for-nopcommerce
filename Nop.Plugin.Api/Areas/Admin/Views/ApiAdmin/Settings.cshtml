@@ -2,13 +2,13 @@
 @model Nop.Plugin.Api.Areas.Admin.Models.ConfigurationModel
 
 @{
-    Layout = Constants.ViewNames.AdminLayout;
+    Layout = "_ConfigurePlugin";
 
     //page title
-    ViewBag.Title = T("Plugins.Api.Admin.Page.Settings.Title").Text;
+    //ViewBag.Title = T("Plugins.Api.Admin.Page.Settings.Title").Text;
 
     //active menu item (system name)
-    Html.SetActiveMenuItemSystemName("Api-Settings-Menu");
+    //Html.SetActiveMenuItemSystemName("Api-Settings-Menu");
 }
 
 <form asp-controller="ApiAdmin" asp-action="Settings" method="post">

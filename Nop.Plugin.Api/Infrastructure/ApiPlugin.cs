@@ -37,7 +37,7 @@ namespace Nop.Plugin.Api.Infrastructure
         {
             //locales
 
-            await _localizationService.AddLocaleResourceAsync(new Dictionary<string, string>
+            await _localizationService.AddOrUpdateLocaleResourceAsync(new Dictionary<string, string>
             {
                 { "Plugins.Api", "Api plugin" },
                 { "Plugins.Api.Admin.Menu.ManageClients", "Manage Api Clients" },

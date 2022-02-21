@@ -79,7 +79,7 @@ namespace Nop.Plugin.Api.Authorization.Attributes
 				if (context == null)
 					throw new ArgumentNullException(nameof(context));
 
-				if (!await DataSettingsManager.IsDatabaseInstalledAsync())
+				if (!DataSettingsManager.IsDatabaseInstalled())
 					return;
 
 				//check whether this filter has been overridden for the action
