@@ -35,6 +35,10 @@ namespace Nop.Plugin.Api.Services
         private static readonly string CURRENCY_ID = NopCustomerDefaults.CurrencyIdAttribute.ToLowerInvariant();
         private static readonly string DATE_OF_BIRTH = NopCustomerDefaults.DateOfBirthAttribute.ToLowerInvariant();
         private static readonly string GENDER = NopCustomerDefaults.GenderAttribute.ToLowerInvariant();
+        private static readonly string VAT_NUMBER = NopCustomerDefaults.VatNumberAttribute.ToLowerInvariant();
+        private static readonly string VAT_NUMBER_STATUS_ID = NopCustomerDefaults.VatNumberStatusIdAttribute.ToLowerInvariant();
+        private static readonly string EU_COOKIE_LAW_ACCEPTED = NopCustomerDefaults.EuCookieLawAcceptedAttribute.ToLowerInvariant();
+        private static readonly string COMPANY = NopCustomerDefaults.CompanyAttribute.ToLowerInvariant();
 
         private readonly IStaticCacheManager _cacheManager;
 		private readonly IAddressApiService _addressApiService;
@@ -128,9 +132,14 @@ namespace Nop.Plugin.Api.Services
                 }
 
                 result = await HandleCustomerGenericAttributesAsync(searchParams, query, limit, page, order);
-            }
 
-            // TODO: call SetCustomerAddressesAsync
+                foreach (CustomerDto customerDto in result)
+                {
+                    var customer = await query.Where(x => x.Id == customerDto.Id).FirstOrDefaultAsync();
+
+                    await SetCustomerAddressesAsync(customer, customerDto);
+                }
+            }            
 
             return result;
         }
@@ -235,6 +244,26 @@ namespace Nop.Plugin.Api.Services
                         else if (mapping.Attribute.Key.Equals(GENDER, StringComparison.InvariantCultureIgnoreCase))
                         {
                             customerDto.Gender = mapping.Attribute.Value;
+                        }
+                        else if (mapping.Attribute.Key.Equals(VAT_NUMBER, StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            customerDto.VatNumber = mapping.Attribute.Value;
+                        }
+                        else if (mapping.Attribute.Key.Equals(VAT_NUMBER_STATUS_ID, StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            customerDto.VatNumberStatusId = string.IsNullOrWhiteSpace(mapping.Attribute.Value)
+                                                                ? (int?)null
+                                                                : int.Parse(mapping.Attribute.Value);
+                        }
+                        else if (mapping.Attribute.Key.Equals(COMPANY, StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            customerDto.Company = mapping.Attribute.Value;
+                        }
+                        else if (mapping.Attribute.Key.Equals(EU_COOKIE_LAW_ACCEPTED, StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            customerDto.EuCookieLawAccepted = string.IsNullOrWhiteSpace(mapping.Attribute.Value)
+                                                                ? (bool?)null
+                                                                : bool.Parse(mapping.Attribute.Value);
                         }
                     }
                 }
@@ -370,6 +399,22 @@ namespace Nop.Plugin.Api.Services
                 {
                     allRecords = GetCustomerAttributesMappingsByKey(allRecords, GENDER, searchParams[GENDER]);
                 }
+                if (searchParams.ContainsKey(VAT_NUMBER))
+                {
+                    allRecords = GetCustomerAttributesMappingsByKey(allRecords, VAT_NUMBER, searchParams[VAT_NUMBER]);
+                }
+                if (searchParams.ContainsKey(VAT_NUMBER_STATUS_ID))
+                {
+                    allRecords = GetCustomerAttributesMappingsByKey(allRecords, VAT_NUMBER_STATUS_ID, searchParams[VAT_NUMBER_STATUS_ID]);
+                }
+                if (searchParams.ContainsKey(EU_COOKIE_LAW_ACCEPTED))
+                {
+                    allRecords = GetCustomerAttributesMappingsByKey(allRecords, EU_COOKIE_LAW_ACCEPTED, searchParams[EU_COOKIE_LAW_ACCEPTED]);
+                }
+                if (searchParams.ContainsKey(COMPANY))
+                {
+                    allRecords = GetCustomerAttributesMappingsByKey(allRecords, COMPANY, searchParams[COMPANY]);
+                }
             }
 
             var allRecordsGroupedByCustomerId = allRecords
@@ -462,6 +507,26 @@ namespace Nop.Plugin.Api.Services
                     else if (attribute.Key.Equals(GENDER, StringComparison.InvariantCultureIgnoreCase))
                     {
                         customerDto.Gender = attribute.Value;
+                    }
+                    else if (attribute.Key.Equals(VAT_NUMBER, StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        customerDto.VatNumber = attribute.Value;
+                    }
+                    else if (attribute.Key.Equals(VAT_NUMBER_STATUS_ID, StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        customerDto.VatNumberStatusId = string.IsNullOrWhiteSpace(attribute.Value)
+                                                            ? (int?)null
+                                                            : int.Parse(attribute.Value);
+                    }
+                    else if (attribute.Key.Equals(COMPANY, StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        customerDto.Company = attribute.Value;
+                    }
+                    else if (attribute.Key.Equals(EU_COOKIE_LAW_ACCEPTED, StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        customerDto.EuCookieLawAccepted = string.IsNullOrWhiteSpace(attribute.Value)
+                                                            ? (bool?)null
+                                                            : bool.Parse(attribute.Value);
                     }
                 }
             }

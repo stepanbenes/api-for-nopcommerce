@@ -124,6 +124,22 @@ namespace Nop.Plugin.Api.DTO.Customers
         [JsonProperty("subscribed_to_newsletter")]
         public bool SubscribedToNewsletter { get; set; }
 
+        [JsonProperty("vat_number")]
+        public string VatNumber { get; set; }
+        /// <summary>
+        /// Gets or set the EU vat number status id 
+        /// </summary>
+        [JsonProperty("vat_number_status_id")]
+        public int? VatNumberStatusId { get; set; }
+
+        [JsonProperty("eu_cookie_law_accepted")]
+        public bool? EuCookieLawAccepted { get; set; }
+        /// <summary>
+        /// get or set the company Name
+        /// </summary>
+        [JsonProperty("company")]
+        public string Company { get; set; }
+
         [JsonProperty("role_ids")]
         public List<int> RoleIds
         {
