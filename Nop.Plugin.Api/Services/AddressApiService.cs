@@ -9,6 +9,7 @@ using Nop.Core.Domain.Customers;
 using Nop.Core.Domain.Directory;
 using Nop.Data;
 using Nop.Plugin.Api.DTO;
+using Nop.Plugin.Api.DTOs.StateProvinces;
 using Nop.Plugin.Api.MappingExtensions;
 using Nop.Services.Customers;
 using Nop.Services.Directory;
@@ -19,20 +20,23 @@ namespace Nop.Plugin.Api.Services
 	{
         private readonly IStaticCacheManager _cacheManager;
 		private readonly ICountryService _countryService;
-		private readonly IRepository<Address> _addressRepository;
+        private readonly IStateProvinceService _stateProvinceService;
+        private readonly IRepository<Address> _addressRepository;
         private readonly IRepository<CustomerAddressMapping> _customerAddressMappingRepository;
 
         public AddressApiService(
             IRepository<Address> addressRepository,
             IRepository<CustomerAddressMapping> customerAddressMappingRepository,
             IStaticCacheManager staticCacheManager,
-            ICountryService countryService)
-		{
+            ICountryService countryService,
+            IStateProvinceService stateProvinceService)
+        {
             _addressRepository = addressRepository;
             _customerAddressMappingRepository = customerAddressMappingRepository;
             _cacheManager = staticCacheManager;
-			_countryService = countryService;
-		}
+            _countryService = countryService;
+            _stateProvinceService = stateProvinceService;
+        }
 
         /// <summary>
         /// Gets a list of addresses mapped to customer
@@ -87,7 +91,26 @@ namespace Nop.Plugin.Api.Services
             return countries.Select(c => c.ToDto()).ToList();
         }
 
-		public async Task<AddressDto> GetAddressByIdAsync(int addressId)
+        public async Task<CountryDto> GetCountryByIdAsync(int id)
+        {
+            var country = await _countryService.GetCountryByIdAsync(id);
+            return country?.ToDto();
+        }
+
+        public async Task<IList<StateProvinceDto>> GetAllStateProvinceAsync()
+        {
+            IEnumerable<StateProvince> stateProvinces = await _stateProvinceService.GetStateProvincesAsync();
+            return stateProvinces.Select(c => c.ToDto()).ToList();
+        }
+
+        public async Task<StateProvinceDto> GetStateProvinceByIdAsync(int id)
+        {
+            var province = await _stateProvinceService.GetStateProvinceByIdAsync(id);
+            return province?.ToDto();
+        }
+
+
+        public async Task<AddressDto> GetAddressByIdAsync(int addressId)
 		{
             var query = from address in _addressRepository.Table
                         where address.Id == addressId
