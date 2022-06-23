@@ -213,7 +213,7 @@ namespace Nop.Plugin.Api.Controllers
                 //)
             };
 
-			return Ok(productCategoriesRootObject);
+            return Ok(productCategoriesRootObject);
         }
 
         [HttpPost]
@@ -308,9 +308,11 @@ namespace Nop.Plugin.Api.Controllers
 
             await UpdateProductAttributesAsync(product, productDelta);
 
+            await UpdateProductAttributeCombinationsAsync(product, productDelta);
+
             await UpdateProductPicturesAsync(product, productDelta.Dto.Images);
 
-            await _productTagService.UpdateProductTagsAsync(product, productDelta.Dto.Tags.ToArray());
+            await _productTagService.UpdateProductTagsAsync(product, productDelta.Dto.Tags != null ? productDelta.Dto.Tags.ToArray() : Array.Empty<string>());
 
             await UpdateProductManufacturersAsync(product, productDelta.Dto.ManufacturerIds);
 
@@ -375,9 +377,9 @@ namespace Nop.Plugin.Api.Controllers
             return new RawJsonActionResult("{}");
         }
 
-		#region Private methods
+        #region Private methods
 
-		private async Task UpdateProductPicturesAsync(Product entityToUpdate, List<ImageMappingDto> setPictures)
+        private async Task UpdateProductPicturesAsync(Product entityToUpdate, List<ImageMappingDto> setPictures)
         {
             // If no pictures are specified means we don't have to update anything
             if (setPictures == null)
@@ -470,6 +472,88 @@ namespace Nop.Plugin.Api.Controllers
                     await _productAttributeService.InsertProductAttributeMappingAsync(newProductAttributeMapping);
                 }
             }
+
+            //product attribute combinations
+            if (productDtoDelta.Dto.ProductAttributeCombinations == null)
+            {
+                return;
+            }
+            //delete unused product attribute
+            var toBeUpdatedAttributeCombinationIds = productDtoDelta.Dto.ProductAttributeCombinations.Where(y => y.Id != 0).Select(x => x.Id);
+            var productAttributeCombinations = await _productAttributeService.GetAllProductAttributeCombinationsAsync(entityToUpdate.Id);
+            var unusedProductAttributeCombinations = productAttributeCombinations.Where(x => !toBeUpdatedAttributeCombinationIds.Contains(x.Id)).ToList();
+
+            foreach (var unusedProductAttributeCombination in unusedProductAttributeCombinations)
+            {
+                await _productAttributeService.DeleteProductAttributeCombinationAsync(unusedProductAttributeCombination);
+            }
+
+            foreach (var productAttributeCombination in productDtoDelta.Dto.ProductAttributeCombinations)
+            {
+                var productAttributeCombinationToUpdate = productAttributeCombinations.FirstOrDefault(x => x.Id == productAttributeCombination.Id);
+                if (productAttributeCombination.Id > 0)
+                {
+                    productDtoDelta.Merge(productAttributeCombination, productAttributeCombinationToUpdate, false);
+                    //update existing product attribute combination
+                    await _productAttributeService.UpdateProductAttributeCombinationAsync(productAttributeCombinationToUpdate);
+                }
+                else
+                {
+                    var newProductAttributeCombination = new ProductAttributeCombination
+                    {
+                        ProductId = entityToUpdate.Id
+                    };
+
+                    productDtoDelta.Merge(productAttributeCombination, newProductAttributeCombination, false);
+
+                    // add new product attribute
+                    await _productAttributeService.InsertProductAttributeCombinationAsync(newProductAttributeCombination);
+                }
+            }
+
+        }
+
+        private async Task UpdateProductAttributeCombinationsAsync(Product entityToUpdate, Delta<ProductDto> productDtoDelta)
+        {
+
+            //product attribute combinations
+            if (productDtoDelta.Dto.ProductAttributeCombinations == null)
+            {
+                return;
+            }
+            //delete unused product attribute
+            var toBeUpdatedAttributeCombinationIds = productDtoDelta.Dto.ProductAttributeCombinations.Where(y => y.Id != 0).Select(x => x.Id);
+            var productAttributeCombinations = await _productAttributeService.GetAllProductAttributeCombinationsAsync(entityToUpdate.Id);
+            var unusedProductAttributeCombinations = productAttributeCombinations.Where(x => !toBeUpdatedAttributeCombinationIds.Contains(x.Id)).ToList();
+
+            foreach (var unusedProductAttributeCombination in unusedProductAttributeCombinations)
+            {
+                await _productAttributeService.DeleteProductAttributeCombinationAsync(unusedProductAttributeCombination);
+            }
+
+            foreach (var productAttributeCombination in productDtoDelta.Dto.ProductAttributeCombinations)
+            {
+                var productAttributeCombinationToUpdate = productAttributeCombinations.FirstOrDefault(x => x.Id == productAttributeCombination.Id);
+                if (productAttributeCombination.Id > 0)
+                {
+                    productDtoDelta.Merge(productAttributeCombination, productAttributeCombinationToUpdate, false);
+                    //update existing product attribute combination
+                    await _productAttributeService.UpdateProductAttributeCombinationAsync(productAttributeCombinationToUpdate);
+                }
+                else
+                {
+                    var newProductAttributeCombination = new ProductAttributeCombination
+                    {
+                        ProductId = entityToUpdate.Id
+                    };
+
+                    productDtoDelta.Merge(productAttributeCombination, newProductAttributeCombination, false);
+
+                    // add new product attribute
+                    await _productAttributeService.InsertProductAttributeCombinationAsync(newProductAttributeCombination);
+                }
+            }
+
         }
 
         private async Task UpdateProductAttributeValuesAsync(ProductAttributeMappingDto productAttributeMappingDto, Delta<ProductDto> productDtoDelta)
@@ -556,18 +640,14 @@ namespace Nop.Plugin.Api.Controllers
                 return;
             }
             var productmanufacturers = await _manufacturerService.GetProductManufacturersByProductIdAsync(product.Id);
-            var unusedProductManufacturers = productmanufacturers.Where(x => !passedManufacturerIds.Contains(x.Id)).ToList();
+            var unusedProductManufacturers = productmanufacturers.Where(x => !passedManufacturerIds.Contains(x.ManufacturerId)).ToList();
 
-            // remove all manufacturers that are not passed
-            foreach (var unusedProductManufacturer in unusedProductManufacturers)
-            {
-                //_manufacturerService.DeleteProductManufacturer(unusedProductManufacturer);
-            }
+
 
             foreach (var passedManufacturerId in passedManufacturerIds)
             {
                 // not part of existing manufacturers so we will create a new one
-                if (productmanufacturers.All(x => x.Id != passedManufacturerId))
+                if (productmanufacturers.All(x => x.ManufacturerId != passedManufacturerId))
                 {
                     // if manufacturer does not exist we simply ignore it, otherwise add it to the product
                     var manufacturer = await _manufacturerService.GetManufacturerByIdAsync(passedManufacturerId);
@@ -580,6 +660,11 @@ namespace Nop.Plugin.Api.Controllers
                         });
                     }
                 }
+            }
+            // remove all manufacturers that are not passed
+            foreach (var unusedProductManufacturer in unusedProductManufacturers)
+            {
+                await _manufacturerService.DeleteProductManufacturerAsync(unusedProductManufacturer);
             }
         }
 
