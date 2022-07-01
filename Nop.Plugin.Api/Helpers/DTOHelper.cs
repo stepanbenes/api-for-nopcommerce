@@ -398,6 +398,7 @@ namespace Nop.Plugin.Api.Helpers
 		private async Task PrepareProductAttributesAsync(ProductDto productDto)
 		{
 			var productAttributeMappings = await _productAttributeService.GetProductAttributeMappingsByProductIdAsync(productDto.Id);
+			var productAttributeCombinations = await _productAttributeService.GetAllProductAttributeCombinationsAsync(productDto.Id);
 
 			if (productDto.ProductAttributeMappings == null)
 			{
@@ -413,6 +414,9 @@ namespace Nop.Plugin.Api.Helpers
 					productDto.ProductAttributeMappings.Add(productAttributeMappingDto);
 				}
 			}
+
+			PrepareProductAttributeCombinations(productAttributeCombinations, productDto);
+
 		}
 
 		private async Task<ProductAttributeMappingDto> PrepareProductAttributeMappingDtoAsync(

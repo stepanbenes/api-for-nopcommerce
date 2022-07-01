@@ -78,6 +78,7 @@ namespace Nop.Plugin.Api.AutoMapper
             CreateMap<ProductAttribute, ProductAttributeDto>();
 
             CreateMap<ProductSpecificationAttribute, ProductSpecificationAttributeDto>();
+            CreateMap<ProductAttributeCombination, ProductAttributeCombinationDto>();
 
             CreateMap<SpecificationAttribute, SpecificationAttributeDto>();
             CreateMap<SpecificationAttributeOption, SpecificationAttributeOptionDto>();
@@ -118,7 +119,7 @@ namespace Nop.Plugin.Api.AutoMapper
             AutoMapperApiConfiguration.MapperConfigurationExpression.CreateMap<Order, OrderDto>()
                                       .IgnoreAllNonExisting()
                                       .ForMember(x => x.Id, y => y.MapFrom(src => src.Id));
-                                      //.ForMember(x => x.OrderItems, y => y.MapFrom(src => src.OrderItems.Select(x => x.ToDto())));
+            //.ForMember(x => x.OrderItems, y => y.MapFrom(src => src.OrderItems.Select(x => x.ToDto())));
         }
 
         private void CreateAddressMap()
@@ -126,10 +127,10 @@ namespace Nop.Plugin.Api.AutoMapper
             AutoMapperApiConfiguration.MapperConfigurationExpression.CreateMap<Address, AddressDto>()
                                       .IgnoreAllNonExisting()
                                       .ForMember(x => x.Id, y => y.MapFrom(src => src.Id));
-                                      //.ForMember(x => x.CountryName,
-                                      //           y => y.MapFrom(src => src.Country.GetWithDefault(x => x, new Country()).Name))
-                                      //.ForMember(x => x.StateProvinceName,
-                                      //           y => y.MapFrom(src => src.StateProvince.GetWithDefault(x => x, new StateProvince()).Name));
+            //.ForMember(x => x.CountryName,
+            //           y => y.MapFrom(src => src.Country.GetWithDefault(x => x, new Country()).Name))
+            //.ForMember(x => x.StateProvinceName,
+            //           y => y.MapFrom(src => src.StateProvince.GetWithDefault(x => x, new StateProvince()).Name));
         }
 
         private void CreateAddressDtoToEntityMap()
@@ -144,34 +145,34 @@ namespace Nop.Plugin.Api.AutoMapper
             AutoMapperApiConfiguration.MapperConfigurationExpression.CreateMap<Customer, CustomerDto>()
                                       .IgnoreAllNonExisting()
                                       .ForMember(x => x.Id, y => y.MapFrom(src => src.Id));
-                                      //.ForMember(x => x.BillingAddress,
-                                      //           y => y.MapFrom(src => src.BillingAddress.GetWithDefault(x => x, new Address()).ToDto()))
-                                      //.ForMember(x => x.ShippingAddress,
-                                      //           y => y.MapFrom(src => src.ShippingAddress.GetWithDefault(x => x, new Address()).ToDto()))
-                                      //.ForMember(x => x.Addresses,
-                                      //           y =>
-                                      //               y.MapFrom(
-                                      //                         src =>
-                                      //                             src.Addresses.GetWithDefault(x => x, new List<Address>())
-                                      //                                .Select(address => address.ToDto())))
-                                      //.ForMember(x => x.ShoppingCartItems,
-                                      //           y =>
-                                      //               y.MapFrom(
-                                      //                         src =>
-                                      //                             src.ShoppingCartItems.GetWithDefault(x => x, new List<ShoppingCartItem>())
-                                      //                                .Select(item => item.ToDto())))
-                                      //.ForMember(x => x.RoleIds, y => y.MapFrom(src => src.CustomerRoles.Select(z => z.Id)));
+            //.ForMember(x => x.BillingAddress,
+            //           y => y.MapFrom(src => src.BillingAddress.GetWithDefault(x => x, new Address()).ToDto()))
+            //.ForMember(x => x.ShippingAddress,
+            //           y => y.MapFrom(src => src.ShippingAddress.GetWithDefault(x => x, new Address()).ToDto()))
+            //.ForMember(x => x.Addresses,
+            //           y =>
+            //               y.MapFrom(
+            //                         src =>
+            //                             src.Addresses.GetWithDefault(x => x, new List<Address>())
+            //                                .Select(address => address.ToDto())))
+            //.ForMember(x => x.ShoppingCartItems,
+            //           y =>
+            //               y.MapFrom(
+            //                         src =>
+            //                             src.ShoppingCartItems.GetWithDefault(x => x, new List<ShoppingCartItem>())
+            //                                .Select(item => item.ToDto())))
+            //.ForMember(x => x.RoleIds, y => y.MapFrom(src => src.CustomerRoles.Select(z => z.Id)));
         }
 
         private void CreateShoppingCartItemMap()
         {
             AutoMapperApiConfiguration.MapperConfigurationExpression.CreateMap<ShoppingCartItem, ShoppingCartItemDto>()
                                       .IgnoreAllNonExisting();
-                                      //.ForMember(x => x.CustomerDto,
-                                      //           y => y.MapFrom(src =>
-                                      //                              src.Customer.GetWithDefault(x => x, new Customer()).ToCustomerForShoppingCartItemDto()))
-                                      //.ForMember(x => x.ProductDto,
-                                      //           y => y.MapFrom(src => src.Product.GetWithDefault(x => x, new Product()).ToDto()));
+            //.ForMember(x => x.CustomerDto,
+            //           y => y.MapFrom(src =>
+            //                              src.Customer.GetWithDefault(x => x, new Customer()).ToCustomerForShoppingCartItemDto()))
+            //.ForMember(x => x.ProductDto,
+            //           y => y.MapFrom(src => src.Product.GetWithDefault(x => x, new Product()).ToDto()));
         }
 
         private void CreateProductMap()
@@ -179,9 +180,9 @@ namespace Nop.Plugin.Api.AutoMapper
             AutoMapperApiConfiguration.MapperConfigurationExpression.CreateMap<Product, ProductDto>()
                                       .IgnoreAllNonExisting()
                                       .ForMember(p => p.RequiredProductIds, o => o.Ignore());
-                                      //.ForMember(x => x.FullDescription, y => y.MapFrom(src => WebUtility.HtmlEncode(src.FullDescription)))
-                                      //.ForMember(x => x.Tags,
-                                      //           y => y.MapFrom(src => src.ProductProductTagMappings.Select(x => x.ProductTag.Name)));
+            //.ForMember(x => x.FullDescription, y => y.MapFrom(src => WebUtility.HtmlEncode(src.FullDescription)))
+            //.ForMember(x => x.Tags,
+            //           y => y.MapFrom(src => src.ProductProductTagMappings.Select(x => x.ProductTag.Name)));
         }
     }
 }
