@@ -1,7 +1,7 @@
 # The base working directory is supposed to be parent directory. In the parent directory, there must be nopCommerce and api-for-nopcommerce subdirectories.
 
 # create the build instance
-FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 
 WORKDIR /
 COPY ./nopCommerce/src ./nopCommerce/src
@@ -31,7 +31,7 @@ WORKDIR /nopCommerce/src/Presentation/Nop.Web
 RUN dotnet publish Nop.Web.csproj -c Release -o /app/published
 
 # create the runtime instance 
-FROM mcr.microsoft.com/dotnet/aspnet:5.0-alpine AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:6.0-alpine AS runtime
 
 RUN apk add --no-cache icu-dev fontconfig libc-dev && apk add --no-cache libgdiplus --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing/
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
