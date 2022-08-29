@@ -22,6 +22,7 @@ using Nop.Services.Topics;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
+using Nop.Core.Domain.Shipping;
 
 namespace Nop.Plugin.Api.Infrastructure
 {
@@ -50,6 +51,8 @@ namespace Nop.Plugin.Api.Infrastructure
             services.AddScoped<ISpecificationAttributeApiService, SpecificationAttributesApiService>();
             services.AddScoped<INewsLetterSubscriptionApiService, NewsLetterSubscriptionApiService>();
             services.AddScoped<IManufacturerApiService, ManufacturerApiService>();
+            services.AddScoped<IWarehouseApiService, WarehouseApiService>();
+            services.AddScoped<IProductWarehouseInventoriesApiService, ProductWarehouseInventoriesApiService>();
 
             services.AddScoped<IMappingHelper, MappingHelper>();
             services.AddScoped<ICustomerRolesHelper, CustomerRolesHelper>();
@@ -71,6 +74,7 @@ namespace Nop.Plugin.Api.Infrastructure
             services.AddScoped<IFactory<ShoppingCartItem>, ShoppingCartItemFactory>();
             services.AddScoped<IFactory<Manufacturer>, ManufacturerFactory>();
             services.AddScoped<IFactory<Topic>, TopicFactory>();
+            services.AddScoped<IFactory<Warehouse>, WarehouseFactory>();
 
             services.AddScoped<IJsonPropertyMapper, JsonPropertyMapper>();
 
