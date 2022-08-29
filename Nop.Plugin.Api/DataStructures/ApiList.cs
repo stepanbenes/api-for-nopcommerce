@@ -12,6 +12,11 @@ namespace Nop.Plugin.Api.DataStructures
             AddRange(source.Skip(pageIndex * pageSize).Take(pageSize).ToList());
         }
 
+        public ApiList(IQueryable<T> source)
+        {
+            AddRange(source.ToList());
+        }
+
         public int PageIndex { get; }
         public int PageSize { get; }
     }
