@@ -288,6 +288,15 @@ namespace Nop.Plugin.Api.DTO.Products
         public int? MinStockQuantity { get; set; }
 
         /// <summary>
+        ///     Gets or sets the low stock activity identifier
+        ///     0 - Nothing
+        ///     1 - Disable buy button
+        ///     2 - Unpublish
+        /// </summary>
+        [JsonProperty("low_stock_activity_id")]
+        public int LowStockActivityId { get; set; }
+
+        /// <summary>
         ///     Gets or sets the quantity when admin should be notified
         /// </summary>
         [JsonProperty("notify_admin_for_quantity_below")]
