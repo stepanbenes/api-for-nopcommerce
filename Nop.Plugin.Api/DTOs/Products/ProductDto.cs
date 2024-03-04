@@ -437,6 +437,24 @@ namespace Nop.Plugin.Api.DTO.Products
         public decimal? BasepriceBaseAmount { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this product is marked as new
+        /// </summary>
+        [JsonProperty("mark_as_new")]
+        public bool MarkAsNew { get; set; }
+
+        /// <summary>
+        /// Gets or sets the start date and time of the new product (set product as "New" from date). Leave empty to ignore this property
+        /// </summary>
+        [JsonProperty("mark_as_new_start_date_time_utc")]
+        public DateTime? MarkAsNewStartDateTimeUtc { get; set; }
+
+        /// <summary>
+        /// Gets or sets the end date and time of the new product (set product as "New" to date). Leave empty to ignore this property
+        /// </summary>
+        [JsonProperty("mark_as_new_end_date_time_utc")]
+        public DateTime? MarkAsNewEndDateTimeUtc { get; set; }
+
+        /// <summary>
         ///     Gets or sets a value indicating whether this product has tier prices configured
         ///     <remarks>
         ///         The same as if we run this.TierPrices.Count > 0
