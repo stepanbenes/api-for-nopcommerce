@@ -95,9 +95,16 @@ namespace Nop.Plugin.Api.Helpers
                 // This case handles collections.
                 if (propertyValue is ICollection<object> propertyValueAsCollection)
                 {
-                    var collectionElementsType = propertyToUpdate.PropertyType.GetGenericArguments()[0];
+                    var collectionElementsType = propertyToUpdate.PropertyType.GetGenericArguments().FirstOrDefault();
+                    
+                    // Treat empty arrays as nulls as we can't be sure of the type
+                    if (collectionElementsType == null)
+                    {
+                        propertyToUpdate.SetValue(objectToBeUpdated, null);
+                        return;
+                    }
+                    
                     var collection = propertyToUpdate.GetValue(objectToBeUpdated);
-
                     if (collection == null)
                     {
                         collection = CreateEmptyList(collectionElementsType);
