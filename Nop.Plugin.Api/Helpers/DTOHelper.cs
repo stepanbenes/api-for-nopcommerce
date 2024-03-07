@@ -66,6 +66,7 @@ namespace Nop.Plugin.Api.Helpers
 		private readonly IStoreMappingService _storeMappingService;
 		private readonly IStoreService _storeService;
 		private readonly IUrlRecordService _urlRecordService;
+		private readonly ISpecificationAttributeService _specificationAttributeService;
 
 		private readonly Lazy<Task<Language>> _customerLanguage;
 
@@ -88,7 +89,8 @@ namespace Nop.Plugin.Api.Helpers
 			IAddressService addressService,
 			IAuthenticationService authenticationService,
 			ICustomerApiService customerApiService,
-			ICurrencyService currencyService)
+			ICurrencyService currencyService,
+			ISpecificationAttributeService specificationAttributeService)
 		{
 			_productService = productService;
 			_aclService = aclService;
@@ -109,6 +111,7 @@ namespace Nop.Plugin.Api.Helpers
 			_authenticationService = authenticationService;
 			_customerApiService = customerApiService;
 			_currencyService = currencyService;
+			_specificationAttributeService = specificationAttributeService;
 
 			_customerLanguage = new Lazy<Task<Language>>(GetAuthenticatedCustomerLanguage);
 		}
@@ -296,6 +299,12 @@ namespace Nop.Plugin.Api.Helpers
 			return specificationAttribute.ToDto();
 		}
 
+		public SpecificationAttributeOptionDto PrepareSpecificationAttributeOptionDto(
+			SpecificationAttributeOption specificationAttributeOption)
+		{
+			return specificationAttributeOption.ToDto();
+		}
+
 		public async Task<ManufacturerDto> PrepareManufacturerDtoAsync(Manufacturer manufacturer)
 		{
 			var manufacturerDto = manufacturer.ToDto();
@@ -409,7 +418,9 @@ namespace Nop.Plugin.Api.Helpers
 		{
 			var productAttributeMappings = await _productAttributeService.GetProductAttributeMappingsByProductIdAsync(productDto.Id);
 			var productAttributeCombinations = await _productAttributeService.GetAllProductAttributeCombinationsAsync(productDto.Id);
-
+			var productSpecificationAttributes =
+				await _specificationAttributeService.GetProductSpecificationAttributesAsync(productDto.Id);
+			
 			if (productDto.ProductAttributeMappings == null)
 			{
 				productDto.ProductAttributeMappings = new List<ProductAttributeMappingDto>();
@@ -426,6 +437,18 @@ namespace Nop.Plugin.Api.Helpers
 			}
 
 			PrepareProductAttributeCombinations(productAttributeCombinations, productDto);
+
+			if (productDto.ProductSpecificationAttributes == null)
+			{
+				productDto.ProductSpecificationAttributes = new List<ProductSpecificationAttributeDto>();
+			}
+
+			foreach (var productSpecificationAttribute in productSpecificationAttributes)
+			{
+				var productSpecificationAttributeDto = PrepareProductSpecificationAttributeDto(productSpecificationAttribute);
+				if(productSpecificationAttributeDto!=null)
+					productDto.ProductSpecificationAttributes.Add(productSpecificationAttributeDto);
+			}
 
 		}
 
