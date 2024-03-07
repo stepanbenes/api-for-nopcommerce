@@ -26,7 +26,7 @@ namespace Nop.Plugin.Api.Validators
             else if (HttpMethod == HttpMethod.Put)
             {
                 //apply "update" rules
-                RuleFor(x => x.Id).GreaterThan(0).WithMessage("invalid id");
+                //RuleFor(x => x.Id).GreaterThan(0).WithMessage("invalid id");
 
                 if (RequestJsonDictionary.ContainsKey("name"))
                 {

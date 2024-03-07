@@ -37,6 +37,9 @@ namespace Nop.Plugin.Api.Helpers
         ProductAttributeDto PrepareProductAttributeDTO(ProductAttribute productAttribute);
         ProductSpecificationAttributeDto PrepareProductSpecificationAttributeDto(ProductSpecificationAttribute productSpecificationAttribute);
         SpecificationAttributeDto PrepareSpecificationAttributeDto(SpecificationAttribute specificationAttribute);
+
+        SpecificationAttributeOptionDto PrepareSpecificationAttributeOptionDto(
+            SpecificationAttributeOption specificationAttributeOption);
         Task<ManufacturerDto> PrepareManufacturerDtoAsync(Manufacturer manufacturer);
 
         Task<WarehouseDto> PrepareWarehouseDtoAsync(Warehouse warehouse);

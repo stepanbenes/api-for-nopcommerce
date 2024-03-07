@@ -32,7 +32,7 @@ namespace Nop.Plugin.Api.Controllers
         private readonly IDTOHelper _dtoHelper;
         private readonly ISpecificationAttributeApiService _specificationAttributeApiService;
         private readonly ISpecificationAttributeService _specificationAttributeService;
-
+        
         public SpecificationAttributesController(
             IJsonFieldsSerializer jsonFieldsSerializer,
             ICustomerActivityService customerActivityService,
@@ -52,8 +52,9 @@ namespace Nop.Plugin.Api.Controllers
             _specificationAttributeApiService = specificationAttributesApiService;
             _dtoHelper = dtoHelper;
         }
-
-        /// <summary>
+        
+        
+          /// <summary>
         ///     Receive a list of all specification attributes
         /// </summary>
         /// <response code="200">OK</response>
@@ -65,7 +66,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [GetRequestsErrorInterceptorActionFilter]
-        public IActionResult GetSpecificationAttributes([FromQuery] SpecificationAttributesParametersModel parameters)
+        public async Task<IActionResult>  GetSpecificationAttributes([FromQuery] SpecificationAttributesParametersModel parameters)
         {
             if (parameters.Limit < Constants.Configurations.MinLimit || parameters.Limit > Constants.Configurations.MaxLimit)
             {
@@ -80,6 +81,15 @@ namespace Nop.Plugin.Api.Controllers
             var specificationAttribtues = _specificationAttributeApiService.GetSpecificationAttributes(parameters.Limit, parameters.Page, parameters.SinceId);
 
             var specificationAttributeDtos = specificationAttribtues.Select(x => _dtoHelper.PrepareSpecificationAttributeDto(x)).ToList();
+
+            foreach (var specificationAttributeDto in specificationAttributeDtos)
+            {
+                var specificationAttributeOptions = await _specificationAttributeService.GetSpecificationAttributeOptionsBySpecificationAttributeAsync(specificationAttributeDto.Id);
+                
+                var specificationAttributeOptionsDto = specificationAttributeOptions.Select(x => _dtoHelper.PrepareSpecificationAttributeOptionDto(x)).ToList();
+                
+                specificationAttributeDto.SpecificationAttributeOptions = specificationAttributeOptionsDto;
+            }
 
             var specificationAttributesRootObject = new SpecificationAttributesRootObjectDto
             {
@@ -144,7 +154,12 @@ namespace Nop.Plugin.Api.Controllers
             }
 
             var specificationAttributeDto = _dtoHelper.PrepareSpecificationAttributeDto(specificationAttribute);
-
+            var specificationAttributeOptions = await _specificationAttributeService.GetSpecificationAttributeOptionsBySpecificationAttributeAsync(specificationAttributeDto.Id);
+                
+            var specificationAttributeOptionsDto = specificationAttributeOptions.Select(x => _dtoHelper.PrepareSpecificationAttributeOptionDto(x)).ToList();
+                
+            specificationAttributeDto.SpecificationAttributeOptions = specificationAttributeOptionsDto;
+            
             var specificationAttributesRootObject = new SpecificationAttributesRootObjectDto();
             specificationAttributesRootObject.SpecificationAttributes.Add(specificationAttributeDto);
 
@@ -219,11 +234,38 @@ namespace Nop.Plugin.Api.Controllers
             specificationAttributeDelta.Merge(specificationAttribute);
 
             await _specificationAttributeService.UpdateSpecificationAttributeAsync(specificationAttribute);
+            //add or update specification attribute options
+            foreach (var specificationAttributeOptionDto in specificationAttributeDelta.Dto.SpecificationAttributeOptions)
+            {
+                var specificationAttributeOption = new SpecificationAttributeOption()
+                {
+                    Id = specificationAttributeOptionDto.Id,
+                    Name = specificationAttributeOptionDto.Name,
+                    SpecificationAttributeId = specificationAttributeOptionDto.SpecificationAttributeId,
+                    ColorSquaresRgb = specificationAttributeOptionDto.ColorSquaresRgb,
+                    DisplayOrder = specificationAttributeOptionDto.DisplayOrder
+                };
+                if (specificationAttributeOption.Id == 0) //create
+                {
+                    
+                    await _specificationAttributeService.InsertSpecificationAttributeOptionAsync(specificationAttributeOption);
+                }
+                else
+                {
+                    await _specificationAttributeService.UpdateSpecificationAttributeOptionAsync(
+                        specificationAttributeOption);
+                }
+            }
 
             await CustomerActivityService.InsertActivityAsync("EditSpecAttribute", await LocalizationService.GetResourceAsync("ActivityLog.EditSpecAttribute"), specificationAttribute);
 
             // Preparing the result dto of the new product attribute
             var specificationAttributeDto = _dtoHelper.PrepareSpecificationAttributeDto(specificationAttribute);
+            var specificationAttributeOptions = await _specificationAttributeService.GetSpecificationAttributeOptionsBySpecificationAttributeAsync(specificationAttributeDto.Id);
+                
+            var specificationAttributeOptionsDto = specificationAttributeOptions.Select(x => _dtoHelper.PrepareSpecificationAttributeOptionDto(x)).ToList();
+                
+            specificationAttributeDto.SpecificationAttributeOptions = specificationAttributeOptionsDto;
 
             var specificatoinAttributesRootObjectDto = new SpecificationAttributesRootObjectDto();
             specificatoinAttributesRootObjectDto.SpecificationAttributes.Add(specificationAttributeDto);
@@ -232,6 +274,7 @@ namespace Nop.Plugin.Api.Controllers
 
             return new RawJsonActionResult(json);
         }
+        
 
         [HttpDelete]
         [Route("/api/specificationattributes/{id}", Name = "DeleteSpecificationAttribute")]
@@ -254,11 +297,12 @@ namespace Nop.Plugin.Api.Controllers
             }
 
             await _specificationAttributeService.DeleteSpecificationAttributeAsync(specificationAttribute);
-
+            
             //activity log
             await CustomerActivityService.InsertActivityAsync("DeleteSpecAttribute", await LocalizationService.GetResourceAsync("ActivityLog.DeleteSpecAttribute"), specificationAttribute);
 
             return new RawJsonActionResult("{}");
         }
+      
     }
 }
