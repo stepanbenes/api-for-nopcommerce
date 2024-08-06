@@ -24,8 +24,8 @@ using Nop.Services.Stores;
 
 namespace Nop.Plugin.Api.Controllers
 {
-  [AuthorizePermission("ManageProducts")]
-  [AuthorizePermission("ManageCategories")]
+  [AuthorizePermission(StandardPermission.Catalog.PRODUCTS_CREATE_EDIT_DELETE)]
+  [AuthorizePermission(StandardPermission.Catalog.CATEGORIES_CREATE_EDIT_DELETE)]
   public class ProductCategoryMappingsController : BaseApiController
   {
     private readonly ICategoryApiService _categoryApiService;

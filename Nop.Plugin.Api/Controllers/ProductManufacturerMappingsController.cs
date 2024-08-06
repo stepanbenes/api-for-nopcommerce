@@ -24,8 +24,8 @@ using Nop.Services.Stores;
 
 namespace Nop.Plugin.Api.Controllers
 {
-  [AuthorizePermission("ManageProducts")]
-  [AuthorizePermission("ManageManufacturers")]
+  [AuthorizePermission(StandardPermission.Catalog.PRODUCTS_CREATE_EDIT_DELETE)]
+  [AuthorizePermission(StandardPermission.Catalog.MANUFACTURER_CREATE_EDIT_DELETE)]
   public class ProductManufacturerMappingsController : BaseApiController
   {
     private readonly IManufacturerApiService _manufacturerApiService;

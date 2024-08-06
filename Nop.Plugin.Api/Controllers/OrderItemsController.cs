@@ -28,7 +28,7 @@ using Nop.Services.Tax;
 
 namespace Nop.Plugin.Api.Controllers
 {
-  [AuthorizePermission("ManageOrders")]
+  [AuthorizePermission(StandardPermission.Orders.ORDERS_CREATE_EDIT_DELETE)]
   public class OrderItemsController : BaseApiController
   {
     private readonly IDTOHelper _dtoHelper;

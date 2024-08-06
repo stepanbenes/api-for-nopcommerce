@@ -1,5 +1,4 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Text;
+﻿using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -13,6 +12,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -23,6 +23,7 @@ using Nop.Plugin.Api.Authorization.Requirements;
 using Nop.Plugin.Api.Configuration;
 using Nop.Plugin.Api.Delta;
 using Swashbuckle.AspNetCore.SwaggerGen;
+
 
 namespace Nop.Plugin.Api.Infrastructure
 {
@@ -83,7 +84,8 @@ namespace Nop.Plugin.Api.Infrastructure
                 };
               });
 
-          JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+         // JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+         JsonWebTokenHandler.DefaultInboundClaimTypeMap.Clear();
           AddAuthorizationPipeline(services);
 
         }

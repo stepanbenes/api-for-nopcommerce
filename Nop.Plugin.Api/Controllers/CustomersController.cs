@@ -32,7 +32,7 @@ using Nop.Services.Stores;
 
 namespace Nop.Plugin.Api.Controllers
 {
-  [AuthorizePermission("ManageCustomers")]
+  [AuthorizePermission(StandardPermission.Customers.CUSTOMERS_CREATE_EDIT_DELETE)]
   public class CustomersController : BaseApiController
   {
     private readonly ICountryService _countryService;
@@ -152,7 +152,7 @@ namespace Nop.Plugin.Api.Controllers
     /// <response code="401">Unauthorized</response>
     [HttpGet]
     [Route("/api/customers/me", Name = "GetCurrentCustomer")]
-    [AuthorizePermission("ManageCustomers", ignore: true)] // turn off all permission authorizations, access to this action is allowed to all authenticated customers
+    [AuthorizePermission(StandardPermission.Customers.CUSTOMERS_CREATE_EDIT_DELETE, ignore: true)] // turn off all permission authorizations, access to this action is allowed to all authenticated customers
     [ProducesResponseType(typeof(CustomersRootObject), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
@@ -479,7 +479,7 @@ namespace Nop.Plugin.Api.Controllers
 
     [HttpPost]
     [Route("api/customers/{customerId}/billingaddress", Name = "SetBillingAddress")]
-    [AuthorizePermission("ManageCustomers", ignore: true)]
+    [AuthorizePermission(StandardPermission.Customers.CUSTOMERS_CREATE_EDIT_DELETE, ignore: true)]
     [GetRequestsErrorInterceptorActionFilter]
     [ProducesResponseType(typeof(AddressDto), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -505,7 +505,7 @@ namespace Nop.Plugin.Api.Controllers
 
     [HttpPost]
     [Route("api/customers/{customerId}/shippingaddress", Name = "SetShippingAddress")]
-    [AuthorizePermission("ManageCustomers", ignore: true)]
+    [AuthorizePermission(StandardPermission.Customers.CUSTOMERS_CREATE_EDIT_DELETE, ignore: true)]
     [GetRequestsErrorInterceptorActionFilter]
     [ProducesResponseType(typeof(AddressDto), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]

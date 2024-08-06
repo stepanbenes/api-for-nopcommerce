@@ -24,7 +24,7 @@ using Nop.Services.Stores;
 
 namespace Nop.Plugin.Api.Controllers
 {
-  [AuthorizePermission("ManageAttributes")]
+  [AuthorizePermission(StandardPermission.Catalog.SPECIFICATION_ATTRIBUTES_CREATE_EDIT_DELETE)]
   public class SpecificationAttributesController : BaseApiController
   {
     private readonly IDTOHelper _dtoHelper;

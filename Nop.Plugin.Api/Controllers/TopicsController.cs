@@ -25,7 +25,7 @@ using Nop.Plugin.Api.Authorization.Attributes;
 
 namespace Nop.Plugin.Api.Controllers
 {
-  [AuthorizePermission("ManageTopics")]
+  [AuthorizePermission(StandardPermission.ContentManagement.TOPICS_CREATE_EDIT_DELETE)]
   public class TopicsController : BaseApiController
   {
     private readonly ITopicService _topicService;

@@ -22,7 +22,7 @@ using Nop.Services.Stores;
 
 namespace Nop.Plugin.Api.Controllers
 {
-  [AuthorizePermission("ManageNewsletterSubscribers")]
+  [AuthorizePermission(StandardPermission.Promotions.SUBSCRIBERS_CREATE_EDIT_DELETE)]
   public class NewsLetterSubscriptionController : BaseApiController
   {
     private readonly INewsLetterSubscriptionApiService _newsLetterSubscriptionApiService;

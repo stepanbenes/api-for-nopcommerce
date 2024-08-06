@@ -69,7 +69,7 @@ namespace Nop.Plugin.Api.Controllers
     /// <response code="401">Unauthorized</response>
     [HttpGet]
     [Route("/api/categories", Name = "GetCategories")]
-    [AuthorizePermission("PublicStoreAllowNavigation")]
+    [AuthorizePermission(StandardPermission.PublicStore.PUBLIC_STORE_ALLOW_NAVIGATION)]
     [ProducesResponseType(typeof(CategoriesRootObject), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
     [GetRequestsErrorInterceptorActionFilter]
@@ -110,7 +110,7 @@ namespace Nop.Plugin.Api.Controllers
     /// <response code="401">Unauthorized</response>
     [HttpGet]
     [Route("/api/categories/count", Name = "GetCategoriesCount")]
-    [AuthorizePermission("PublicStoreAllowNavigation")]
+    [AuthorizePermission(StandardPermission.PublicStore.PUBLIC_STORE_ALLOW_NAVIGATION)]
     [ProducesResponseType(typeof(CategoriesCountRootObject), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
     [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -139,7 +139,7 @@ namespace Nop.Plugin.Api.Controllers
     /// <response code="401">Unauthorized</response>
     [HttpGet]
     [Route("/api/categories/{id}", Name = "GetCategoryById")]
-    [AuthorizePermission("PublicStoreAllowNavigation")]
+    [AuthorizePermission(StandardPermission.PublicStore.PUBLIC_STORE_ALLOW_NAVIGATION)]
     [ProducesResponseType(typeof(CategoriesRootObject), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.NotFound)]
@@ -172,7 +172,7 @@ namespace Nop.Plugin.Api.Controllers
 
     [HttpPost]
     [Route("/api/categories", Name = "CreateCategory")]
-    [AuthorizePermission("ManageCategories")]
+    [AuthorizePermission(StandardPermission.Catalog.CATEGORIES_CREATE_EDIT_DELETE)]
     [ProducesResponseType(typeof(CategoriesRootObject), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ErrorsRootObject), 422)]
     [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -240,7 +240,7 @@ namespace Nop.Plugin.Api.Controllers
 
     [HttpPut]
     [Route("/api/categories/{id}", Name = "UpdateCategory")]
-    [AuthorizePermission("ManageCategories")]
+    [AuthorizePermission(StandardPermission.Catalog.CATEGORIES_CREATE_EDIT_DELETE)]
     [ProducesResponseType(typeof(CategoriesRootObject), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ErrorsRootObject), 422)]
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
@@ -303,7 +303,7 @@ namespace Nop.Plugin.Api.Controllers
 
     [HttpDelete]
     [Route("/api/categories/{id}", Name = "DeleteCategory")]
-    [AuthorizePermission("ManageCategories")]
+    [AuthorizePermission(StandardPermission.Catalog.CATEGORIES_CREATE_EDIT_DELETE)]
     [ProducesResponseType(typeof(void), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
