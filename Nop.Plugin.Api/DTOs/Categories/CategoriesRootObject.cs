@@ -1,27 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
 namespace Nop.Plugin.Api.DTO.Categories
 {
-    public class CategoriesRootObject : ISerializableObject
+  public class CategoriesRootObject : ISerializableObject
+  {
+    public CategoriesRootObject()
     {
-        public CategoriesRootObject()
-        {
-            Categories = new List<CategoryDto>();
-        }
-
-        [JsonProperty("categories")]
-        public IList<CategoryDto> Categories { get; set; }
-
-        public string GetPrimaryPropertyName()
-        {
-            return "categories";
-        }
-
-        public Type GetPrimaryPropertyType()
-        {
-            return typeof(CategoryDto);
-        }
+      Categories = new List<CategoryDto>();
     }
+
+    [JsonProperty("categories")]
+    public IList<CategoryDto> Categories { get; set; }
+
+    public string GetPrimaryPropertyName()
+    {
+      return "categories";
+    }
+
+    public Type GetPrimaryPropertyType()
+    {
+      return typeof(CategoryDto);
+    }
+  }
 }

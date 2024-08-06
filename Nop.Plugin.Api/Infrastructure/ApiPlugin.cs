@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Nop.Core;
+﻿using Nop.Core;
 using Nop.Core.Domain.Customers;
 using Nop.Core.Domain.Logging;
 using Nop.Core.Infrastructure;
@@ -15,33 +12,33 @@ using Nop.Web.Framework.Menu;
 
 namespace Nop.Plugin.Api.Infrastructure
 {
-    public class ApiPlugin : BasePlugin
+  public class ApiPlugin : BasePlugin
+  {
+    private readonly ICustomerService _customerService;
+    private readonly ILocalizationService _localizationService;
+    private readonly ISettingService _settingService;
+    private readonly IWebHelper _webHelper;
+    private readonly IWorkContext _workContext;
+
+    public ApiPlugin(
+        ISettingService settingService,
+        IWorkContext workContext,
+        ICustomerService customerService,
+        ILocalizationService localizationService,
+        IWebHelper webHelper)
     {
-        private readonly ICustomerService _customerService;
-        private readonly ILocalizationService _localizationService;
-        private readonly ISettingService _settingService;
-        private readonly IWebHelper _webHelper;
-        private readonly IWorkContext _workContext;
+      _settingService = settingService;
+      _workContext = workContext;
+      _customerService = customerService;
+      _localizationService = localizationService;
+      _webHelper = webHelper;
+    }
 
-        public ApiPlugin(
-            ISettingService settingService,
-            IWorkContext workContext,
-            ICustomerService customerService,
-            ILocalizationService localizationService,
-            IWebHelper webHelper)
-        {
-            _settingService = settingService;
-            _workContext = workContext;
-            _customerService = customerService;
-            _localizationService = localizationService;
-            _webHelper = webHelper;
-        }
+    public override async Task InstallAsync()
+    {
+      //locales
 
-        public override async Task InstallAsync()
-        {
-            //locales
-
-            await _localizationService.AddOrUpdateLocaleResourceAsync(new Dictionary<string, string>
+      await _localizationService.AddOrUpdateLocaleResourceAsync(new Dictionary<string, string>
             {
                 { "Plugins.Api", "Api plugin" },
                 { "Plugins.Api.Admin.Menu.ManageClients", "Manage Api Clients" },
@@ -69,122 +66,122 @@ namespace Nop.Plugin.Api.Infrastructure
 
 
 
-            await _settingService.SaveSettingAsync(new ApiSettings());
+      await _settingService.SaveSettingAsync(new ApiSettings());
 
-            var apiRole = await _customerService.GetCustomerRoleBySystemNameAsync(Constants.Roles.ApiRoleSystemName);
+      var apiRole = await _customerService.GetCustomerRoleBySystemNameAsync(Constants.Roles.ApiRoleSystemName);
 
-            if (apiRole == null)
-            {
-                apiRole = new CustomerRole
-                {
-                    Name = Constants.Roles.ApiRoleName,
-                    Active = true,
-                    SystemName = Constants.Roles.ApiRoleSystemName
-                };
-
-                await _customerService.InsertCustomerRoleAsync(apiRole);
-            }
-            else if (apiRole.Active == false)
-            {
-                apiRole.Active = true;
-                await _customerService.UpdateCustomerRoleAsync(apiRole);
-            }
-            
-            var activityLogTypeRepository = EngineContext.Current.Resolve<IRepository<ActivityLogType>>();
-            var activityLogType = (await activityLogTypeRepository.GetAllAsync(query =>
-            {
-                return query.Where(x => x.SystemKeyword == "Api.TokenRequest");
-            })).FirstOrDefault();
-
-            if (activityLogType == null)
-            {
-                await activityLogTypeRepository.InsertAsync(new ActivityLogType
-                {
-                    SystemKeyword = "Api.TokenRequest",
-                    Name = "API token request",
-                    Enabled = true
-                });
-            }
-
-            await base.InstallAsync();
-
-            // Changes to Web.Config trigger application restart.
-            // This doesn't appear to affect the Install function, but just to be safe we will made web.config changes after the plugin was installed.
-            //_webConfigMangerHelper.AddConfiguration();
-        }
-
-        public override async Task UninstallAsync()
+      if (apiRole == null)
+      {
+        apiRole = new CustomerRole
         {
-            //locales
-            await _localizationService.DeleteLocaleResourceAsync("Plugins.Api");
+          Name = Constants.Roles.ApiRoleName,
+          Active = true,
+          SystemName = Constants.Roles.ApiRoleSystemName
+        };
 
-            //_localizationService.DeletePluginLocaleResource("Plugins.Api.Admin.Menu.Title");
-            //_localizationService.DeletePluginLocaleResource("Plugins.Api.Admin.Menu.Settings.Title");
+        await _customerService.InsertCustomerRoleAsync(apiRole);
+      }
+      else if (apiRole.Active == false)
+      {
+        apiRole.Active = true;
+        await _customerService.UpdateCustomerRoleAsync(apiRole);
+      }
 
-            //_localizationService.DeletePluginLocaleResource("Plugins.Api.Admin.Configure");
-            //_localizationService.DeletePluginLocaleResource("Plugins.Api.Admin.GeneralSettings");
-            //_localizationService.DeletePluginLocaleResource("Plugins.Api.Admin.EnableApi");
-            //_localizationService.DeletePluginLocaleResource("Plugins.Api.Admin.EnableApi.Hint");
+      var activityLogTypeRepository = EngineContext.Current.Resolve<IRepository<ActivityLogType>>();
+      var activityLogType = (await activityLogTypeRepository.GetAllAsync(query =>
+      {
+        return query.Where(x => x.SystemKeyword == "Api.TokenRequest");
+      })).FirstOrDefault();
 
-            //_localizationService.DeletePluginLocaleResource("Plugins.Api.Admin.Settings.GeneralSettingsTitle");
-            //_localizationService.DeletePluginLocaleResource("Plugins.Api.Admin.Edit");
-
-
-            var apiRole = await _customerService.GetCustomerRoleBySystemNameAsync(Constants.Roles.ApiRoleSystemName);
-            if (apiRole != null)
-            {
-                apiRole.Active = false;
-                await _customerService.UpdateCustomerRoleAsync(apiRole);
-            }
-            
-            var activityLogTypeRepository = EngineContext.Current.Resolve<IRepository<ActivityLogType>>();
-            var activityLogType = (await activityLogTypeRepository.GetAllAsync(query =>
-            {
-                return query.Where(x => x.SystemKeyword.Equals("Api.TokenRequest"));
-            })).FirstOrDefault();
-            if (activityLogType != null)
-            {
-                activityLogType.Enabled = false;
-                await activityLogTypeRepository.UpdateAsync(activityLogType);
-            }
-
-            await base.UninstallAsync();
-        }
-
-        public override string GetConfigurationPageUrl()
+      if (activityLogType == null)
+      {
+        await activityLogTypeRepository.InsertAsync(new ActivityLogType
         {
-            return $"{_webHelper.GetStoreLocation()}Admin/ApiAdmin/Settings";
-        }
+          SystemKeyword = "Api.TokenRequest",
+          Name = "API token request",
+          Enabled = true
+        });
+      }
 
-        public async Task ManageSiteMapAsync(SiteMapNode rootNode)
-        {
-            var workingLanguage = await _workContext.GetWorkingLanguageAsync();
+      await base.InstallAsync();
 
-            var pluginMenuName = await _localizationService.GetResourceAsync("Plugins.Api.Admin.Menu.Title", workingLanguage.Id, defaultValue: "API");
-
-            var settingsMenuName = await _localizationService.GetResourceAsync("Plugins.Api.Admin.Menu.Settings.Title", workingLanguage.Id, defaultValue: "API");
-
-            const string adminUrlPart = "Admin/";
-
-            var pluginMainMenu = new SiteMapNode
-            {
-                Title = pluginMenuName,
-                Visible = true,
-                SystemName = "Api-Main-Menu",
-                IconClass = "fa-genderless"
-            };
-
-            pluginMainMenu.ChildNodes.Add(new SiteMapNode
-            {
-                Title = settingsMenuName,
-                Url = _webHelper.GetStoreLocation() + adminUrlPart + "ApiAdmin/Settings",
-                Visible = true,
-                SystemName = "Api-Settings-Menu",
-                IconClass = "fa-genderless"
-            });
-
-
-            rootNode.ChildNodes.Add(pluginMainMenu);
-        }
+      // Changes to Web.Config trigger application restart.
+      // This doesn't appear to affect the Install function, but just to be safe we will made web.config changes after the plugin was installed.
+      //_webConfigMangerHelper.AddConfiguration();
     }
+
+    public override async Task UninstallAsync()
+    {
+      //locales
+      await _localizationService.DeleteLocaleResourceAsync("Plugins.Api");
+
+      //_localizationService.DeletePluginLocaleResource("Plugins.Api.Admin.Menu.Title");
+      //_localizationService.DeletePluginLocaleResource("Plugins.Api.Admin.Menu.Settings.Title");
+
+      //_localizationService.DeletePluginLocaleResource("Plugins.Api.Admin.Configure");
+      //_localizationService.DeletePluginLocaleResource("Plugins.Api.Admin.GeneralSettings");
+      //_localizationService.DeletePluginLocaleResource("Plugins.Api.Admin.EnableApi");
+      //_localizationService.DeletePluginLocaleResource("Plugins.Api.Admin.EnableApi.Hint");
+
+      //_localizationService.DeletePluginLocaleResource("Plugins.Api.Admin.Settings.GeneralSettingsTitle");
+      //_localizationService.DeletePluginLocaleResource("Plugins.Api.Admin.Edit");
+
+
+      var apiRole = await _customerService.GetCustomerRoleBySystemNameAsync(Constants.Roles.ApiRoleSystemName);
+      if (apiRole != null)
+      {
+        apiRole.Active = false;
+        await _customerService.UpdateCustomerRoleAsync(apiRole);
+      }
+
+      var activityLogTypeRepository = EngineContext.Current.Resolve<IRepository<ActivityLogType>>();
+      var activityLogType = (await activityLogTypeRepository.GetAllAsync(query =>
+      {
+        return query.Where(x => x.SystemKeyword.Equals("Api.TokenRequest"));
+      })).FirstOrDefault();
+      if (activityLogType != null)
+      {
+        activityLogType.Enabled = false;
+        await activityLogTypeRepository.UpdateAsync(activityLogType);
+      }
+
+      await base.UninstallAsync();
+    }
+
+    public override string GetConfigurationPageUrl()
+    {
+      return $"{_webHelper.GetStoreLocation()}Admin/ApiAdmin/Settings";
+    }
+
+    public async Task ManageSiteMapAsync(SiteMapNode rootNode)
+    {
+      var workingLanguage = await _workContext.GetWorkingLanguageAsync();
+
+      var pluginMenuName = await _localizationService.GetResourceAsync("Plugins.Api.Admin.Menu.Title", workingLanguage.Id, defaultValue: "API");
+
+      var settingsMenuName = await _localizationService.GetResourceAsync("Plugins.Api.Admin.Menu.Settings.Title", workingLanguage.Id, defaultValue: "API");
+
+      const string adminUrlPart = "Admin/";
+
+      var pluginMainMenu = new SiteMapNode
+      {
+        Title = pluginMenuName,
+        Visible = true,
+        SystemName = "Api-Main-Menu",
+        IconClass = "fa-genderless"
+      };
+
+      pluginMainMenu.ChildNodes.Add(new SiteMapNode
+      {
+        Title = settingsMenuName,
+        Url = _webHelper.GetStoreLocation() + adminUrlPart + "ApiAdmin/Settings",
+        Visible = true,
+        SystemName = "Api-Settings-Menu",
+        IconClass = "fa-genderless"
+      });
+
+
+      rootNode.ChildNodes.Add(pluginMainMenu);
+    }
+  }
 }

@@ -1,19 +1,17 @@
-﻿using System;
-using System.Threading.Tasks;
-using Nop.Core.Domain.Common;
+﻿using Nop.Core.Domain.Common;
 
 namespace Nop.Plugin.Api.Factories
 {
-    public class AddressFactory : IFactory<Address>
+  public class AddressFactory : IFactory<Address>
+  {
+    public Task<Address> InitializeAsync()
     {
-        public Task<Address> InitializeAsync()
-        {
-            var address = new Address
-                          {
-                              CreatedOnUtc = DateTime.UtcNow
-                          };
+      var address = new Address
+      {
+        CreatedOnUtc = DateTime.UtcNow
+      };
 
-            return Task.FromResult(address);
-        }
+      return Task.FromResult(address);
     }
+  }
 }

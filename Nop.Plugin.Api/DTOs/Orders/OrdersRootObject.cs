@@ -1,27 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
 namespace Nop.Plugin.Api.DTO.Orders
 {
-    public class OrdersRootObject : ISerializableObject
+  public class OrdersRootObject : ISerializableObject
+  {
+    public OrdersRootObject()
     {
-        public OrdersRootObject()
-        {
-            Orders = new List<OrderDto>();
-        }
-
-        [JsonProperty("orders")]
-        public IList<OrderDto> Orders { get; set; }
-
-        public string GetPrimaryPropertyName()
-        {
-            return "orders";
-        }
-
-        public Type GetPrimaryPropertyType()
-        {
-            return typeof(OrderDto);
-        }
+      Orders = new List<OrderDto>();
     }
+
+    [JsonProperty("orders")]
+    public IList<OrderDto> Orders { get; set; }
+
+    public string GetPrimaryPropertyName()
+    {
+      return "orders";
+    }
+
+    public Type GetPrimaryPropertyType()
+    {
+      return typeof(OrderDto);
+    }
+  }
 }

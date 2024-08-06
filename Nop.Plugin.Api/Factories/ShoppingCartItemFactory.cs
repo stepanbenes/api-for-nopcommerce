@@ -1,19 +1,17 @@
-﻿using System;
-using System.Threading.Tasks;
-using Nop.Core.Domain.Orders;
+﻿using Nop.Core.Domain.Orders;
 
 namespace Nop.Plugin.Api.Factories
 {
-    public class ShoppingCartItemFactory : IFactory<ShoppingCartItem>
+  public class ShoppingCartItemFactory : IFactory<ShoppingCartItem>
+  {
+    public Task<ShoppingCartItem> InitializeAsync()
     {
-        public Task<ShoppingCartItem> InitializeAsync()
-        {
-            var newShoppingCartItem = new ShoppingCartItem();
+      var newShoppingCartItem = new ShoppingCartItem();
 
-            newShoppingCartItem.CreatedOnUtc = DateTime.UtcNow;
-            newShoppingCartItem.UpdatedOnUtc = DateTime.UtcNow;
+      newShoppingCartItem.CreatedOnUtc = DateTime.UtcNow;
+      newShoppingCartItem.UpdatedOnUtc = DateTime.UtcNow;
 
-            return Task.FromResult(newShoppingCartItem);
-        }
+      return Task.FromResult(newShoppingCartItem);
     }
+  }
 }

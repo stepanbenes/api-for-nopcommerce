@@ -1,40 +1,38 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using Nop.Plugin.Api.DTO.Images;
+﻿using Nop.Plugin.Api.DTO.Images;
 
 namespace Nop.Plugin.Api.Attributes
 {
-    public class ImageCollectionValidationAttribute : BaseValidationAttribute
+  public class ImageCollectionValidationAttribute : BaseValidationAttribute
+  {
+    private Dictionary<string, string> _errors = new Dictionary<string, string>();
+
+    public override async Task ValidateAsync(object instance)
     {
-        private Dictionary<string, string> _errors = new Dictionary<string, string>();
+      // Images are not required so they could be null
+      // and there is nothing to validate in this case
 
-        public override async Task ValidateAsync(object instance)
+      if (instance is ICollection<ImageMappingDto> imagesCollection)
+      {
+        foreach (var image in imagesCollection)
         {
-            // Images are not required so they could be null
-            // and there is nothing to validate in this case
+          var imageValidationAttribute = new ImageValidationAttribute();
 
-            if (instance is ICollection<ImageMappingDto> imagesCollection)
-            {
-                foreach (var image in imagesCollection)
-                {
-                    var imageValidationAttribute = new ImageValidationAttribute();
+          await imageValidationAttribute.ValidateAsync(image);
 
-                    await imageValidationAttribute.ValidateAsync(image);
+          var errorsForImage = imageValidationAttribute.GetErrors();
 
-                    var errorsForImage = imageValidationAttribute.GetErrors();
-
-                    if (errorsForImage.Count > 0)
-                    {
-                        _errors = errorsForImage;
-                        break;
-                    }
-                }
-            }
+          if (errorsForImage.Count > 0)
+          {
+            _errors = errorsForImage;
+            break;
+          }
         }
-
-        public override Dictionary<string, string> GetErrors()
-        {
-            return _errors;
-        }
+      }
     }
+
+    public override Dictionary<string, string> GetErrors()
+    {
+      return _errors;
+    }
+  }
 }
