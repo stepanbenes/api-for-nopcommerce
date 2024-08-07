@@ -2,16 +2,16 @@
 
 namespace Nop.Plugin.Api.Factories
 {
-  public class AddressFactory : IFactory<Address>
-  {
-    public Task<Address> InitializeAsync()
+    public class AddressFactory : IFactory<Address>
     {
-      var address = new Address
-      {
-        CreatedOnUtc = DateTime.UtcNow
-      };
+        public Task<Address> InitializeAsync()
+        {
+            var address = new Address
+            {
+                CreatedOnUtc = DateTime.UtcNow
+            };
 
-      return Task.FromResult(address);
+            return Task.FromResult(address);
+        }
     }
-  }
 }

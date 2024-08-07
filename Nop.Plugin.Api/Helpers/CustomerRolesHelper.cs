@@ -4,47 +4,47 @@ using Nop.Services.Customers;
 
 namespace Nop.Plugin.Api.Helpers
 {
-  public class CustomerRolesHelper : ICustomerRolesHelper
-  {
-    private const string CUSTOMERROLES_ALL_KEY = "Nop.customerrole.all-{0}";
-    private readonly IStaticCacheManager _cacheManager;
-
-    private readonly ICustomerService _customerService;
-
-    public CustomerRolesHelper(ICustomerService customerService, IStaticCacheManager cacheManager)
+    public class CustomerRolesHelper : ICustomerRolesHelper
     {
-      _customerService = customerService;
-      _cacheManager = cacheManager;
-    }
+        private const string CUSTOMERROLES_ALL_KEY = "Nop.customerrole.all-{0}";
+        private readonly IStaticCacheManager _cacheManager;
 
-    public async Task<IList<CustomerRole>> GetValidCustomerRolesAsync(List<int> roleIds)
-    {
-      // This is needed because the caching messes up the entity framework context
-      // and when you try to send something TO the database it throws an exception.
-      await _cacheManager.RemoveByPrefixAsync(CUSTOMERROLES_ALL_KEY);
+        private readonly ICustomerService _customerService;
 
-      var allCustomerRoles = await _customerService.GetAllCustomerRolesAsync(true);
-      var newCustomerRoles = new List<CustomerRole>();
-      foreach (var customerRole in allCustomerRoles)
-      {
-        if (roleIds != null && roleIds.Contains(customerRole.Id))
+        public CustomerRolesHelper(ICustomerService customerService, IStaticCacheManager cacheManager)
         {
-          newCustomerRoles.Add(customerRole);
+            _customerService = customerService;
+            _cacheManager = cacheManager;
         }
-      }
 
-      return newCustomerRoles;
+        public async Task<IList<CustomerRole>> GetValidCustomerRolesAsync(List<int> roleIds)
+        {
+            // This is needed because the caching messes up the entity framework context
+            // and when you try to send something TO the database it throws an exception.
+            await _cacheManager.RemoveByPrefixAsync(CUSTOMERROLES_ALL_KEY);
+
+            var allCustomerRoles = await _customerService.GetAllCustomerRolesAsync(true);
+            var newCustomerRoles = new List<CustomerRole>();
+            foreach (var customerRole in allCustomerRoles)
+            {
+                if (roleIds != null && roleIds.Contains(customerRole.Id))
+                {
+                    newCustomerRoles.Add(customerRole);
+                }
+            }
+
+            return newCustomerRoles;
+        }
+
+        public bool IsInGuestsRole(IList<CustomerRole> customerRoles)
+        {
+            return customerRoles.FirstOrDefault(cr => cr.SystemName == NopCustomerDefaults.GuestsRoleName) != null;
+        }
+
+        public bool IsInRegisteredRole(IList<CustomerRole> customerRoles)
+        {
+            return customerRoles.FirstOrDefault(cr => cr.SystemName == NopCustomerDefaults.RegisteredRoleName) != null;
+        }
+
     }
-
-    public bool IsInGuestsRole(IList<CustomerRole> customerRoles)
-    {
-      return customerRoles.FirstOrDefault(cr => cr.SystemName == NopCustomerDefaults.GuestsRoleName) != null;
-    }
-
-    public bool IsInRegisteredRole(IList<CustomerRole> customerRoles)
-    {
-      return customerRoles.FirstOrDefault(cr => cr.SystemName == NopCustomerDefaults.RegisteredRoleName) != null;
-    }
-
-  }
 }

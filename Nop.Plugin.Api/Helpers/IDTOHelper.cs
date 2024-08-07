@@ -23,26 +23,26 @@ using Nop.Plugin.Api.DTOs.Topics;
 
 namespace Nop.Plugin.Api.Helpers
 {
-  public interface IDTOHelper
-  {
-    Task<ProductDto> PrepareProductDTOAsync(Product product);
-    Task<CategoryDto> PrepareCategoryDTOAsync(Category category);
-    Task<OrderDto> PrepareOrderDTOAsync(Order order);
-    Task<ShoppingCartItemDto> PrepareShoppingCartItemDTOAsync(ShoppingCartItem shoppingCartItem);
-    Task<OrderItemDto> PrepareOrderItemDTOAsync(OrderItem orderItem);
-    Task<StoreDto> PrepareStoreDTOAsync(Store store);
-    Task<LanguageDto> PrepareLanguageDtoAsync(Language language);
-    Task<CurrencyDto> PrepareCurrencyDtoAsync(Currency currency);
-    ProductAttributeDto PrepareProductAttributeDTO(ProductAttribute productAttribute);
-    ProductSpecificationAttributeDto PrepareProductSpecificationAttributeDto(ProductSpecificationAttribute productSpecificationAttribute);
-    SpecificationAttributeDto PrepareSpecificationAttributeDto(SpecificationAttribute specificationAttribute);
+    public interface IDTOHelper
+    {
+        Task<ProductDto> PrepareProductDTOAsync(Product product);
+        Task<CategoryDto> PrepareCategoryDTOAsync(Category category);
+        Task<OrderDto> PrepareOrderDTOAsync(Order order);
+        Task<ShoppingCartItemDto> PrepareShoppingCartItemDTOAsync(ShoppingCartItem shoppingCartItem);
+        Task<OrderItemDto> PrepareOrderItemDTOAsync(OrderItem orderItem);
+        Task<StoreDto> PrepareStoreDTOAsync(Store store);
+        Task<LanguageDto> PrepareLanguageDtoAsync(Language language);
+        Task<CurrencyDto> PrepareCurrencyDtoAsync(Currency currency);
+        ProductAttributeDto PrepareProductAttributeDTO(ProductAttribute productAttribute);
+        ProductSpecificationAttributeDto PrepareProductSpecificationAttributeDto(ProductSpecificationAttribute productSpecificationAttribute);
+        SpecificationAttributeDto PrepareSpecificationAttributeDto(SpecificationAttribute specificationAttribute);
 
-    SpecificationAttributeOptionDto PrepareSpecificationAttributeOptionDto(
-        SpecificationAttributeOption specificationAttributeOption);
-    Task<ManufacturerDto> PrepareManufacturerDtoAsync(Manufacturer manufacturer);
+        SpecificationAttributeOptionDto PrepareSpecificationAttributeOptionDto(
+            SpecificationAttributeOption specificationAttributeOption);
+        Task<ManufacturerDto> PrepareManufacturerDtoAsync(Manufacturer manufacturer);
 
-    Task<WarehouseDto> PrepareWarehouseDtoAsync(Warehouse warehouse);
-    TopicDto PrepareTopicDTO(Topic topic);
-    TaxCategoryDto prepareTaxCategoryDto(TaxCategory taxCategory);
-  }
+        Task<WarehouseDto> PrepareWarehouseDtoAsync(Warehouse warehouse);
+        TopicDto PrepareTopicDTO(Topic topic);
+        TaxCategoryDto prepareTaxCategoryDto(TaxCategory taxCategory);
+    }
 }

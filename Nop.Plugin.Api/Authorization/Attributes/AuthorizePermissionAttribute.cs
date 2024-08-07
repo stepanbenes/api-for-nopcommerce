@@ -6,114 +6,114 @@ using Nop.Services.Security;
 
 namespace Nop.Plugin.Api.Authorization.Attributes
 {
-  /// <summary>
-  /// Represents a filter attribute that confirms access to the admin panel
-  /// </summary>
-  public sealed class AuthorizePermissionAttribute : TypeFilterAttribute
-  {
-    #region Ctor
-
-    public AuthorizePermissionAttribute(string permissionSystemName, bool ignore = false)
-      : base(typeof(AuthorizePermissionFilter))
-    {
-      PermissionSystemName = permissionSystemName;
-      IgnoreFilter = ignore;
-      Arguments = new object[] { permissionSystemName, ignore };
-    }
-
-
-    #endregion
-
-    #region Properties
-
-    public string PermissionSystemName { get; }
-
-    public bool IgnoreFilter { get; }
-
-    #endregion
-
-    #region Nested filter
-
     /// <summary>
-    /// Represents a filter that confirms access to the admin panel
+    /// Represents a filter attribute that confirms access to the admin panel
     /// </summary>
-    private class AuthorizePermissionFilter : IAsyncAuthorizationFilter
+    public sealed class AuthorizePermissionAttribute : TypeFilterAttribute
     {
-      #region Fields
+        #region Ctor
 
-      private readonly string permission;
-      private readonly bool ignoreFilter;
-      private readonly IPermissionService permissionService;
-      private readonly IAuthenticationService authenticationService;
+        public AuthorizePermissionAttribute(string permissionSystemName, bool ignore = false)
+          : base(typeof(AuthorizePermissionFilter))
+        {
+            PermissionSystemName = permissionSystemName;
+            IgnoreFilter = ignore;
+            Arguments = new object[] { permissionSystemName, ignore };
+        }
 
-      #endregion
 
-      #region Ctor
+        #endregion
 
-      public AuthorizePermissionFilter(string permission, bool ignoreFilter, IPermissionService permissionService, IAuthenticationService authenticationService)
-      {
-        this.permission = permission;
-        this.ignoreFilter = ignoreFilter;
-        this.permissionService = permissionService;
-        this.authenticationService = authenticationService;
-      }
+        #region Properties
 
-      #endregion
+        public string PermissionSystemName { get; }
 
-      #region Private methods
+        public bool IgnoreFilter { get; }
 
-      /// <summary>
-      /// Called early in the filter pipeline to confirm request is authorized
-      /// </summary>
-      /// <param name="context">Authorization filter context</param>
-      /// <returns>A task that represents the asynchronous operation</returns>
-      private async Task AuthorizePermissionAsync(AuthorizationFilterContext context)
-      {
-        if (context == null)
-          throw new ArgumentNullException(nameof(context));
+        #endregion
 
-        if (!DataSettingsManager.IsDatabaseInstalled())
-          return;
+        #region Nested filter
 
-        //check whether this filter has been overridden for the action
-        var actionFilter = context.ActionDescriptor.FilterDescriptors
-          .Where(filterDescriptor => filterDescriptor.Scope == FilterScope.Action)
-          .Select(filterDescriptor => filterDescriptor.Filter)
-          .OfType<AuthorizePermissionAttribute>()
-          .Where(a => a.PermissionSystemName == this.permission)
-          .FirstOrDefault();
+        /// <summary>
+        /// Represents a filter that confirms access to the admin panel
+        /// </summary>
+        private class AuthorizePermissionFilter : IAsyncAuthorizationFilter
+        {
+            #region Fields
 
-        //ignore filter (the action is available even if navigation is not allowed)
-        if (actionFilter is not null && actionFilter.IgnoreFilter)
-          return; // ignore attribute on controller, allow access for anyone
+            private readonly string permission;
+            private readonly bool ignoreFilter;
+            private readonly IPermissionService permissionService;
+            private readonly IAuthenticationService authenticationService;
 
-        var customer = await authenticationService.GetAuthenticatedCustomerAsync();
+            #endregion
 
-        // check whether current customer has permission to access resource
-        if (customer is not null && await permissionService.AuthorizeAsync(permission, customer))
-          return; // authorized, allow access
+            #region Ctor
 
-        // current user hasn't access
-        context.Result = new StatusCodeResult(Microsoft.AspNetCore.Http.StatusCodes.Status403Forbidden);
-      }
+            public AuthorizePermissionFilter(string permission, bool ignoreFilter, IPermissionService permissionService, IAuthenticationService authenticationService)
+            {
+                this.permission = permission;
+                this.ignoreFilter = ignoreFilter;
+                this.permissionService = permissionService;
+                this.authenticationService = authenticationService;
+            }
 
-      #endregion
+            #endregion
 
-      #region Methods
+            #region Private methods
 
-      /// <summary>
-      /// Called early in the filter pipeline to confirm request is authorized
-      /// </summary>
-      /// <param name="context">Authorization filter context</param>
-      /// <returns>A task that represents the asynchronous operation</returns>
-      public async Task OnAuthorizationAsync(AuthorizationFilterContext context)
-      {
-        await AuthorizePermissionAsync(context);
-      }
+            /// <summary>
+            /// Called early in the filter pipeline to confirm request is authorized
+            /// </summary>
+            /// <param name="context">Authorization filter context</param>
+            /// <returns>A task that represents the asynchronous operation</returns>
+            private async Task AuthorizePermissionAsync(AuthorizationFilterContext context)
+            {
+                if (context == null)
+                    throw new ArgumentNullException(nameof(context));
 
-      #endregion
+                if (!DataSettingsManager.IsDatabaseInstalled())
+                    return;
+
+                //check whether this filter has been overridden for the action
+                var actionFilter = context.ActionDescriptor.FilterDescriptors
+                  .Where(filterDescriptor => filterDescriptor.Scope == FilterScope.Action)
+                  .Select(filterDescriptor => filterDescriptor.Filter)
+                  .OfType<AuthorizePermissionAttribute>()
+                  .Where(a => a.PermissionSystemName == this.permission)
+                  .FirstOrDefault();
+
+                //ignore filter (the action is available even if navigation is not allowed)
+                if (actionFilter is not null && actionFilter.IgnoreFilter)
+                    return; // ignore attribute on controller, allow access for anyone
+
+                var customer = await authenticationService.GetAuthenticatedCustomerAsync();
+
+                // check whether current customer has permission to access resource
+                if (customer is not null && await permissionService.AuthorizeAsync(permission, customer))
+                    return; // authorized, allow access
+
+                // current user hasn't access
+                context.Result = new StatusCodeResult(Microsoft.AspNetCore.Http.StatusCodes.Status403Forbidden);
+            }
+
+            #endregion
+
+            #region Methods
+
+            /// <summary>
+            /// Called early in the filter pipeline to confirm request is authorized
+            /// </summary>
+            /// <param name="context">Authorization filter context</param>
+            /// <returns>A task that represents the asynchronous operation</returns>
+            public async Task OnAuthorizationAsync(AuthorizationFilterContext context)
+            {
+                await AuthorizePermissionAsync(context);
+            }
+
+            #endregion
+        }
+
+        #endregion
     }
-
-    #endregion
-  }
 }

@@ -3,17 +3,17 @@ using Nop.Plugin.Api.ModelBinders;
 
 namespace Nop.Plugin.Api.Attributes
 {
-  public class FromQueryJsonAttribute : ModelBinderAttribute
-  {
-    public FromQueryJsonAttribute()
+    public class FromQueryJsonAttribute : ModelBinderAttribute
     {
-      BinderType = typeof(JsonQueryModelBinder);
-    }
+        public FromQueryJsonAttribute()
+        {
+            BinderType = typeof(JsonQueryModelBinder);
+        }
 
-    public FromQueryJsonAttribute(string paramName)
-        : this()
-    {
-      Name = paramName;
+        public FromQueryJsonAttribute(string paramName)
+            : this()
+        {
+            Name = paramName;
+        }
     }
-  }
 }

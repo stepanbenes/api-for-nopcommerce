@@ -2,24 +2,24 @@
 
 namespace Nop.Plugin.Api.DTO.Orders
 {
-  public class OrdersRootObject : ISerializableObject
-  {
-    public OrdersRootObject()
+    public class OrdersRootObject : ISerializableObject
     {
-      Orders = new List<OrderDto>();
-    }
+        public OrdersRootObject()
+        {
+            Orders = new List<OrderDto>();
+        }
 
-    [JsonProperty("orders")]
-    public IList<OrderDto> Orders { get; set; }
+        [JsonProperty("orders")]
+        public IList<OrderDto> Orders { get; set; }
 
-    public string GetPrimaryPropertyName()
-    {
-      return "orders";
-    }
+        public string GetPrimaryPropertyName()
+        {
+            return "orders";
+        }
 
-    public Type GetPrimaryPropertyType()
-    {
-      return typeof(OrderDto);
+        public Type GetPrimaryPropertyType()
+        {
+            return typeof(OrderDto);
+        }
     }
-  }
 }

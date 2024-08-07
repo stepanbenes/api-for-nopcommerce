@@ -2,24 +2,24 @@
 
 namespace Nop.Plugin.Api.DTO.NewsLetterSubscriptions
 {
-  public class NewsLetterSubscriptionsRootObject : ISerializableObject
-  {
-    public NewsLetterSubscriptionsRootObject()
+    public class NewsLetterSubscriptionsRootObject : ISerializableObject
     {
-      NewsLetterSubscriptions = new List<NewsLetterSubscriptionDto>();
-    }
+        public NewsLetterSubscriptionsRootObject()
+        {
+            NewsLetterSubscriptions = new List<NewsLetterSubscriptionDto>();
+        }
 
-    [JsonProperty("news_letter_subscriptions")]
-    public IList<NewsLetterSubscriptionDto> NewsLetterSubscriptions { get; set; }
+        [JsonProperty("news_letter_subscriptions")]
+        public IList<NewsLetterSubscriptionDto> NewsLetterSubscriptions { get; set; }
 
-    public string GetPrimaryPropertyName()
-    {
-      return "news_letter_subscriptions";
-    }
+        public string GetPrimaryPropertyName()
+        {
+            return "news_letter_subscriptions";
+        }
 
-    public Type GetPrimaryPropertyType()
-    {
-      return typeof(NewsLetterSubscriptionDto);
+        public Type GetPrimaryPropertyType()
+        {
+            return typeof(NewsLetterSubscriptionDto);
+        }
     }
-  }
 }

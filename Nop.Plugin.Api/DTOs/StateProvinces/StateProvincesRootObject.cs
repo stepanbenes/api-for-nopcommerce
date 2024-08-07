@@ -3,24 +3,24 @@ using Nop.Plugin.Api.DTO;
 
 namespace Nop.Plugin.Api.DTOs.StateProvinces
 {
-  public class StateProvincesRootObject : ISerializableObject
-  {
-    public StateProvincesRootObject()
+    public class StateProvincesRootObject : ISerializableObject
     {
-      StateProvinces = new List<StateProvinceDto>();
-    }
+        public StateProvincesRootObject()
+        {
+            StateProvinces = new List<StateProvinceDto>();
+        }
 
-    [JsonProperty("state_provinces")]
-    public IList<StateProvinceDto> StateProvinces { get; set; }
+        [JsonProperty("state_provinces")]
+        public IList<StateProvinceDto> StateProvinces { get; set; }
 
-    public string GetPrimaryPropertyName()
-    {
-      return "state_provinces";
-    }
+        public string GetPrimaryPropertyName()
+        {
+            return "state_provinces";
+        }
 
-    public Type GetPrimaryPropertyType()
-    {
-      return typeof(StateProvinceDto);
+        public Type GetPrimaryPropertyType()
+        {
+            return typeof(StateProvinceDto);
+        }
     }
-  }
 }

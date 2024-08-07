@@ -2,10 +2,10 @@
 
 namespace Nop.Plugin.Api.DTO.Products
 {
-  public class ProductsCountRootObject
-  {
-    [JsonProperty("count")]
-    public int Count { get; set; }
+    public class ProductsCountRootObject
+    {
+        [JsonProperty("count")]
+        public int Count { get; set; }
 
-  }
+    }
 }

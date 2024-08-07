@@ -3,12 +3,12 @@ using Nop.Plugin.Api.Infrastructure;
 
 namespace Nop.Plugin.Api.Services
 {
-  public interface INewsLetterSubscriptionApiService
-  {
-    List<NewsLetterSubscription> GetNewsLetterSubscriptions(
-        DateTime? createdAtMin = null, DateTime? createdAtMax = null,
-        int limit = Constants.Configurations.DefaultLimit, int page = Constants.Configurations.DefaultPageValue,
-        int sinceId = Constants.Configurations.DefaultSinceId,
-        bool? onlyActive = true);
-  }
+    public interface INewsLetterSubscriptionApiService
+    {
+        List<NewsLetterSubscription> GetNewsLetterSubscriptions(
+            DateTime? createdAtMin = null, DateTime? createdAtMax = null,
+            int limit = Constants.Configurations.DefaultLimit, int page = Constants.Configurations.DefaultPageValue,
+            int sinceId = Constants.Configurations.DefaultSinceId,
+            bool? onlyActive = true);
+    }
 }

@@ -2,24 +2,24 @@
 
 namespace Nop.Plugin.Api.DTO
 {
-  public class CurrenciesRootObject : ISerializableObject
-  {
-    public CurrenciesRootObject()
+    public class CurrenciesRootObject : ISerializableObject
     {
-      Currencies = new List<CurrencyDto>();
-    }
+        public CurrenciesRootObject()
+        {
+            Currencies = new List<CurrencyDto>();
+        }
 
-    [JsonProperty("currencies")]
-    public IList<CurrencyDto> Currencies { get; set; }
+        [JsonProperty("currencies")]
+        public IList<CurrencyDto> Currencies { get; set; }
 
-    public string GetPrimaryPropertyName()
-    {
-      return "currencies";
-    }
+        public string GetPrimaryPropertyName()
+        {
+            return "currencies";
+        }
 
-    public Type GetPrimaryPropertyType()
-    {
-      return typeof(CurrencyDto);
+        public Type GetPrimaryPropertyType()
+        {
+            return typeof(CurrencyDto);
+        }
     }
-  }
 }

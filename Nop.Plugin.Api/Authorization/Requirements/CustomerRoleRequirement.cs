@@ -1,47 +1,47 @@
-﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Nop.Core.Domain.Customers;
 using Nop.Core.Infrastructure;
 using Nop.Plugin.Api.Infrastructure;
 using Nop.Services.Customers;
+using System.Security.Claims;
 
 namespace Nop.Plugin.Api.Authorization.Requirements
 {
-  public class CustomerRoleRequirement : IAuthorizationRequirement
-  {
-    public async Task<bool> IsCustomerInRoleAsync()
+    public class CustomerRoleRequirement : IAuthorizationRequirement
     {
-      try
-      {
-        var httpContextAccessor = EngineContext.Current.Resolve<IHttpContextAccessor>();
-
-        var customerIdClaim = httpContextAccessor.HttpContext.User.Claims.FirstOrDefault(m => m.Type == ClaimTypes.NameIdentifier);
-
-        if (customerIdClaim != null && Guid.TryParse(customerIdClaim.Value, out var customerGuid))
+        public async Task<bool> IsCustomerInRoleAsync()
         {
-          var customerService = EngineContext.Current.Resolve<ICustomerService>();
+            try
+            {
+                var httpContextAccessor = EngineContext.Current.Resolve<IHttpContextAccessor>();
 
-          var customer = await customerService.GetCustomerByGuidAsync(customerGuid);
+                var customerIdClaim = httpContextAccessor.HttpContext.User.Claims.FirstOrDefault(m => m.Type == ClaimTypes.NameIdentifier);
 
-          if (customer != null)
-          {
-            var customerRoles = await customerService.GetCustomerRolesAsync(customer);
-            return IsInApiRole(customerRoles);
-          }
+                if (customerIdClaim != null && Guid.TryParse(customerIdClaim.Value, out var customerGuid))
+                {
+                    var customerService = EngineContext.Current.Resolve<ICustomerService>();
+
+                    var customer = await customerService.GetCustomerByGuidAsync(customerGuid);
+
+                    if (customer != null)
+                    {
+                        var customerRoles = await customerService.GetCustomerRolesAsync(customer);
+                        return IsInApiRole(customerRoles);
+                    }
+                }
+            }
+            catch
+            {
+                // best effort
+            }
+
+            return false;
         }
-      }
-      catch
-      {
-        // best effort
-      }
 
-      return false;
+        private static bool IsInApiRole(IEnumerable<CustomerRole> customerRoles)
+        {
+            return customerRoles.FirstOrDefault(cr => cr.SystemName == Constants.Roles.ApiRoleSystemName) != null;
+        }
     }
-
-    private static bool IsInApiRole(IEnumerable<CustomerRole> customerRoles)
-    {
-      return customerRoles.FirstOrDefault(cr => cr.SystemName == Constants.Roles.ApiRoleSystemName) != null;
-    }
-  }
 }

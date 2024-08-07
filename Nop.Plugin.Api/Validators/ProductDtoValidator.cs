@@ -5,26 +5,26 @@ using Nop.Plugin.Api.Helpers;
 
 namespace Nop.Plugin.Api.Validators
 {
-  [UsedImplicitly]
-  public class ProductDtoValidator : BaseDtoValidator<ProductDto>
-  {
-    #region Constructors
-
-    public ProductDtoValidator(IHttpContextAccessor httpContextAccessor, IJsonHelper jsonHelper, Dictionary<string, object> requestJsonDictionary) :
-        base(httpContextAccessor, jsonHelper, requestJsonDictionary)
+    [UsedImplicitly]
+    public class ProductDtoValidator : BaseDtoValidator<ProductDto>
     {
-      SetNameRule();
+        #region Constructors
+
+        public ProductDtoValidator(IHttpContextAccessor httpContextAccessor, IJsonHelper jsonHelper, Dictionary<string, object> requestJsonDictionary) :
+            base(httpContextAccessor, jsonHelper, requestJsonDictionary)
+        {
+            SetNameRule();
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        private void SetNameRule()
+        {
+            SetNotNullOrEmptyCreateOrUpdateRule(p => p.Name, "invalid name", "name");
+        }
+
+        #endregion
     }
-
-    #endregion
-
-    #region Private Methods
-
-    private void SetNameRule()
-    {
-      SetNotNullOrEmptyCreateOrUpdateRule(p => p.Name, "invalid name", "name");
-    }
-
-    #endregion
-  }
 }

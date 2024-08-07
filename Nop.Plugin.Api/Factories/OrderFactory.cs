@@ -4,19 +4,19 @@ using Nop.Core.Domain.Shipping;
 
 namespace Nop.Plugin.Api.Factories
 {
-  public class OrderFactory : IFactory<Order>
-  {
-    public Task<Order> InitializeAsync()
+    public class OrderFactory : IFactory<Order>
     {
-      var order = new Order();
+        public Task<Order> InitializeAsync()
+        {
+            var order = new Order();
 
-      order.CreatedOnUtc = DateTime.UtcNow;
-      order.OrderGuid = new Guid();
-      order.PaymentStatus = PaymentStatus.Pending;
-      order.ShippingStatus = ShippingStatus.NotYetShipped;
-      order.OrderStatus = OrderStatus.Pending;
+            order.CreatedOnUtc = DateTime.UtcNow;
+            order.OrderGuid = new Guid();
+            order.PaymentStatus = PaymentStatus.Pending;
+            order.ShippingStatus = ShippingStatus.NotYetShipped;
+            order.OrderStatus = OrderStatus.Pending;
 
-      return Task.FromResult(order);
+            return Task.FromResult(order);
+        }
     }
-  }
 }

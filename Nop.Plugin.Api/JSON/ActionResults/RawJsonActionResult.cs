@@ -3,32 +3,32 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Nop.Plugin.Api.JSON.ActionResults
 {
-  // TODO: Move to BaseApiController as method.
-  public class RawJsonActionResult : ActionResult
-  {
-    private readonly string _jsonString;
-
-    public RawJsonActionResult(object value)
+    // TODO: Move to BaseApiController as method.
+    public class RawJsonActionResult : ActionResult
     {
-      if (value != null)
-      {
-        _jsonString = value.ToString();
-      }
+        private readonly string _jsonString;
+
+        public RawJsonActionResult(object value)
+        {
+            if (value != null)
+            {
+                _jsonString = value.ToString();
+            }
+        }
+
+        public override async Task ExecuteResultAsync(ActionContext context)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            var response = context.HttpContext.Response;
+
+            response.StatusCode = 200;
+            response.ContentType = "application/json";
+
+            await response.WriteAsync(_jsonString);
+        }
     }
-
-    public override async Task ExecuteResultAsync(ActionContext context)
-    {
-      if (context == null)
-      {
-        throw new ArgumentNullException(nameof(context));
-      }
-
-      var response = context.HttpContext.Response;
-
-      response.StatusCode = 200;
-      response.ContentType = "application/json";
-
-      await response.WriteAsync(_jsonString);
-    }
-  }
 }

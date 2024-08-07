@@ -2,19 +2,19 @@
 
 namespace Nop.Plugin.Api.DTO.Errors
 {
-  public class ErrorsRootObject : ISerializableObject
-  {
-    [JsonProperty("errors")]
-    public Dictionary<string, List<string>> Errors { get; set; }
-
-    public string GetPrimaryPropertyName()
+    public class ErrorsRootObject : ISerializableObject
     {
-      return "errors";
-    }
+        [JsonProperty("errors")]
+        public Dictionary<string, List<string>> Errors { get; set; }
 
-    public Type GetPrimaryPropertyType()
-    {
-      return Errors.GetType();
+        public string GetPrimaryPropertyName()
+        {
+            return "errors";
+        }
+
+        public Type GetPrimaryPropertyType()
+        {
+            return Errors.GetType();
+        }
     }
-  }
 }

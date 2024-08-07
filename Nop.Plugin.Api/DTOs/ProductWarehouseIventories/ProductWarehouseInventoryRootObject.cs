@@ -2,24 +2,24 @@
 
 namespace Nop.Plugin.Api.DTO.ProductWarehouseIventories
 {
-  public class ProductWarehouseInventoryRootObject : ISerializableObject
-  {
-    public ProductWarehouseInventoryRootObject()
+    public class ProductWarehouseInventoryRootObject : ISerializableObject
     {
-      ProductWarehouseInventoryDtos = new List<ProductWarehouseInventoryDto>();
-    }
+        public ProductWarehouseInventoryRootObject()
+        {
+            ProductWarehouseInventoryDtos = new List<ProductWarehouseInventoryDto>();
+        }
 
-    [JsonProperty("product_warehouse_inventories")]
-    public IList<ProductWarehouseInventoryDto> ProductWarehouseInventoryDtos { get; set; }
+        [JsonProperty("product_warehouse_inventories")]
+        public IList<ProductWarehouseInventoryDto> ProductWarehouseInventoryDtos { get; set; }
 
-    public string GetPrimaryPropertyName()
-    {
-      return "product_warehouse_inventories";
-    }
+        public string GetPrimaryPropertyName()
+        {
+            return "product_warehouse_inventories";
+        }
 
-    public Type GetPrimaryPropertyType()
-    {
-      return typeof(ProductWarehouseInventoryDto);
+        public Type GetPrimaryPropertyType()
+        {
+            return typeof(ProductWarehouseInventoryDto);
+        }
     }
-  }
 }

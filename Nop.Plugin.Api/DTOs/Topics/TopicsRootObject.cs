@@ -3,24 +3,24 @@ using Nop.Plugin.Api.DTO;
 
 namespace Nop.Plugin.Api.DTOs.Topics
 {
-  public class TopicsRootObject : ISerializableObject
-  {
-    public TopicsRootObject()
+    public class TopicsRootObject : ISerializableObject
     {
-      Topics = new List<TopicDto>();
-    }
+        public TopicsRootObject()
+        {
+            Topics = new List<TopicDto>();
+        }
 
-    [JsonProperty("topics")]
-    public IList<TopicDto> Topics { get; set; }
+        [JsonProperty("topics")]
+        public IList<TopicDto> Topics { get; set; }
 
-    public string GetPrimaryPropertyName()
-    {
-      return "topics";
-    }
+        public string GetPrimaryPropertyName()
+        {
+            return "topics";
+        }
 
-    public Type GetPrimaryPropertyType()
-    {
-      return typeof(TopicDto);
+        public Type GetPrimaryPropertyType()
+        {
+            return typeof(TopicDto);
+        }
     }
-  }
 }

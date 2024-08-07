@@ -2,13 +2,13 @@
 
 namespace Nop.Plugin.Api.Factories
 {
-  public class WarehouseFactory : IFactory<Warehouse>
-  {
-    public Task<Warehouse> InitializeAsync()
+    public class WarehouseFactory : IFactory<Warehouse>
     {
-      var warehouse = new Warehouse();
+        public Task<Warehouse> InitializeAsync()
+        {
+            var warehouse = new Warehouse();
 
-      return Task.FromResult(warehouse);
+            return Task.FromResult(warehouse);
+        }
     }
-  }
 }

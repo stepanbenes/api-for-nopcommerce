@@ -2,24 +2,24 @@
 
 namespace Nop.Plugin.Api.DTO.ProductManufacturerMappings
 {
-  public class ProductManufacturerMappingsRootObject : ISerializableObject
-  {
-    public ProductManufacturerMappingsRootObject()
+    public class ProductManufacturerMappingsRootObject : ISerializableObject
     {
-      ProductManufacturerMappingsDtos = new List<ProductManufacturerMappingsDto>();
-    }
+        public ProductManufacturerMappingsRootObject()
+        {
+            ProductManufacturerMappingsDtos = new List<ProductManufacturerMappingsDto>();
+        }
 
-    [JsonProperty("product_manufacturer_mappings")]
-    public IList<ProductManufacturerMappingsDto> ProductManufacturerMappingsDtos { get; set; }
+        [JsonProperty("product_manufacturer_mappings")]
+        public IList<ProductManufacturerMappingsDto> ProductManufacturerMappingsDtos { get; set; }
 
-    public string GetPrimaryPropertyName()
-    {
-      return "product_manufacturer_mappings";
-    }
+        public string GetPrimaryPropertyName()
+        {
+            return "product_manufacturer_mappings";
+        }
 
-    public Type GetPrimaryPropertyType()
-    {
-      return typeof(ProductManufacturerMappingsDto);
+        public Type GetPrimaryPropertyType()
+        {
+            return typeof(ProductManufacturerMappingsDto);
+        }
     }
-  }
 }

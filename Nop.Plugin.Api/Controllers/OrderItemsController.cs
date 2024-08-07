@@ -1,5 +1,4 @@
-﻿using System.Net;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Nop.Core.Domain.Catalog;
 using Nop.Core.Domain.Orders;
 using Nop.Plugin.Api.Attributes;
@@ -25,380 +24,381 @@ using Nop.Services.Orders;
 using Nop.Services.Security;
 using Nop.Services.Stores;
 using Nop.Services.Tax;
+using System.Net;
 
 namespace Nop.Plugin.Api.Controllers
 {
-  [AuthorizePermission(StandardPermission.Orders.ORDERS_CREATE_EDIT_DELETE)]
-  public class OrderItemsController : BaseApiController
-  {
-    private readonly IDTOHelper _dtoHelper;
-    private readonly IOrderApiService _orderApiService;
-    private readonly IOrderItemApiService _orderItemApiService;
-    private readonly IOrderService _orderService;
-    private readonly IPriceCalculationService _priceCalculationService;
-    private readonly IProductApiService _productApiService;
-    private readonly ITaxService _taxService;
-
-    public OrderItemsController(
-        IJsonFieldsSerializer jsonFieldsSerializer,
-        IAclService aclService,
-        ICustomerService customerService,
-        IStoreMappingService storeMappingService,
-        IStoreService storeService,
-        IDiscountService discountService,
-        ICustomerActivityService customerActivityService,
-        ILocalizationService localizationService,
-        IOrderItemApiService orderItemApiService,
-        IOrderApiService orderApiService,
-        IOrderService orderService,
-        IProductApiService productApiService,
-        IPriceCalculationService priceCalculationService,
-        ITaxService taxService,
-        IPictureService pictureService, IDTOHelper dtoHelper)
-        : base(jsonFieldsSerializer,
-               aclService,
-               customerService,
-               storeMappingService,
-               storeService,
-               discountService,
-               customerActivityService,
-               localizationService,
-               pictureService)
+    [AuthorizePermission(StandardPermission.Orders.ORDERS_CREATE_EDIT_DELETE)]
+    public class OrderItemsController : BaseApiController
     {
-      _orderItemApiService = orderItemApiService;
-      _orderApiService = orderApiService;
-      _orderService = orderService;
-      _productApiService = productApiService;
-      _priceCalculationService = priceCalculationService;
-      _taxService = taxService;
-      _dtoHelper = dtoHelper;
-    }
+        private readonly IDTOHelper _dtoHelper;
+        private readonly IOrderApiService _orderApiService;
+        private readonly IOrderItemApiService _orderItemApiService;
+        private readonly IOrderService _orderService;
+        private readonly IPriceCalculationService _priceCalculationService;
+        private readonly IProductApiService _productApiService;
+        private readonly ITaxService _taxService;
 
-    [HttpGet]
-    [Route("/api/orders/{orderId}/items", Name = "GetOrderItems")]
-    [ProducesResponseType(typeof(OrderItemsRootObject), (int)HttpStatusCode.OK)]
-    [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
-    [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-    [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
-    [GetRequestsErrorInterceptorActionFilter]
-    public async Task<IActionResult> GetOrderItems([FromRoute] int orderId, [FromQuery] OrderItemsParametersModel parameters)
-    {
-      if (parameters.Limit < Constants.Configurations.MinLimit || parameters.Limit > Constants.Configurations.MaxLimit)
-      {
-        return Error(HttpStatusCode.BadRequest, "limit", "Invalid limit parameter");
-      }
+        public OrderItemsController(
+            IJsonFieldsSerializer jsonFieldsSerializer,
+            IAclService aclService,
+            ICustomerService customerService,
+            IStoreMappingService storeMappingService,
+            IStoreService storeService,
+            IDiscountService discountService,
+            ICustomerActivityService customerActivityService,
+            ILocalizationService localizationService,
+            IOrderItemApiService orderItemApiService,
+            IOrderApiService orderApiService,
+            IOrderService orderService,
+            IProductApiService productApiService,
+            IPriceCalculationService priceCalculationService,
+            ITaxService taxService,
+            IPictureService pictureService, IDTOHelper dtoHelper)
+            : base(jsonFieldsSerializer,
+                   aclService,
+                   customerService,
+                   storeMappingService,
+                   storeService,
+                   discountService,
+                   customerActivityService,
+                   localizationService,
+                   pictureService)
+        {
+            _orderItemApiService = orderItemApiService;
+            _orderApiService = orderApiService;
+            _orderService = orderService;
+            _productApiService = productApiService;
+            _priceCalculationService = priceCalculationService;
+            _taxService = taxService;
+            _dtoHelper = dtoHelper;
+        }
 
-      if (parameters.Page < Constants.Configurations.DefaultPageValue)
-      {
-        return Error(HttpStatusCode.BadRequest, "page", "Invalid request parameters");
-      }
+        [HttpGet]
+        [Route("/api/orders/{orderId}/items", Name = "GetOrderItems")]
+        [ProducesResponseType(typeof(OrderItemsRootObject), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
+        [GetRequestsErrorInterceptorActionFilter]
+        public async Task<IActionResult> GetOrderItems([FromRoute] int orderId, [FromQuery] OrderItemsParametersModel parameters)
+        {
+            if (parameters.Limit < Constants.Configurations.MinLimit || parameters.Limit > Constants.Configurations.MaxLimit)
+            {
+                return Error(HttpStatusCode.BadRequest, "limit", "Invalid limit parameter");
+            }
 
-      var order = _orderApiService.GetOrderById(orderId);
+            if (parameters.Page < Constants.Configurations.DefaultPageValue)
+            {
+                return Error(HttpStatusCode.BadRequest, "page", "Invalid request parameters");
+            }
 
-      if (order == null)
-      {
-        return Error(HttpStatusCode.NotFound, "order", "not found");
-      }
+            var order = _orderApiService.GetOrderById(orderId);
 
-      var allOrderItemsForOrder = await _orderItemApiService.GetOrderItemsForOrderAsync(order, parameters.Limit, parameters.Page,
-                                                     parameters.SinceId);
+            if (order == null)
+            {
+                return Error(HttpStatusCode.NotFound, "order", "not found");
+            }
 
-      var orderItemsRootObject = new OrderItemsRootObject
-      {
-        OrderItems = await allOrderItemsForOrder.SelectAwait(async item => await _dtoHelper.PrepareOrderItemDTOAsync(item)).ToListAsync()
-      };
+            var allOrderItemsForOrder = await _orderItemApiService.GetOrderItemsForOrderAsync(order, parameters.Limit, parameters.Page,
+                                                           parameters.SinceId);
 
-      var json = JsonFieldsSerializer.Serialize(orderItemsRootObject, parameters.Fields);
+            var orderItemsRootObject = new OrderItemsRootObject
+            {
+                OrderItems = await allOrderItemsForOrder.SelectAwait(async item => await _dtoHelper.PrepareOrderItemDTOAsync(item)).ToListAsync()
+            };
 
-      return new RawJsonActionResult(json);
-    }
+            var json = JsonFieldsSerializer.Serialize(orderItemsRootObject, parameters.Fields);
 
-    [HttpGet]
-    [Route("/api/orders/{orderId}/items/count", Name = "GetOrderItemsCount")]
-    [ProducesResponseType(typeof(OrderItemsCountRootObject), (int)HttpStatusCode.OK)]
-    [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-    [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
-    [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
-    [GetRequestsErrorInterceptorActionFilter]
-    public async Task<IActionResult> GetOrderItemsCount([FromRoute] int orderId)
-    {
-      var order = _orderApiService.GetOrderById(orderId);
+            return new RawJsonActionResult(json);
+        }
 
-      if (order == null)
-      {
-        return Error(HttpStatusCode.NotFound, "order", "not found");
-      }
+        [HttpGet]
+        [Route("/api/orders/{orderId}/items/count", Name = "GetOrderItemsCount")]
+        [ProducesResponseType(typeof(OrderItemsCountRootObject), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
+        [GetRequestsErrorInterceptorActionFilter]
+        public async Task<IActionResult> GetOrderItemsCount([FromRoute] int orderId)
+        {
+            var order = _orderApiService.GetOrderById(orderId);
 
-      var orderItemsCountForOrder = await _orderItemApiService.GetOrderItemsCountAsync(order);
+            if (order == null)
+            {
+                return Error(HttpStatusCode.NotFound, "order", "not found");
+            }
 
-      var orderItemsCountRootObject = new OrderItemsCountRootObject
-      {
-        Count = orderItemsCountForOrder
-      };
+            var orderItemsCountForOrder = await _orderItemApiService.GetOrderItemsCountAsync(order);
 
-      return Ok(orderItemsCountRootObject);
-    }
+            var orderItemsCountRootObject = new OrderItemsCountRootObject
+            {
+                Count = orderItemsCountForOrder
+            };
 
-    [HttpGet]
-    [Route("/api/orders/{orderId}/items/{orderItemId}", Name = "GetOrderItemByIdForOrder")]
-    [ProducesResponseType(typeof(OrderItemsRootObject), (int)HttpStatusCode.OK)]
-    [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-    [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
-    [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
-    [GetRequestsErrorInterceptorActionFilter]
-    public async Task<IActionResult> GetOrderItemByIdForOrder([FromRoute] int orderId, [FromRoute] int orderItemId, [FromQuery] string fields = "")
-    {
-      var order = _orderApiService.GetOrderById(orderId);
+            return Ok(orderItemsCountRootObject);
+        }
 
-      if (order == null)
-      {
-        return Error(HttpStatusCode.NotFound, "order", "not found");
-      }
+        [HttpGet]
+        [Route("/api/orders/{orderId}/items/{orderItemId}", Name = "GetOrderItemByIdForOrder")]
+        [ProducesResponseType(typeof(OrderItemsRootObject), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
+        [GetRequestsErrorInterceptorActionFilter]
+        public async Task<IActionResult> GetOrderItemByIdForOrder([FromRoute] int orderId, [FromRoute] int orderItemId, [FromQuery] string fields = "")
+        {
+            var order = _orderApiService.GetOrderById(orderId);
 
-      var orderItem = await _orderService.GetOrderItemByIdAsync(orderItemId);
+            if (order == null)
+            {
+                return Error(HttpStatusCode.NotFound, "order", "not found");
+            }
 
-      if (orderItem == null)
-      {
-        return Error(HttpStatusCode.NotFound, "order_item", "not found");
-      }
+            var orderItem = await _orderService.GetOrderItemByIdAsync(orderItemId);
 
-      var orderItemDtos = new List<OrderItemDto>
+            if (orderItem == null)
+            {
+                return Error(HttpStatusCode.NotFound, "order_item", "not found");
+            }
+
+            var orderItemDtos = new List<OrderItemDto>
                                 {
                                     await _dtoHelper.PrepareOrderItemDTOAsync(orderItem)
                                 };
 
-      var orderItemsRootObject = new OrderItemsRootObject
-      {
-        OrderItems = orderItemDtos
-      };
+            var orderItemsRootObject = new OrderItemsRootObject
+            {
+                OrderItems = orderItemDtos
+            };
 
-      var json = JsonFieldsSerializer.Serialize(orderItemsRootObject, fields);
+            var json = JsonFieldsSerializer.Serialize(orderItemsRootObject, fields);
 
-      return new RawJsonActionResult(json);
-    }
+            return new RawJsonActionResult(json);
+        }
 
-    [HttpPost]
-    [Route("/api/orders/{orderId}/items", Name = "CreateOrderItem")]
-    [ProducesResponseType(typeof(OrderItemsRootObject), (int)HttpStatusCode.OK)]
-    [ProducesResponseType(typeof(ErrorsRootObject), 422)]
-    [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
-    [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-    [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
-    public async Task<IActionResult> CreateOrderItem(
-        [FromRoute]
+        [HttpPost]
+        [Route("/api/orders/{orderId}/items", Name = "CreateOrderItem")]
+        [ProducesResponseType(typeof(OrderItemsRootObject), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ErrorsRootObject), 422)]
+        [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
+        public async Task<IActionResult> CreateOrderItem(
+            [FromRoute]
             int orderId,
-        [FromBody]
+            [FromBody]
             [ModelBinder(typeof(JsonModelBinder<OrderItemDto>))]
             Delta<OrderItemDto> orderItemDelta)
-    {
-      // Here we display the errors if the validation has failed at some point.
-      if (!ModelState.IsValid)
-      {
-        return Error();
-      }
-
-      var order = _orderApiService.GetOrderById(orderId);
-
-      if (order == null)
-      {
-        return Error(HttpStatusCode.NotFound, "order", "not found");
-      }
-
-      var product = GetProduct(orderItemDelta.Dto.ProductId);
-
-      if (product == null)
-      {
-        return Error(HttpStatusCode.NotFound, "product", "not found");
-      }
-
-      if (product.IsRental)
-      {
-        if (orderItemDelta.Dto.RentalStartDateUtc == null)
         {
-          return Error(HttpStatusCode.BadRequest, "rental_start_date_utc", "required");
+            // Here we display the errors if the validation has failed at some point.
+            if (!ModelState.IsValid)
+            {
+                return Error();
+            }
+
+            var order = _orderApiService.GetOrderById(orderId);
+
+            if (order == null)
+            {
+                return Error(HttpStatusCode.NotFound, "order", "not found");
+            }
+
+            var product = GetProduct(orderItemDelta.Dto.ProductId);
+
+            if (product == null)
+            {
+                return Error(HttpStatusCode.NotFound, "product", "not found");
+            }
+
+            if (product.IsRental)
+            {
+                if (orderItemDelta.Dto.RentalStartDateUtc == null)
+                {
+                    return Error(HttpStatusCode.BadRequest, "rental_start_date_utc", "required");
+                }
+
+                if (orderItemDelta.Dto.RentalEndDateUtc == null)
+                {
+                    return Error(HttpStatusCode.BadRequest, "rental_end_date_utc", "required");
+                }
+
+                if (orderItemDelta.Dto.RentalStartDateUtc > orderItemDelta.Dto.RentalEndDateUtc)
+                {
+                    return Error(HttpStatusCode.BadRequest, "rental_start_date_utc",
+                                 "should be before rental_end_date_utc");
+                }
+
+                if (orderItemDelta.Dto.RentalStartDateUtc < DateTime.UtcNow)
+                {
+                    return Error(HttpStatusCode.BadRequest, "rental_start_date_utc", "should be a future date");
+                }
+            }
+
+            var newOrderItem = await PrepareDefaultOrderItemFromProductAsync(order, product);
+            orderItemDelta.Merge(newOrderItem);
+            await _orderService.InsertOrderItemAsync(newOrderItem);
+
+            await _orderService.UpdateOrderAsync(order);
+
+            await CustomerActivityService.InsertActivityAsync("AddNewOrderItem", await LocalizationService.GetResourceAsync("ActivityLog.AddNewOrderItem"), newOrderItem);
+
+            var orderItemsRootObject = new OrderItemsRootObject();
+
+            orderItemsRootObject.OrderItems.Add(newOrderItem.ToDto());
+
+            var json = JsonFieldsSerializer.Serialize(orderItemsRootObject, string.Empty);
+
+            return new RawJsonActionResult(json);
         }
 
-        if (orderItemDelta.Dto.RentalEndDateUtc == null)
-        {
-          return Error(HttpStatusCode.BadRequest, "rental_end_date_utc", "required");
-        }
-
-        if (orderItemDelta.Dto.RentalStartDateUtc > orderItemDelta.Dto.RentalEndDateUtc)
-        {
-          return Error(HttpStatusCode.BadRequest, "rental_start_date_utc",
-                       "should be before rental_end_date_utc");
-        }
-
-        if (orderItemDelta.Dto.RentalStartDateUtc < DateTime.UtcNow)
-        {
-          return Error(HttpStatusCode.BadRequest, "rental_start_date_utc", "should be a future date");
-        }
-      }
-
-      var newOrderItem = await PrepareDefaultOrderItemFromProductAsync(order, product);
-      orderItemDelta.Merge(newOrderItem);
-      await _orderService.InsertOrderItemAsync(newOrderItem);
-
-      await _orderService.UpdateOrderAsync(order);
-
-      await CustomerActivityService.InsertActivityAsync("AddNewOrderItem", await LocalizationService.GetResourceAsync("ActivityLog.AddNewOrderItem"), newOrderItem);
-
-      var orderItemsRootObject = new OrderItemsRootObject();
-
-      orderItemsRootObject.OrderItems.Add(newOrderItem.ToDto());
-
-      var json = JsonFieldsSerializer.Serialize(orderItemsRootObject, string.Empty);
-
-      return new RawJsonActionResult(json);
-    }
-
-    [HttpPut]
-    [Route("/api/orders/{orderId}/items/{orderItemId}", Name = "UpdateOrderItem")]
-    [ProducesResponseType(typeof(OrderItemsRootObject), (int)HttpStatusCode.OK)]
-    [ProducesResponseType(typeof(ErrorsRootObject), 422)]
-    [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
-    [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-    [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
-    public async Task<IActionResult> UpdateOrderItem([FromRoute] int orderId, [FromRoute] int orderItemId,
-        [FromBody]
+        [HttpPut]
+        [Route("/api/orders/{orderId}/items/{orderItemId}", Name = "UpdateOrderItem")]
+        [ProducesResponseType(typeof(OrderItemsRootObject), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ErrorsRootObject), 422)]
+        [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
+        public async Task<IActionResult> UpdateOrderItem([FromRoute] int orderId, [FromRoute] int orderItemId,
+            [FromBody]
             [ModelBinder(typeof(JsonModelBinder<OrderItemDto>))]
             Delta<OrderItemDto> orderItemDelta)
-    {
-      // Here we display the errors if the validation has failed at some point.
-      if (!ModelState.IsValid)
-      {
-        return Error();
-      }
+        {
+            // Here we display the errors if the validation has failed at some point.
+            if (!ModelState.IsValid)
+            {
+                return Error();
+            }
 
-      var orderItemToUpdate = await _orderService.GetOrderItemByIdAsync(orderItemId);
+            var orderItemToUpdate = await _orderService.GetOrderItemByIdAsync(orderItemId);
 
-      if (orderItemToUpdate == null)
-      {
-        return Error(HttpStatusCode.NotFound, "order_item", "not found");
-      }
+            if (orderItemToUpdate == null)
+            {
+                return Error(HttpStatusCode.NotFound, "order_item", "not found");
+            }
 
-      var order = _orderApiService.GetOrderById(orderId);
+            var order = _orderApiService.GetOrderById(orderId);
 
-      if (order == null)
-      {
-        return Error(HttpStatusCode.NotFound, "order", "not found");
-      }
+            if (order == null)
+            {
+                return Error(HttpStatusCode.NotFound, "order", "not found");
+            }
 
-      // This is needed because those fields shouldn't be updatable. That is why we save them and after the merge set them back.
-      int? productId = orderItemToUpdate.ProductId;
-      var rentalStartDate = orderItemToUpdate.RentalStartDateUtc;
-      var rentalEndDate = orderItemToUpdate.RentalEndDateUtc;
+            // This is needed because those fields shouldn't be updatable. That is why we save them and after the merge set them back.
+            int? productId = orderItemToUpdate.ProductId;
+            var rentalStartDate = orderItemToUpdate.RentalStartDateUtc;
+            var rentalEndDate = orderItemToUpdate.RentalEndDateUtc;
 
-      orderItemDelta.Merge(orderItemToUpdate);
+            orderItemDelta.Merge(orderItemToUpdate);
 
-      orderItemToUpdate.ProductId = (int)productId;
-      orderItemToUpdate.RentalStartDateUtc = rentalStartDate;
-      orderItemToUpdate.RentalEndDateUtc = rentalEndDate;
+            orderItemToUpdate.ProductId = (int)productId;
+            orderItemToUpdate.RentalStartDateUtc = rentalStartDate;
+            orderItemToUpdate.RentalEndDateUtc = rentalEndDate;
 
-      await _orderService.UpdateOrderAsync(order);
+            await _orderService.UpdateOrderAsync(order);
 
-      await CustomerActivityService.InsertActivityAsync("UpdateOrderItem", await LocalizationService.GetResourceAsync("ActivityLog.UpdateOrderItem"), orderItemToUpdate);
+            await CustomerActivityService.InsertActivityAsync("UpdateOrderItem", await LocalizationService.GetResourceAsync("ActivityLog.UpdateOrderItem"), orderItemToUpdate);
 
-      var orderItemsRootObject = new OrderItemsRootObject();
+            var orderItemsRootObject = new OrderItemsRootObject();
 
-      orderItemsRootObject.OrderItems.Add(orderItemToUpdate.ToDto());
+            orderItemsRootObject.OrderItems.Add(orderItemToUpdate.ToDto());
 
-      var json = JsonFieldsSerializer.Serialize(orderItemsRootObject, string.Empty);
+            var json = JsonFieldsSerializer.Serialize(orderItemsRootObject, string.Empty);
 
-      return new RawJsonActionResult(json);
+            return new RawJsonActionResult(json);
+        }
+
+        [HttpDelete]
+        [Route("/api/orders/{orderId}/items/{orderItemId}", Name = "DeleteOrderItemById")]
+        [ProducesResponseType(typeof(void), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
+        [GetRequestsErrorInterceptorActionFilter]
+        public async Task<IActionResult> DeleteOrderItemById([FromRoute] int orderId, [FromRoute] int orderItemId)
+        {
+            var order = _orderApiService.GetOrderById(orderId);
+
+            if (order == null)
+            {
+                return Error(HttpStatusCode.NotFound, "order", "not found");
+            }
+
+            var orderItem = await _orderService.GetOrderItemByIdAsync(orderItemId);
+            await _orderService.DeleteOrderItemAsync(orderItem);
+
+            return new RawJsonActionResult("{}");
+        }
+
+        [HttpDelete]
+        [Route("/api/orders/{orderId}/items", Name = "DeleteAllOrderItemsForOrder")]
+        [ProducesResponseType(typeof(void), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
+        [GetRequestsErrorInterceptorActionFilter]
+        public async Task<IActionResult> DeleteAllOrderItemsForOrder([FromRoute] int orderId)
+        {
+            var order = _orderApiService.GetOrderById(orderId);
+
+            if (order == null)
+            {
+                return Error(HttpStatusCode.NotFound, "order", "not found");
+            }
+
+            var orderItems = await _orderService.GetOrderItemsAsync(order.Id);
+
+            foreach (var item in orderItems)
+            {
+                await _orderService.DeleteOrderItemAsync(item);
+            }
+
+            return new RawJsonActionResult("{}");
+        }
+
+        #region Private methods
+
+        private Product GetProduct(int? productId)
+        {
+            Product product = null;
+
+            if (productId.HasValue)
+            {
+                var id = productId.Value;
+
+                product = _productApiService.GetProductById(id);
+            }
+
+            return product;
+        }
+
+        private async Task<OrderItem> PrepareDefaultOrderItemFromProductAsync(Order order, Product product)
+        {
+
+            var customer = await CustomerService.GetCustomerByIdAsync(order.CustomerId);
+            var presetQty = 1;
+            var store = await StoreService.GetStoreByIdAsync(order.StoreId);
+            var price = await _priceCalculationService.GetFinalPriceAsync(product, customer, store, decimal.Zero, true, presetQty);
+
+            var (priceInclTax, _) = await _taxService.GetProductPriceAsync(product, price.finalPrice, includingTax: true, customer);
+            var (priceExclTax, _) = await _taxService.GetProductPriceAsync(product, price.finalPrice, includingTax: false, customer);
+
+            var orderItem = new OrderItem
+            {
+                OrderItemGuid = new Guid(),
+                UnitPriceExclTax = priceExclTax,
+                UnitPriceInclTax = priceInclTax,
+                PriceInclTax = priceInclTax,
+                PriceExclTax = priceExclTax,
+                OriginalProductCost = await _priceCalculationService.GetProductCostAsync(product, null),
+                Quantity = presetQty,
+                ProductId = product.Id,
+                OrderId = order.Id
+            };
+
+            return orderItem;
+        }
+
+        #endregion
     }
-
-    [HttpDelete]
-    [Route("/api/orders/{orderId}/items/{orderItemId}", Name = "DeleteOrderItemById")]
-    [ProducesResponseType(typeof(void), (int)HttpStatusCode.OK)]
-    [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-    [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
-    [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
-    [GetRequestsErrorInterceptorActionFilter]
-    public async Task<IActionResult> DeleteOrderItemById([FromRoute] int orderId, [FromRoute] int orderItemId)
-    {
-      var order = _orderApiService.GetOrderById(orderId);
-
-      if (order == null)
-      {
-        return Error(HttpStatusCode.NotFound, "order", "not found");
-      }
-
-      var orderItem = await _orderService.GetOrderItemByIdAsync(orderItemId);
-      await _orderService.DeleteOrderItemAsync(orderItem);
-
-      return new RawJsonActionResult("{}");
-    }
-
-    [HttpDelete]
-    [Route("/api/orders/{orderId}/items", Name = "DeleteAllOrderItemsForOrder")]
-    [ProducesResponseType(typeof(void), (int)HttpStatusCode.OK)]
-    [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-    [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
-    [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
-    [GetRequestsErrorInterceptorActionFilter]
-    public async Task<IActionResult> DeleteAllOrderItemsForOrder([FromRoute] int orderId)
-    {
-      var order = _orderApiService.GetOrderById(orderId);
-
-      if (order == null)
-      {
-        return Error(HttpStatusCode.NotFound, "order", "not found");
-      }
-
-      var orderItems = await _orderService.GetOrderItemsAsync(order.Id);
-
-      foreach (var item in orderItems)
-      {
-        await _orderService.DeleteOrderItemAsync(item);
-      }
-
-      return new RawJsonActionResult("{}");
-    }
-
-    #region Private methods
-
-    private Product GetProduct(int? productId)
-    {
-      Product product = null;
-
-      if (productId.HasValue)
-      {
-        var id = productId.Value;
-
-        product = _productApiService.GetProductById(id);
-      }
-
-      return product;
-    }
-
-    private async Task<OrderItem> PrepareDefaultOrderItemFromProductAsync(Order order, Product product)
-    {
-
-      var customer = await CustomerService.GetCustomerByIdAsync(order.CustomerId);
-      var presetQty = 1;
-      var store = await StoreService.GetStoreByIdAsync(order.StoreId);
-      var price = await _priceCalculationService.GetFinalPriceAsync(product, customer, store, decimal.Zero, true, presetQty);
-
-      var (priceInclTax, _) = await _taxService.GetProductPriceAsync(product, price.finalPrice, includingTax: true, customer);
-      var (priceExclTax, _) = await _taxService.GetProductPriceAsync(product, price.finalPrice, includingTax: false, customer);
-
-      var orderItem = new OrderItem
-      {
-        OrderItemGuid = new Guid(),
-        UnitPriceExclTax = priceExclTax,
-        UnitPriceInclTax = priceInclTax,
-        PriceInclTax = priceInclTax,
-        PriceExclTax = priceExclTax,
-        OriginalProductCost = await _priceCalculationService.GetProductCostAsync(product, null),
-        Quantity = presetQty,
-        ProductId = product.Id,
-        OrderId = order.Id
-      };
-
-      return orderItem;
-    }
-
-    #endregion
-  }
 }

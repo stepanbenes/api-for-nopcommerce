@@ -2,24 +2,24 @@
 
 namespace Nop.Plugin.Api.DTO.SpecificationAttributes
 {
-  public class ProductSpecificationAttributesRootObjectDto : ISerializableObject
-  {
-    public ProductSpecificationAttributesRootObjectDto()
+    public class ProductSpecificationAttributesRootObjectDto : ISerializableObject
     {
-      ProductSpecificationAttributes = new List<ProductSpecificationAttributeDto>();
-    }
+        public ProductSpecificationAttributesRootObjectDto()
+        {
+            ProductSpecificationAttributes = new List<ProductSpecificationAttributeDto>();
+        }
 
-    [JsonProperty("product_specification_attributes")]
-    public IList<ProductSpecificationAttributeDto> ProductSpecificationAttributes { get; set; }
+        [JsonProperty("product_specification_attributes")]
+        public IList<ProductSpecificationAttributeDto> ProductSpecificationAttributes { get; set; }
 
-    public string GetPrimaryPropertyName()
-    {
-      return "product_specification_attributes";
-    }
+        public string GetPrimaryPropertyName()
+        {
+            return "product_specification_attributes";
+        }
 
-    public Type GetPrimaryPropertyType()
-    {
-      return typeof(ProductSpecificationAttributeDto);
+        public Type GetPrimaryPropertyType()
+        {
+            return typeof(ProductSpecificationAttributeDto);
+        }
     }
-  }
 }

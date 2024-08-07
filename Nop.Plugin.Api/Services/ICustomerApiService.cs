@@ -6,45 +6,45 @@ using Nop.Plugin.Api.Infrastructure;
 
 namespace Nop.Plugin.Api.Services
 {
-  public interface ICustomerApiService
-  {
-    Task<int> GetCustomersCountAsync();
+    public interface ICustomerApiService
+    {
+        Task<int> GetCustomersCountAsync();
 
-    Task<CustomerDto> GetCustomerByIdAsync(int id, bool showDeleted = false);
+        Task<CustomerDto> GetCustomerByIdAsync(int id, bool showDeleted = false);
 
-    Task<Customer> GetCustomerEntityByIdAsync(int id);
+        Task<Customer> GetCustomerEntityByIdAsync(int id);
 
-    Task<IList<CustomerDto>> GetCustomersDtosAsync(
-        DateTime? createdAtMin = null, DateTime? createdAtMax = null,
-        int limit = Constants.Configurations.DefaultLimit, int page = Constants.Configurations.DefaultPageValue,
-        int sinceId = Constants.Configurations.DefaultSinceId);
+        Task<IList<CustomerDto>> GetCustomersDtosAsync(
+            DateTime? createdAtMin = null, DateTime? createdAtMax = null,
+            int limit = Constants.Configurations.DefaultLimit, int page = Constants.Configurations.DefaultPageValue,
+            int sinceId = Constants.Configurations.DefaultSinceId);
 
-    Task<IList<CustomerDto>> SearchAsync(
-        string query = "", string order = Constants.Configurations.DefaultOrder,
-        int page = Constants.Configurations.DefaultPageValue, int limit = Constants.Configurations.DefaultLimit);
+        Task<IList<CustomerDto>> SearchAsync(
+            string query = "", string order = Constants.Configurations.DefaultOrder,
+            int page = Constants.Configurations.DefaultPageValue, int limit = Constants.Configurations.DefaultLimit);
 
 
 
-    /// <summary>
-    /// Gets current user working language
-    /// </summary>
-    Task<Language> GetCustomerLanguageAsync(Customer customer);
+        /// <summary>
+        /// Gets current user working language
+        /// </summary>
+        Task<Language> GetCustomerLanguageAsync(Customer customer);
 
-    /// <summary>
-    /// Sets current user working language
-    /// </summary>
-    /// <param name="language">Language</param>
-    Task SetCustomerLanguageAsync(Customer customer, Language language);
+        /// <summary>
+        /// Sets current user working language
+        /// </summary>
+        /// <param name="language">Language</param>
+        Task SetCustomerLanguageAsync(Customer customer, Language language);
 
-    /// <summary>
-    /// Gets or sets current user working currency
-    /// </summary>
-    Task<Currency> GetCustomerCurrencyAsync(Customer customer);
+        /// <summary>
+        /// Gets or sets current user working currency
+        /// </summary>
+        Task<Currency> GetCustomerCurrencyAsync(Customer customer);
 
-    /// <summary>
-    /// Sets current user working currency
-    /// </summary>
-    /// <param name="currency">Currency</param>
-    Task SetCustomerCurrencyAsync(Customer customer, Currency currency);
-  }
+        /// <summary>
+        /// Sets current user working currency
+        /// </summary>
+        /// <param name="currency">Currency</param>
+        Task SetCustomerCurrencyAsync(Customer customer, Currency currency);
+    }
 }

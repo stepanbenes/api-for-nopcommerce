@@ -1,36 +1,36 @@
-﻿using System.Reflection;
-using AutoMapper;
+﻿using AutoMapper;
+using System.Reflection;
 
 namespace Nop.Plugin.Api.MappingExtensions
 {
-  public static class BaseMapping
-  {
-    public static IMappingExpression<TSource, TDestination> IgnoreAllNonExisting<TSource, TDestination>(
-        this IMappingExpression<TSource, TDestination> expression)
+    public static class BaseMapping
     {
-      var flags = BindingFlags.Public | BindingFlags.Instance;
-      var sourceType = typeof(TSource);
-      var destinationProperties = typeof(TDestination).GetProperties(flags);
-
-      foreach (var property in destinationProperties)
-      {
-        if (sourceType.GetProperty(property.Name, flags) == null)
+        public static IMappingExpression<TSource, TDestination> IgnoreAllNonExisting<TSource, TDestination>(
+            this IMappingExpression<TSource, TDestination> expression)
         {
-          expression.ForMember(property.Name, opt => opt.Ignore());
-        }
-      }
-      return expression;
-    }
+            var flags = BindingFlags.Public | BindingFlags.Instance;
+            var sourceType = typeof(TSource);
+            var destinationProperties = typeof(TDestination).GetProperties(flags);
 
-    public static TResult GetWithDefault<TSource, TResult>(
-        this TSource instance,
-        Func<TSource, TResult> getter,
-        TResult defaultValue = default(TResult))
-        where TSource : class
-    {
-      return instance != null
-                 ? getter(instance)
-                 : defaultValue;
+            foreach (var property in destinationProperties)
+            {
+                if (sourceType.GetProperty(property.Name, flags) == null)
+                {
+                    expression.ForMember(property.Name, opt => opt.Ignore());
+                }
+            }
+            return expression;
+        }
+
+        public static TResult GetWithDefault<TSource, TResult>(
+            this TSource instance,
+            Func<TSource, TResult> getter,
+            TResult defaultValue = default(TResult))
+            where TSource : class
+        {
+            return instance != null
+                       ? getter(instance)
+                       : defaultValue;
+        }
     }
-  }
 }

@@ -2,37 +2,37 @@
 
 namespace Nop.Plugin.Api.Attributes
 {
-  public class ImageCollectionValidationAttribute : BaseValidationAttribute
-  {
-    private Dictionary<string, string> _errors = new Dictionary<string, string>();
-
-    public override async Task ValidateAsync(object instance)
+    public class ImageCollectionValidationAttribute : BaseValidationAttribute
     {
-      // Images are not required so they could be null
-      // and there is nothing to validate in this case
+        private Dictionary<string, string> _errors = new Dictionary<string, string>();
 
-      if (instance is ICollection<ImageMappingDto> imagesCollection)
-      {
-        foreach (var image in imagesCollection)
+        public override async Task ValidateAsync(object instance)
         {
-          var imageValidationAttribute = new ImageValidationAttribute();
+            // Images are not required so they could be null
+            // and there is nothing to validate in this case
 
-          await imageValidationAttribute.ValidateAsync(image);
+            if (instance is ICollection<ImageMappingDto> imagesCollection)
+            {
+                foreach (var image in imagesCollection)
+                {
+                    var imageValidationAttribute = new ImageValidationAttribute();
 
-          var errorsForImage = imageValidationAttribute.GetErrors();
+                    await imageValidationAttribute.ValidateAsync(image);
 
-          if (errorsForImage.Count > 0)
-          {
-            _errors = errorsForImage;
-            break;
-          }
+                    var errorsForImage = imageValidationAttribute.GetErrors();
+
+                    if (errorsForImage.Count > 0)
+                    {
+                        _errors = errorsForImage;
+                        break;
+                    }
+                }
+            }
         }
-      }
-    }
 
-    public override Dictionary<string, string> GetErrors()
-    {
-      return _errors;
+        public override Dictionary<string, string> GetErrors()
+        {
+            return _errors;
+        }
     }
-  }
 }

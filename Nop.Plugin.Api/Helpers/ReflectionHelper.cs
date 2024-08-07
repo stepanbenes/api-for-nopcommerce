@@ -1,27 +1,27 @@
-﻿using System.Reflection;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
+using System.Reflection;
 
 namespace Nop.Plugin.Api.Helpers
 {
-  public static class ReflectionHelper
-  {
-    public static bool HasProperty(string propertyName, Type type)
+    public static class ReflectionHelper
     {
-      return type.GetProperty(propertyName, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance) != null;
-    }
+        public static bool HasProperty(string propertyName, Type type)
+        {
+            return type.GetProperty(propertyName, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance) != null;
+        }
 
-    public static JsonObjectAttribute GetJsonObjectAttribute(Type objectType)
-    {
-      var jsonObject = objectType.GetCustomAttribute(typeof(JsonObjectAttribute)) as JsonObjectAttribute;
+        public static JsonObjectAttribute GetJsonObjectAttribute(Type objectType)
+        {
+            var jsonObject = objectType.GetCustomAttribute(typeof(JsonObjectAttribute)) as JsonObjectAttribute;
 
-      return jsonObject;
-    }
+            return jsonObject;
+        }
 
-    public static Type GetGenericElementType(Type type)
-    {
-      return type.HasElementType
-                 ? type.GetElementType()
-                 : type.GetTypeInfo().GenericTypeArguments[0];
+        public static Type GetGenericElementType(Type type)
+        {
+            return type.HasElementType
+                       ? type.GetElementType()
+                       : type.GetTypeInfo().GenericTypeArguments[0];
+        }
     }
-  }
 }

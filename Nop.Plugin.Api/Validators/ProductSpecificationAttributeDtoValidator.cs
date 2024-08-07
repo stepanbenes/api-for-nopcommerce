@@ -7,62 +7,62 @@ using Nop.Plugin.Api.Helpers;
 
 namespace Nop.Plugin.Api.Validators
 {
-  [UsedImplicitly]
-  public class ProductSpecificationAttributeDtoValidator : BaseDtoValidator<ProductSpecificationAttributeDto>
-  {
-    public ProductSpecificationAttributeDtoValidator(IHttpContextAccessor httpContextAccessor, IJsonHelper jsonHelper, Dictionary<string, object> requestJsonDictionary)
-        : base(httpContextAccessor, jsonHelper, requestJsonDictionary)
+    [UsedImplicitly]
+    public class ProductSpecificationAttributeDtoValidator : BaseDtoValidator<ProductSpecificationAttributeDto>
     {
-      if (HttpMethod == HttpMethod.Post)
-      {
-        //apply "create" rules
-        RuleFor(x => x.Id).Equal(0).WithMessage("id must be zero or null for new records");
-
-        ApplyProductIdRule();
-        ApplyAttributeTypeIdRule();
-
-        if (RequestJsonDictionary.ContainsKey("specification_attribute_option_id"))
+        public ProductSpecificationAttributeDtoValidator(IHttpContextAccessor httpContextAccessor, IJsonHelper jsonHelper, Dictionary<string, object> requestJsonDictionary)
+            : base(httpContextAccessor, jsonHelper, requestJsonDictionary)
         {
-          ApplySpecificationAttributeOptoinIdRule();
-        }
-      }
-      else if (HttpMethod == HttpMethod.Put)
-      {
-        //apply "update" rules
-        RuleFor(x => x.Id).GreaterThan(0).WithMessage("invalid id");
+            if (HttpMethod == HttpMethod.Post)
+            {
+                //apply "create" rules
+                RuleFor(x => x.Id).Equal(0).WithMessage("id must be zero or null for new records");
 
-        if (RequestJsonDictionary.ContainsKey("product_id"))
+                ApplyProductIdRule();
+                ApplyAttributeTypeIdRule();
+
+                if (RequestJsonDictionary.ContainsKey("specification_attribute_option_id"))
+                {
+                    ApplySpecificationAttributeOptoinIdRule();
+                }
+            }
+            else if (HttpMethod == HttpMethod.Put)
+            {
+                //apply "update" rules
+                RuleFor(x => x.Id).GreaterThan(0).WithMessage("invalid id");
+
+                if (RequestJsonDictionary.ContainsKey("product_id"))
+                {
+                    ApplyProductIdRule();
+                }
+
+                if (RequestJsonDictionary.ContainsKey("attribute_type_id"))
+                {
+                    ApplyAttributeTypeIdRule();
+                }
+
+                if (RequestJsonDictionary.ContainsKey("specification_attribute_option_id"))
+                {
+                    ApplySpecificationAttributeOptoinIdRule();
+                }
+            }
+        }
+
+        private void ApplyProductIdRule()
         {
-          ApplyProductIdRule();
+            RuleFor(x => x.ProductId).GreaterThan(0).WithMessage("invalid product id");
         }
 
-        if (RequestJsonDictionary.ContainsKey("attribute_type_id"))
+        private void ApplyAttributeTypeIdRule()
         {
-          ApplyAttributeTypeIdRule();
+            var specificationAttributeTypes = (SpecificationAttributeType[])Enum.GetValues(typeof(SpecificationAttributeType));
+            RuleFor(x => x.AttributeTypeId).InclusiveBetween((int)specificationAttributeTypes.First(), (int)specificationAttributeTypes.Last())
+                                           .WithMessage("invalid attribute type id");
         }
 
-        if (RequestJsonDictionary.ContainsKey("specification_attribute_option_id"))
+        private void ApplySpecificationAttributeOptoinIdRule()
         {
-          ApplySpecificationAttributeOptoinIdRule();
+            RuleFor(x => x.SpecificationAttributeOptionId).GreaterThan(0).WithMessage("invalid specification attribute option id");
         }
-      }
     }
-
-    private void ApplyProductIdRule()
-    {
-      RuleFor(x => x.ProductId).GreaterThan(0).WithMessage("invalid product id");
-    }
-
-    private void ApplyAttributeTypeIdRule()
-    {
-      var specificationAttributeTypes = (SpecificationAttributeType[])Enum.GetValues(typeof(SpecificationAttributeType));
-      RuleFor(x => x.AttributeTypeId).InclusiveBetween((int)specificationAttributeTypes.First(), (int)specificationAttributeTypes.Last())
-                                     .WithMessage("invalid attribute type id");
-    }
-
-    private void ApplySpecificationAttributeOptoinIdRule()
-    {
-      RuleFor(x => x.SpecificationAttributeOptionId).GreaterThan(0).WithMessage("invalid specification attribute option id");
-    }
-  }
 }

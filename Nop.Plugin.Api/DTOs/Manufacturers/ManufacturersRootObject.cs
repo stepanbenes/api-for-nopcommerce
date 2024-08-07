@@ -2,24 +2,24 @@
 
 namespace Nop.Plugin.Api.DTO.Manufacturers
 {
-  public class ManufacturersRootObject : ISerializableObject
-  {
-    public ManufacturersRootObject()
+    public class ManufacturersRootObject : ISerializableObject
     {
-      Manufacturers = new List<ManufacturerDto>();
-    }
+        public ManufacturersRootObject()
+        {
+            Manufacturers = new List<ManufacturerDto>();
+        }
 
-    [JsonProperty("manufacturers")]
-    public IList<ManufacturerDto> Manufacturers { get; set; }
+        [JsonProperty("manufacturers")]
+        public IList<ManufacturerDto> Manufacturers { get; set; }
 
-    public string GetPrimaryPropertyName()
-    {
-      return "manufacturers";
-    }
+        public string GetPrimaryPropertyName()
+        {
+            return "manufacturers";
+        }
 
-    public Type GetPrimaryPropertyType()
-    {
-      return typeof(ManufacturerDto);
+        public Type GetPrimaryPropertyType()
+        {
+            return typeof(ManufacturerDto);
+        }
     }
-  }
 }

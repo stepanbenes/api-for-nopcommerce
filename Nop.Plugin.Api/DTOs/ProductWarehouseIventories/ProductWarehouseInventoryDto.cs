@@ -22,7 +22,7 @@ namespace Nop.Plugin.Api.DTO.ProductWarehouseIventories
         /// Gets or sets the stock quantity
         /// </summary>
 
-        [JsonProperty("stock_quantity")] 
+        [JsonProperty("stock_quantity")]
         public int? StockQuantity { get; set; }
 
         /// <summary>

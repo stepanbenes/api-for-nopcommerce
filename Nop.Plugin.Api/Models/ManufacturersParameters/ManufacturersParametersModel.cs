@@ -5,53 +5,53 @@ using Nop.Plugin.Api.ModelBinders;
 
 namespace Nop.Plugin.Api.Models.ManufacturersParameters
 {
-  // JsonProperty is used only for swagger
-  [ModelBinder(typeof(ParametersModelBinder<ManufacturersParametersModel>))]
-  public class ManufacturersParametersModel : BaseManufacturersParametersModel
-  {
-    public ManufacturersParametersModel()
+    // JsonProperty is used only for swagger
+    [ModelBinder(typeof(ParametersModelBinder<ManufacturersParametersModel>))]
+    public class ManufacturersParametersModel : BaseManufacturersParametersModel
     {
-      Ids = null;
-      Limit = Constants.Configurations.DefaultLimit;
-      Page = Constants.Configurations.DefaultPageValue;
-      SinceId = Constants.Configurations.DefaultSinceId;
-      Fields = string.Empty;
+        public ManufacturersParametersModel()
+        {
+            Ids = null;
+            Limit = Constants.Configurations.DefaultLimit;
+            Page = Constants.Configurations.DefaultPageValue;
+            SinceId = Constants.Configurations.DefaultSinceId;
+            Fields = string.Empty;
+        }
+
+        /// <summary>
+        ///     A comma-separated list of manufacturer ids
+        /// </summary>
+        [JsonProperty("ids")]
+        public List<int> Ids { get; set; }
+
+        /// <summary>
+        ///     Amount of results (default: 50) (maximum: 250)
+        /// </summary>
+        [JsonProperty("limit")]
+        public int Limit { get; set; }
+
+        /// <summary>
+        ///     Page to show (default: 1)
+        /// </summary>
+        [JsonProperty("page")]
+        public int Page { get; set; }
+
+        /// <summary>
+        ///     Restrict results to after the specified ID
+        /// </summary>
+        [JsonProperty("since_id")]
+        public int SinceId { get; set; }
+
+        /// <summary>
+        ///     comma-separated list of fields to include in the response
+        /// </summary>
+        [JsonProperty("fields")]
+        public string Fields { get; set; }
+
+        /// <summary>
+        ///     comma-separated list of fields to include in the response
+        /// </summary>
+        [JsonProperty("languageid")]
+        public int? LanguageId { get; set; }
     }
-
-    /// <summary>
-    ///     A comma-separated list of manufacturer ids
-    /// </summary>
-    [JsonProperty("ids")]
-    public List<int> Ids { get; set; }
-
-    /// <summary>
-    ///     Amount of results (default: 50) (maximum: 250)
-    /// </summary>
-    [JsonProperty("limit")]
-    public int Limit { get; set; }
-
-    /// <summary>
-    ///     Page to show (default: 1)
-    /// </summary>
-    [JsonProperty("page")]
-    public int Page { get; set; }
-
-    /// <summary>
-    ///     Restrict results to after the specified ID
-    /// </summary>
-    [JsonProperty("since_id")]
-    public int SinceId { get; set; }
-
-    /// <summary>
-    ///     comma-separated list of fields to include in the response
-    /// </summary>
-    [JsonProperty("fields")]
-    public string Fields { get; set; }
-
-    /// <summary>
-    ///     comma-separated list of fields to include in the response
-    /// </summary>
-    [JsonProperty("languageid")]
-    public int? LanguageId { get; set; }
-  }
 }

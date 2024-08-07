@@ -2,24 +2,24 @@
 
 namespace Nop.Plugin.Api.DTO.CustomerRoles
 {
-  public class CustomerRolesRootObject : ISerializableObject
-  {
-    public CustomerRolesRootObject()
+    public class CustomerRolesRootObject : ISerializableObject
     {
-      CustomerRoles = new List<CustomerRoleDto>();
-    }
+        public CustomerRolesRootObject()
+        {
+            CustomerRoles = new List<CustomerRoleDto>();
+        }
 
-    [JsonProperty("customer_roles")]
-    public IList<CustomerRoleDto> CustomerRoles { get; set; }
+        [JsonProperty("customer_roles")]
+        public IList<CustomerRoleDto> CustomerRoles { get; set; }
 
-    public string GetPrimaryPropertyName()
-    {
-      return "customer_roles";
-    }
+        public string GetPrimaryPropertyName()
+        {
+            return "customer_roles";
+        }
 
-    public Type GetPrimaryPropertyType()
-    {
-      return typeof(CustomerRoleDto);
+        public Type GetPrimaryPropertyType()
+        {
+            return typeof(CustomerRoleDto);
+        }
     }
-  }
 }

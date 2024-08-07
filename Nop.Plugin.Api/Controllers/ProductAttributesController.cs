@@ -1,5 +1,4 @@
-﻿using System.Net;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Nop.Core.Domain.Catalog;
 using Nop.Plugin.Api.Attributes;
 using Nop.Plugin.Api.Authorization.Attributes;
@@ -21,250 +20,251 @@ using Nop.Services.Logging;
 using Nop.Services.Media;
 using Nop.Services.Security;
 using Nop.Services.Stores;
+using System.Net;
 
 namespace Nop.Plugin.Api.Controllers
 {
-  [AuthorizePermission(StandardPermission.Catalog.PRODUCTS_CREATE_EDIT_DELETE)]
-  [AuthorizePermission(StandardPermission.Catalog.PRODUCT_ATTRIBUTES_CREATE_EDIT_DELETE)]
-  public class ProductAttributesController : BaseApiController
-  {
-    private readonly IDTOHelper _dtoHelper;
-    private readonly IProductAttributesApiService _productAttributesApiService;
-    private readonly IProductAttributeService _productAttributeService;
-
-    public ProductAttributesController(
-        IJsonFieldsSerializer jsonFieldsSerializer,
-        ICustomerActivityService customerActivityService,
-        ILocalizationService localizationService,
-        IAclService aclService,
-        IStoreMappingService storeMappingService,
-        IStoreService storeService,
-        ICustomerService customerService,
-        IDiscountService discountService,
-        IPictureService pictureService,
-        IProductAttributeService productAttributeService,
-        IProductAttributesApiService productAttributesApiService,
-        IDTOHelper dtoHelper) : base(jsonFieldsSerializer, aclService, customerService, storeMappingService, storeService, discountService,
-                                     customerActivityService, localizationService, pictureService)
+    [AuthorizePermission(StandardPermission.Catalog.PRODUCTS_CREATE_EDIT_DELETE)]
+    [AuthorizePermission(StandardPermission.Catalog.PRODUCT_ATTRIBUTES_CREATE_EDIT_DELETE)]
+    public class ProductAttributesController : BaseApiController
     {
-      _productAttributeService = productAttributeService;
-      _productAttributesApiService = productAttributesApiService;
-      _dtoHelper = dtoHelper;
-    }
+        private readonly IDTOHelper _dtoHelper;
+        private readonly IProductAttributesApiService _productAttributesApiService;
+        private readonly IProductAttributeService _productAttributeService;
 
-    /// <summary>
-    ///     Receive a list of all product attributes
-    /// </summary>
-    /// <response code="200">OK</response>
-    /// <response code="400">Bad Request</response>
-    /// <response code="401">Unauthorized</response>
-    [HttpGet]
-    [Route("/api/productattributes", Name = "GetProductAttributes")]
-    [ProducesResponseType(typeof(ProductAttributesRootObjectDto), (int)HttpStatusCode.OK)]
-    [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
-    [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
-    [GetRequestsErrorInterceptorActionFilter]
-    public IActionResult GetProductAttributes([FromQuery] ProductAttributesParametersModel parameters)
-    {
-      if (parameters.Limit < Constants.Configurations.MinLimit || parameters.Limit > Constants.Configurations.MaxLimit)
-      {
-        return Error(HttpStatusCode.BadRequest, "limit", "invalid limit parameter");
-      }
+        public ProductAttributesController(
+            IJsonFieldsSerializer jsonFieldsSerializer,
+            ICustomerActivityService customerActivityService,
+            ILocalizationService localizationService,
+            IAclService aclService,
+            IStoreMappingService storeMappingService,
+            IStoreService storeService,
+            ICustomerService customerService,
+            IDiscountService discountService,
+            IPictureService pictureService,
+            IProductAttributeService productAttributeService,
+            IProductAttributesApiService productAttributesApiService,
+            IDTOHelper dtoHelper) : base(jsonFieldsSerializer, aclService, customerService, storeMappingService, storeService, discountService,
+                                         customerActivityService, localizationService, pictureService)
+        {
+            _productAttributeService = productAttributeService;
+            _productAttributesApiService = productAttributesApiService;
+            _dtoHelper = dtoHelper;
+        }
 
-      if (parameters.Page < Constants.Configurations.DefaultPageValue)
-      {
-        return Error(HttpStatusCode.BadRequest, "page", "invalid page parameter");
-      }
+        /// <summary>
+        ///     Receive a list of all product attributes
+        /// </summary>
+        /// <response code="200">OK</response>
+        /// <response code="400">Bad Request</response>
+        /// <response code="401">Unauthorized</response>
+        [HttpGet]
+        [Route("/api/productattributes", Name = "GetProductAttributes")]
+        [ProducesResponseType(typeof(ProductAttributesRootObjectDto), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
+        [GetRequestsErrorInterceptorActionFilter]
+        public IActionResult GetProductAttributes([FromQuery] ProductAttributesParametersModel parameters)
+        {
+            if (parameters.Limit < Constants.Configurations.MinLimit || parameters.Limit > Constants.Configurations.MaxLimit)
+            {
+                return Error(HttpStatusCode.BadRequest, "limit", "invalid limit parameter");
+            }
 
-      var allProductAttributes = _productAttributesApiService.GetProductAttributes(parameters.Limit, parameters.Page, parameters.SinceId);
+            if (parameters.Page < Constants.Configurations.DefaultPageValue)
+            {
+                return Error(HttpStatusCode.BadRequest, "page", "invalid page parameter");
+            }
 
-      IList<ProductAttributeDto> productAttributesAsDtos =
-          allProductAttributes.Select(productAttribute => _dtoHelper.PrepareProductAttributeDTO(productAttribute)).ToList();
+            var allProductAttributes = _productAttributesApiService.GetProductAttributes(parameters.Limit, parameters.Page, parameters.SinceId);
 
-      var productAttributesRootObject = new ProductAttributesRootObjectDto
-      {
-        ProductAttributes = productAttributesAsDtos
-      };
+            IList<ProductAttributeDto> productAttributesAsDtos =
+                allProductAttributes.Select(productAttribute => _dtoHelper.PrepareProductAttributeDTO(productAttribute)).ToList();
 
-      var json = JsonFieldsSerializer.Serialize(productAttributesRootObject, parameters.Fields);
+            var productAttributesRootObject = new ProductAttributesRootObjectDto
+            {
+                ProductAttributes = productAttributesAsDtos
+            };
 
-      return new RawJsonActionResult(json);
-    }
+            var json = JsonFieldsSerializer.Serialize(productAttributesRootObject, parameters.Fields);
 
-    /// <summary>
-    ///     Receive a count of all product attributes
-    /// </summary>
-    /// <response code="200">OK</response>
-    /// <response code="401">Unauthorized</response>
-    [HttpGet]
-    [Route("/api/productattributes/count", Name = "GetProductAttributesCount")]
-    [ProducesResponseType(typeof(ProductAttributesCountRootObject), (int)HttpStatusCode.OK)]
-    [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
-    [GetRequestsErrorInterceptorActionFilter]
-    public IActionResult GetProductAttributesCount()
-    {
-      var allProductAttributesCount = _productAttributesApiService.GetProductAttributesCount();
+            return new RawJsonActionResult(json);
+        }
 
-      var productAttributesCountRootObject = new ProductAttributesCountRootObject
-      {
-        Count = allProductAttributesCount
-      };
+        /// <summary>
+        ///     Receive a count of all product attributes
+        /// </summary>
+        /// <response code="200">OK</response>
+        /// <response code="401">Unauthorized</response>
+        [HttpGet]
+        [Route("/api/productattributes/count", Name = "GetProductAttributesCount")]
+        [ProducesResponseType(typeof(ProductAttributesCountRootObject), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
+        [GetRequestsErrorInterceptorActionFilter]
+        public IActionResult GetProductAttributesCount()
+        {
+            var allProductAttributesCount = _productAttributesApiService.GetProductAttributesCount();
 
-      return Ok(productAttributesCountRootObject);
-    }
+            var productAttributesCountRootObject = new ProductAttributesCountRootObject
+            {
+                Count = allProductAttributesCount
+            };
 
-    /// <summary>
-    ///     Retrieve product attribute by spcified id
-    /// </summary>
-    /// <param name="id">Id of the product attribute</param>
-    /// <param name="fields">Fields from the product attribute you want your json to contain</param>
-    /// <response code="200">OK</response>
-    /// <response code="404">Not Found</response>
-    /// <response code="401">Unauthorized</response>
-    [HttpGet]
-    [Route("/api/productattributes/{id}", Name = "GetProductAttributeById")]
-    [ProducesResponseType(typeof(ProductAttributesRootObjectDto), (int)HttpStatusCode.OK)]
-    [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
-    [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
-    [GetRequestsErrorInterceptorActionFilter]
-    public async Task<IActionResult> GetProductAttributeById([FromRoute] int id, [FromQuery] string fields = "")
-    {
-      if (id <= 0)
-      {
-        return Error(HttpStatusCode.BadRequest, "id", "invalid id");
-      }
+            return Ok(productAttributesCountRootObject);
+        }
 
-      var productAttribute = await _productAttributesApiService.GetByIdAsync(id);
+        /// <summary>
+        ///     Retrieve product attribute by spcified id
+        /// </summary>
+        /// <param name="id">Id of the product attribute</param>
+        /// <param name="fields">Fields from the product attribute you want your json to contain</param>
+        /// <response code="200">OK</response>
+        /// <response code="404">Not Found</response>
+        /// <response code="401">Unauthorized</response>
+        [HttpGet]
+        [Route("/api/productattributes/{id}", Name = "GetProductAttributeById")]
+        [ProducesResponseType(typeof(ProductAttributesRootObjectDto), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
+        [GetRequestsErrorInterceptorActionFilter]
+        public async Task<IActionResult> GetProductAttributeById([FromRoute] int id, [FromQuery] string fields = "")
+        {
+            if (id <= 0)
+            {
+                return Error(HttpStatusCode.BadRequest, "id", "invalid id");
+            }
 
-      if (productAttribute == null)
-      {
-        return Error(HttpStatusCode.NotFound, "product attribute", "not found");
-      }
+            var productAttribute = await _productAttributesApiService.GetByIdAsync(id);
 
-      var productAttributeDto = _dtoHelper.PrepareProductAttributeDTO(productAttribute);
+            if (productAttribute == null)
+            {
+                return Error(HttpStatusCode.NotFound, "product attribute", "not found");
+            }
 
-      var productAttributesRootObject = new ProductAttributesRootObjectDto();
+            var productAttributeDto = _dtoHelper.PrepareProductAttributeDTO(productAttribute);
 
-      productAttributesRootObject.ProductAttributes.Add(productAttributeDto);
+            var productAttributesRootObject = new ProductAttributesRootObjectDto();
 
-      var json = JsonFieldsSerializer.Serialize(productAttributesRootObject, fields);
+            productAttributesRootObject.ProductAttributes.Add(productAttributeDto);
 
-      return new RawJsonActionResult(json);
-    }
+            var json = JsonFieldsSerializer.Serialize(productAttributesRootObject, fields);
 
-    [HttpPost]
-    [Route("/api/productattributes", Name = "CreateProductAttribute")]
-    [ProducesResponseType(typeof(ProductAttributesRootObjectDto), (int)HttpStatusCode.OK)]
-    [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
-    [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
-    [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-    [ProducesResponseType(typeof(ErrorsRootObject), 422)]
-    [GetRequestsErrorInterceptorActionFilter]
-    public async Task<IActionResult> CreateProductAttribute(
-        [FromBody]
+            return new RawJsonActionResult(json);
+        }
+
+        [HttpPost]
+        [Route("/api/productattributes", Name = "CreateProductAttribute")]
+        [ProducesResponseType(typeof(ProductAttributesRootObjectDto), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(ErrorsRootObject), 422)]
+        [GetRequestsErrorInterceptorActionFilter]
+        public async Task<IActionResult> CreateProductAttribute(
+            [FromBody]
             [ModelBinder(typeof(JsonModelBinder<ProductAttributeDto>))]
             Delta<ProductAttributeDto> productAttributeDelta)
-    {
-      // Here we display the errors if the validation has failed at some point.
-      if (!ModelState.IsValid)
-      {
-        return Error();
-      }
+        {
+            // Here we display the errors if the validation has failed at some point.
+            if (!ModelState.IsValid)
+            {
+                return Error();
+            }
 
-      // Inserting the new product
-      var productAttribute = new ProductAttribute();
-      productAttributeDelta.Merge(productAttribute);
+            // Inserting the new product
+            var productAttribute = new ProductAttribute();
+            productAttributeDelta.Merge(productAttribute);
 
-      await _productAttributeService.InsertProductAttributeAsync(productAttribute);
+            await _productAttributeService.InsertProductAttributeAsync(productAttribute);
 
-      await CustomerActivityService.InsertActivityAsync("AddNewProductAttribute", await LocalizationService.GetResourceAsync("ActivityLog.AddNewProductAttribute"), productAttribute);
+            await CustomerActivityService.InsertActivityAsync("AddNewProductAttribute", await LocalizationService.GetResourceAsync("ActivityLog.AddNewProductAttribute"), productAttribute);
 
-      // Preparing the result dto of the new product
-      var productAttributeDto = _dtoHelper.PrepareProductAttributeDTO(productAttribute);
+            // Preparing the result dto of the new product
+            var productAttributeDto = _dtoHelper.PrepareProductAttributeDTO(productAttribute);
 
-      var productAttributesRootObjectDto = new ProductAttributesRootObjectDto();
+            var productAttributesRootObjectDto = new ProductAttributesRootObjectDto();
 
-      productAttributesRootObjectDto.ProductAttributes.Add(productAttributeDto);
+            productAttributesRootObjectDto.ProductAttributes.Add(productAttributeDto);
 
-      var json = JsonFieldsSerializer.Serialize(productAttributesRootObjectDto, string.Empty);
+            var json = JsonFieldsSerializer.Serialize(productAttributesRootObjectDto, string.Empty);
 
-      return new RawJsonActionResult(json);
-    }
+            return new RawJsonActionResult(json);
+        }
 
-    [HttpPut]
-    [Route("/api/productattributes/{id}", Name = "UpdateProductAttribute")]
-    [ProducesResponseType(typeof(ProductAttributesRootObjectDto), (int)HttpStatusCode.OK)]
-    [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
-    [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
-    [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-    [ProducesResponseType(typeof(ErrorsRootObject), 422)]
-    [GetRequestsErrorInterceptorActionFilter]
-    public async Task<IActionResult> UpdateProductAttribute(
-        [FromBody]
+        [HttpPut]
+        [Route("/api/productattributes/{id}", Name = "UpdateProductAttribute")]
+        [ProducesResponseType(typeof(ProductAttributesRootObjectDto), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(ErrorsRootObject), 422)]
+        [GetRequestsErrorInterceptorActionFilter]
+        public async Task<IActionResult> UpdateProductAttribute(
+            [FromBody]
             [ModelBinder(typeof(JsonModelBinder<ProductAttributeDto>))]
             Delta<ProductAttributeDto> productAttributeDelta)
-    {
-      // Here we display the errors if the validation has failed at some point.
-      if (!ModelState.IsValid)
-      {
-        return Error();
-      }
+        {
+            // Here we display the errors if the validation has failed at some point.
+            if (!ModelState.IsValid)
+            {
+                return Error();
+            }
 
-      var productAttribute = await _productAttributesApiService.GetByIdAsync(productAttributeDelta.Dto.Id);
+            var productAttribute = await _productAttributesApiService.GetByIdAsync(productAttributeDelta.Dto.Id);
 
-      if (productAttribute == null)
-      {
-        return Error(HttpStatusCode.NotFound, "product attribute", "not found");
-      }
+            if (productAttribute == null)
+            {
+                return Error(HttpStatusCode.NotFound, "product attribute", "not found");
+            }
 
-      productAttributeDelta.Merge(productAttribute);
+            productAttributeDelta.Merge(productAttribute);
 
 
-      await _productAttributeService.UpdateProductAttributeAsync(productAttribute);
+            await _productAttributeService.UpdateProductAttributeAsync(productAttribute);
 
-      await CustomerActivityService.InsertActivityAsync("EditProductAttribute", await LocalizationService.GetResourceAsync("ActivityLog.EditProductAttribute"), productAttribute);
+            await CustomerActivityService.InsertActivityAsync("EditProductAttribute", await LocalizationService.GetResourceAsync("ActivityLog.EditProductAttribute"), productAttribute);
 
-      // Preparing the result dto of the new product attribute
-      var productAttributeDto = _dtoHelper.PrepareProductAttributeDTO(productAttribute);
+            // Preparing the result dto of the new product attribute
+            var productAttributeDto = _dtoHelper.PrepareProductAttributeDTO(productAttribute);
 
-      var productAttributesRootObjectDto = new ProductAttributesRootObjectDto();
+            var productAttributesRootObjectDto = new ProductAttributesRootObjectDto();
 
-      productAttributesRootObjectDto.ProductAttributes.Add(productAttributeDto);
+            productAttributesRootObjectDto.ProductAttributes.Add(productAttributeDto);
 
-      var json = JsonFieldsSerializer.Serialize(productAttributesRootObjectDto, string.Empty);
+            var json = JsonFieldsSerializer.Serialize(productAttributesRootObjectDto, string.Empty);
 
-      return new RawJsonActionResult(json);
+            return new RawJsonActionResult(json);
+        }
+
+        [HttpDelete]
+        [Route("/api/productattributes/{id}", Name = "DeleteProductAttribute")]
+        [ProducesResponseType(typeof(void), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(ErrorsRootObject), 422)]
+        [GetRequestsErrorInterceptorActionFilter]
+        public async Task<IActionResult> DeleteProductAttribute([FromRoute] int id)
+        {
+            if (id <= 0)
+            {
+                return Error(HttpStatusCode.BadRequest, "id", "invalid id");
+            }
+
+            var productAttribute = await _productAttributesApiService.GetByIdAsync(id);
+
+            if (productAttribute == null)
+            {
+                return Error(HttpStatusCode.NotFound, "product attribute", "not found");
+            }
+
+            await _productAttributeService.DeleteProductAttributeAsync(productAttribute);
+
+            //activity log
+            await CustomerActivityService.InsertActivityAsync("DeleteProductAttribute", await LocalizationService.GetResourceAsync("ActivityLog.DeleteProductAttribute"),
+                                                   productAttribute);
+
+            return new RawJsonActionResult("{}");
+        }
     }
-
-    [HttpDelete]
-    [Route("/api/productattributes/{id}", Name = "DeleteProductAttribute")]
-    [ProducesResponseType(typeof(void), (int)HttpStatusCode.OK)]
-    [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
-    [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
-    [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
-    [ProducesResponseType(typeof(ErrorsRootObject), 422)]
-    [GetRequestsErrorInterceptorActionFilter]
-    public async Task<IActionResult> DeleteProductAttribute([FromRoute] int id)
-    {
-      if (id <= 0)
-      {
-        return Error(HttpStatusCode.BadRequest, "id", "invalid id");
-      }
-
-      var productAttribute = await _productAttributesApiService.GetByIdAsync(id);
-
-      if (productAttribute == null)
-      {
-        return Error(HttpStatusCode.NotFound, "product attribute", "not found");
-      }
-
-      await _productAttributeService.DeleteProductAttributeAsync(productAttribute);
-
-      //activity log
-      await CustomerActivityService.InsertActivityAsync("DeleteProductAttribute", await LocalizationService.GetResourceAsync("ActivityLog.DeleteProductAttribute"),
-                                             productAttribute);
-
-      return new RawJsonActionResult("{}");
-    }
-  }
 }

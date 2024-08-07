@@ -2,24 +2,24 @@
 
 namespace Nop.Plugin.Api.DTO.ShoppingCarts
 {
-  public class ShoppingCartItemsRootObject : ISerializableObject
-  {
-    public ShoppingCartItemsRootObject()
+    public class ShoppingCartItemsRootObject : ISerializableObject
     {
-      ShoppingCartItems = new List<ShoppingCartItemDto>();
-    }
+        public ShoppingCartItemsRootObject()
+        {
+            ShoppingCartItems = new List<ShoppingCartItemDto>();
+        }
 
-    [JsonProperty("shopping_carts")]
-    public IList<ShoppingCartItemDto> ShoppingCartItems { get; set; }
+        [JsonProperty("shopping_carts")]
+        public IList<ShoppingCartItemDto> ShoppingCartItems { get; set; }
 
-    public string GetPrimaryPropertyName()
-    {
-      return "shopping_carts";
-    }
+        public string GetPrimaryPropertyName()
+        {
+            return "shopping_carts";
+        }
 
-    public Type GetPrimaryPropertyType()
-    {
-      return typeof(ShoppingCartItemDto);
+        public Type GetPrimaryPropertyType()
+        {
+            return typeof(ShoppingCartItemDto);
+        }
     }
-  }
 }

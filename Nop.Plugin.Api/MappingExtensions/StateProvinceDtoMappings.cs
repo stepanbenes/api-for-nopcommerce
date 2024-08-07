@@ -4,16 +4,16 @@ using Nop.Plugin.Api.DTOs.StateProvinces;
 
 namespace Nop.Plugin.Api.MappingExtensions
 {
-  public static class StateProvinceDtoMappings
-  {
-    public static StateProvinceDto ToDto(this StateProvince address)
+    public static class StateProvinceDtoMappings
     {
-      return address.MapTo<StateProvince, StateProvinceDto>();
-    }
+        public static StateProvinceDto ToDto(this StateProvince address)
+        {
+            return address.MapTo<StateProvince, StateProvinceDto>();
+        }
 
-    public static StateProvince ToEntity(this StateProvinceDto address)
-    {
-      return address.MapTo<StateProvinceDto, StateProvince>();
+        public static StateProvince ToEntity(this StateProvinceDto address)
+        {
+            return address.MapTo<StateProvinceDto, StateProvince>();
+        }
     }
-  }
 }

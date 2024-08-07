@@ -2,12 +2,12 @@
 
 namespace Nop.Plugin.Api.Factories
 {
-  public class TopicFactory : IFactory<Topic>
-  {
-    public Task<Topic> InitializeAsync()
+    public class TopicFactory : IFactory<Topic>
     {
-      var topic = new Topic();
-      return Task.FromResult(topic);
+        public Task<Topic> InitializeAsync()
+        {
+            var topic = new Topic();
+            return Task.FromResult(topic);
+        }
     }
-  }
 }
