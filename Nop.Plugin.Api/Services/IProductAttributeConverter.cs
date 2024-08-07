@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using Nop.Plugin.Api.DTO;
+﻿using Nop.Plugin.Api.DTO;
 
 namespace Nop.Plugin.Api.Services
 {

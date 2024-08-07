@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Nop.Plugin.Api.DTO.Base;
 using Nop.Plugin.Api.DTO.Images;
-using Nop.Plugin.Api.DTO.Languages;
 
 namespace Nop.Plugin.Api.DTO.Manufacturers
 {

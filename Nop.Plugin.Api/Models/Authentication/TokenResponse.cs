@@ -1,5 +1,4 @@
-﻿using System;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
 namespace Nop.Plugin.Api.Models.Authentication
 {
@@ -17,10 +16,10 @@ namespace Nop.Plugin.Api.Models.Authentication
 
         [JsonProperty("token_type", Required = Required.Always)]
         public string TokenType { get; init; } = "Bearer";
-        
+
         [JsonProperty("created_at_utc")]
         public DateTime CreatedAtUtc { get; init; }
-        
+
         [JsonProperty("expires_at_utc")]
         public DateTime ExpiresAtUtc { get; init; }
 

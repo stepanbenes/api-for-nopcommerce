@@ -1,17 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Nop.Plugin.Api.DTO.Base;
 
 namespace Nop.Plugin.Api.DTO
 {
-	[JsonObject(Title = "currency")]
-	public class CurrencyDto : BaseDto
-	{
+    [JsonObject(Title = "currency")]
+    public class CurrencyDto : BaseDto
+    {
         [JsonProperty("name")]
         public string Name { get; set; }
 
@@ -32,7 +27,7 @@ namespace Nop.Plugin.Api.DTO
 
         [JsonProperty("published")]
         public bool Published { get; set; }
-        
+
         [JsonProperty("display_order")]
         public int DisplayOrder { get; set; }
 

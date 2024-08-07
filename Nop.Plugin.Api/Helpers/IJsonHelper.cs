@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.IO;
-
-namespace Nop.Plugin.Api.Helpers
+﻿namespace Nop.Plugin.Api.Helpers
 {
     public interface IJsonHelper
     {

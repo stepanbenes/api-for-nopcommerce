@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using FluentValidation;
+﻿using FluentValidation;
 using Microsoft.AspNetCore.Http;
-using Nop.Core.Domain.Orders;
 using Nop.Plugin.Api.DTO.ShoppingCarts;
 using Nop.Plugin.Api.Helpers;
 

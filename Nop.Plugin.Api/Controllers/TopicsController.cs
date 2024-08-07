@@ -1,36 +1,31 @@
-﻿using Nop.Plugin.Api.JSON.Serializers;
+﻿using Microsoft.AspNetCore.Mvc;
+using Nop.Core;
+using Nop.Core.Domain.Topics;
+using Nop.Plugin.Api.Attributes;
+using Nop.Plugin.Api.Authorization.Attributes;
+using Nop.Plugin.Api.Delta;
+using Nop.Plugin.Api.DTO.Errors;
+using Nop.Plugin.Api.DTO.Orders;
+using Nop.Plugin.Api.DTOs.Topics;
+using Nop.Plugin.Api.Factories;
+using Nop.Plugin.Api.Helpers;
+using Nop.Plugin.Api.JSON.ActionResults;
+using Nop.Plugin.Api.JSON.Serializers;
+using Nop.Plugin.Api.ModelBinders;
+using Nop.Plugin.Api.Models.TopicsParameters;
 using Nop.Services.Customers;
-using Nop.Services.Security;
-using Nop.Services.Topics;
 using Nop.Services.Discounts;
 using Nop.Services.Localization;
 using Nop.Services.Logging;
 using Nop.Services.Media;
+using Nop.Services.Security;
 using Nop.Services.Stores;
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using Nop.Services.Topics;
 using System.Net;
-using Microsoft.AspNetCore.Mvc;
-using Nop.Plugin.Api.Attributes;
-using Nop.Plugin.Api.DTO.Errors;
-using Nop.Plugin.Api.DTO.Orders;
-using Nop.Core;
-using Nop.Plugin.Api.DTOs.Topics;
-using Nop.Plugin.Api.JSON.ActionResults;
-using Nop.Plugin.Api.Models.TopicsParameters;
-using Nop.Plugin.Api.Helpers;
-using Nop.Plugin.Api.ModelBinders;
-using Nop.Plugin.Api.Delta;
-using Nop.Plugin.Api.Factories;
-using Nop.Core.Domain.Topics;
-using System.Threading.Tasks;
-using Nop.Plugin.Api.Authorization.Attributes;
 
 namespace Nop.Plugin.Api.Controllers
 {
-    [AuthorizePermission("ManageTopics")]
+    [AuthorizePermission(StandardPermission.ContentManagement.TOPICS_CREATE_EDIT_DELETE)]
     public class TopicsController : BaseApiController
     {
         private readonly ITopicService _topicService;

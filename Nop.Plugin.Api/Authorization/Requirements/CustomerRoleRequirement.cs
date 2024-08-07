@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Nop.Core.Domain.Customers;
 using Nop.Core.Infrastructure;
 using Nop.Plugin.Api.Infrastructure;
 using Nop.Services.Customers;
+using System.Security.Claims;
 
 namespace Nop.Plugin.Api.Authorization.Requirements
 {
@@ -27,7 +23,7 @@ namespace Nop.Plugin.Api.Authorization.Requirements
                     var customerService = EngineContext.Current.Resolve<ICustomerService>();
 
                     var customer = await customerService.GetCustomerByGuidAsync(customerGuid);
-                   
+
                     if (customer != null)
                     {
                         var customerRoles = await customerService.GetCustomerRolesAsync(customer);

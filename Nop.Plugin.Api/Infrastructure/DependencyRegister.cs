@@ -1,15 +1,15 @@
-﻿using System.Collections.Generic;
-using JetBrains.Annotations;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Nop.Core.Configuration;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Nop.Core.Domain.Catalog;
 using Nop.Core.Domain.Common;
 using Nop.Core.Domain.Customers;
 using Nop.Core.Domain.Orders;
+using Nop.Core.Domain.Shipping;
 using Nop.Core.Domain.Topics;
 using Nop.Core.Infrastructure;
-
 using Nop.Plugin.Api.Converters;
 using Nop.Plugin.Api.Factories;
 using Nop.Plugin.Api.Helpers;
@@ -19,10 +19,6 @@ using Nop.Plugin.Api.ModelBinders;
 using Nop.Plugin.Api.Services;
 using Nop.Plugin.Api.Validators;
 using Nop.Services.Topics;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Configuration;
-using Nop.Core.Domain.Shipping;
 
 namespace Nop.Plugin.Api.Infrastructure
 {

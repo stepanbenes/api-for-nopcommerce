@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Net.Http;
-using FluentValidation;
+﻿using FluentValidation;
 using FluentValidation.Results;
-using FluentValidation.Validators;
 using Microsoft.AspNetCore.Http;
 using Nop.Plugin.Api.DTO.Base;
 using Nop.Plugin.Api.Helpers;
+using System.Linq.Expressions;
 
 namespace Nop.Plugin.Api.Validators
 {
@@ -82,10 +77,10 @@ namespace Nop.Plugin.Api.Validators
 
         protected Dictionary<string, object> GetRequestJsonDictionaryCollectionItemDictionary<TDto>(string collectionKey, TDto dto) where TDto : BaseDto
         {
-            var collectionItems = (List<object>) RequestJsonDictionary[collectionKey];
+            var collectionItems = (List<object>)RequestJsonDictionary[collectionKey];
             var collectionItemDictionary = collectionItems.FirstOrDefault(x =>
-                                                                              ((Dictionary<string, object>) x).ContainsKey("id") &&
-                                                                              (int) (long) ((Dictionary<string, object>) x)["id"] == dto.Id
+                                                                              ((Dictionary<string, object>)x).ContainsKey("id") &&
+                                                                              (int)(long)((Dictionary<string, object>)x)["id"] == dto.Id
                                                                          ) as Dictionary<string, object>;
 
             return collectionItemDictionary;
@@ -134,7 +129,7 @@ namespace Nop.Plugin.Api.Validators
 
             if (requestJsonDictionary.ContainsKey(rootPropertyName))
             {
-                requestJsonDictionary = (Dictionary<string, object>) requestJsonDictionary[rootPropertyName];
+                requestJsonDictionary = (Dictionary<string, object>)requestJsonDictionary[rootPropertyName];
             }
 
             return requestJsonDictionary;

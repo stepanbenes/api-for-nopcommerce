@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 using Microsoft.AspNetCore.Http;
 using Nop.Plugin.Api.DTO.Categories;
 using Nop.Plugin.Api.Helpers;

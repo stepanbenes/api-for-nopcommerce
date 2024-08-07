@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using AutoMapper.Configuration;
 
 namespace Nop.Plugin.Api.AutoMapper
 {

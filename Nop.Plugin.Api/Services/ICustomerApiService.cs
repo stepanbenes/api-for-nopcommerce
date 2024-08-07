@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Nop.Core.Domain.Customers;
+﻿using Nop.Core.Domain.Customers;
 using Nop.Core.Domain.Directory;
 using Nop.Core.Domain.Localization;
 using Nop.Plugin.Api.DTO.Customers;
@@ -26,7 +23,7 @@ namespace Nop.Plugin.Api.Services
             string query = "", string order = Constants.Configurations.DefaultOrder,
             int page = Constants.Configurations.DefaultPageValue, int limit = Constants.Configurations.DefaultLimit);
 
-        Task<Dictionary<string, string>> GetFirstAndLastNameByCustomerIdAsync(int customerId);
+
 
         /// <summary>
         /// Gets current user working language

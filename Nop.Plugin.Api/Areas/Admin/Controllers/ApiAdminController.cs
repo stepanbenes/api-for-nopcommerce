@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Nop.Core;
 using Nop.Plugin.Api.Areas.Admin.Models;
 using Nop.Plugin.Api.Domain;
@@ -15,7 +14,7 @@ using Nop.Web.Framework.Mvc.Filters;
 namespace Nop.Plugin.Api.Areas.Admin.Controllers
 {
     [AuthorizeAdmin]
-    [Area(AreaNames.Admin)]
+    [Area(AreaNames.ADMIN)]
     public class ApiAdminController : BasePluginController
     {
         private readonly ICustomerActivityService _customerActivityService;

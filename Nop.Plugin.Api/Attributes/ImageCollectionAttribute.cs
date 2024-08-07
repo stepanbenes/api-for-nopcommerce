@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using Nop.Plugin.Api.DTO.Images;
+﻿using Nop.Plugin.Api.DTO.Images;
 
 namespace Nop.Plugin.Api.Attributes
 {

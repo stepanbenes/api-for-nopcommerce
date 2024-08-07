@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Nop.Core.Domain.Catalog;
 using Nop.Data;
-using Nop.Core.Domain.Catalog;
 using Nop.Plugin.Api.DataStructures;
 using Nop.Plugin.Api.Infrastructure;
-using Nop.Services.Stores;
-using System.Threading.Tasks;
 using Nop.Services.Catalog;
+using Nop.Services.Stores;
 
 namespace Nop.Plugin.Api.Services
 {
@@ -16,19 +12,19 @@ namespace Nop.Plugin.Api.Services
         private readonly IRepository<Category> _categoryRepository;
         private readonly IRepository<ProductCategory> _productCategoryMappingRepository;
         private readonly IStoreMappingService _storeMappingService;
-		private readonly ICategoryService _categoryService;
+        private readonly ICategoryService _categoryService;
 
-		public CategoryApiService(
-            IRepository<Category> categoryRepository,
-            IRepository<ProductCategory> productCategoryMappingRepository,
-            IStoreMappingService storeMappingService,
-            ICategoryService categoryService)
+        public CategoryApiService(
+                IRepository<Category> categoryRepository,
+                IRepository<ProductCategory> productCategoryMappingRepository,
+                IStoreMappingService storeMappingService,
+                ICategoryService categoryService)
         {
             _categoryRepository = categoryRepository;
             _productCategoryMappingRepository = productCategoryMappingRepository;
             _storeMappingService = storeMappingService;
-			this._categoryService = categoryService;
-		}
+            this._categoryService = categoryService;
+        }
 
         public IList<Category> GetCategories(
             IList<int> ids = null,
@@ -135,5 +131,5 @@ namespace Nop.Plugin.Api.Services
 
             return query;
         }
-	}
+    }
 }

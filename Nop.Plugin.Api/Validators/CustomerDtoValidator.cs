@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Net.Http;
-using FluentValidation;
+﻿using FluentValidation;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Http;
 using Nop.Core.Domain.Customers;
@@ -71,7 +69,7 @@ namespace Nop.Plugin.Api.Validators
             if (RequestJsonDictionary.ContainsKey(key))
             {
                 RuleFor(c => c.BillingAddress)
-                    .SetValidator(new AddressDtoValidator(HttpContextAccessor, JsonHelper, (Dictionary<string, object>) RequestJsonDictionary[key]));
+                    .SetValidator(new AddressDtoValidator(HttpContextAccessor, JsonHelper, (Dictionary<string, object>)RequestJsonDictionary[key]));
             }
         }
 
@@ -81,7 +79,7 @@ namespace Nop.Plugin.Api.Validators
             if (RequestJsonDictionary.ContainsKey(key))
             {
                 RuleFor(c => c.ShippingAddress)
-                    .SetValidator(new AddressDtoValidator(HttpContextAccessor, JsonHelper, (Dictionary<string, object>) RequestJsonDictionary[key]));
+                    .SetValidator(new AddressDtoValidator(HttpContextAccessor, JsonHelper, (Dictionary<string, object>)RequestJsonDictionary[key]));
             }
         }
 

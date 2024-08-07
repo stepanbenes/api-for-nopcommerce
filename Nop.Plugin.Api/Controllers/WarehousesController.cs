@@ -1,8 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Nop.Core.Domain.Shipping;
 using Nop.Plugin.Api.Attributes;
 using Nop.Plugin.Api.Authorization.Attributes;
@@ -11,7 +7,6 @@ using Nop.Plugin.Api.DTO.Errors;
 using Nop.Plugin.Api.DTO.Warehouses;
 using Nop.Plugin.Api.Factories;
 using Nop.Plugin.Api.Helpers;
-using Nop.Plugin.Api.Infrastructure;
 using Nop.Plugin.Api.JSON.ActionResults;
 using Nop.Plugin.Api.JSON.Serializers;
 using Nop.Plugin.Api.MappingExtensions;
@@ -27,6 +22,7 @@ using Nop.Services.Media;
 using Nop.Services.Security;
 using Nop.Services.Shipping;
 using Nop.Services.Stores;
+using System.Net;
 
 namespace Nop.Plugin.Api.Controllers
 {
@@ -71,21 +67,12 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="401">Unauthorized</response>
         [HttpGet]
         [Route("/api/warehouses", Name = "GetWarehouses")]
-        [AuthorizePermission("ManageShippingSettings")]
+        [AuthorizePermission(StandardPermission.Configuration.MANAGE_SHIPPING_SETTINGS)]
         [ProducesResponseType(typeof(WarehousesRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [GetRequestsErrorInterceptorActionFilter]
         public async Task<IActionResult> GetWarehouses([FromQuery] WarehousesParametersModel parameters)
         {
-            //if (parameters.Limit < Constants.Configurations.MinLimit || parameters.Limit > Constants.Configurations.MaxLimit)
-            //{
-            //    return Error(HttpStatusCode.BadRequest, "limit", "Invalid limit parameter");
-            //}
-
-            //if (parameters.Page < Constants.Configurations.DefaultPageValue)
-            //{
-            //    return Error(HttpStatusCode.BadRequest, "page", "Invalid page parameter");
-            //}
 
             var allWarehouses = _warehouseApiService.GetWarehouses(parameters.Ids, parameters.ProductId);
 
@@ -112,7 +99,7 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="401">Unauthorized</response>
         [HttpGet]
         [Route("/api/warehouses/{id}", Name = "GetWarehouseById")]
-        [AuthorizePermission("ManageShippingSettings")]
+        [AuthorizePermission(StandardPermission.Configuration.MANAGE_SHIPPING_SETTINGS)]
         [ProducesResponseType(typeof(WarehousesRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.NotFound)]
@@ -145,7 +132,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpPost]
         [Route("/api/warehouses", Name = "CreateWarehouse")]
-        [AuthorizePermission("ManageShippingSettings")]
+        [AuthorizePermission(StandardPermission.Configuration.MANAGE_SHIPPING_SETTINGS)]
         [ProducesResponseType(typeof(WarehousesRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), 422)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -196,7 +183,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpPut]
         [Route("/api/warehouses/{id}", Name = "UpdateWarehouse")]
-        [AuthorizePermission("ManageShippingSettings")]
+        [AuthorizePermission(StandardPermission.Configuration.MANAGE_SHIPPING_SETTINGS)]
         [ProducesResponseType(typeof(WarehousesRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), 422)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
@@ -251,7 +238,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpDelete]
         [Route("/api/warehouses/{id}", Name = "DeleteWarehouse")]
-        [AuthorizePermission("ManageShippingSettings")]
+        [AuthorizePermission(StandardPermission.Configuration.MANAGE_SHIPPING_SETTINGS)]
         [ProducesResponseType(typeof(void), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]

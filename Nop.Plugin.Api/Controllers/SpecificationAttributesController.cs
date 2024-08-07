@@ -1,7 +1,4 @@
-﻿using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Nop.Core.Domain.Catalog;
 using Nop.Plugin.Api.Attributes;
 using Nop.Plugin.Api.Authorization.Attributes;
@@ -23,16 +20,17 @@ using Nop.Services.Logging;
 using Nop.Services.Media;
 using Nop.Services.Security;
 using Nop.Services.Stores;
+using System.Net;
 
 namespace Nop.Plugin.Api.Controllers
 {
-    [AuthorizePermission("ManageAttributes")]
+    [AuthorizePermission(StandardPermission.Catalog.SPECIFICATION_ATTRIBUTES_CREATE_EDIT_DELETE)]
     public class SpecificationAttributesController : BaseApiController
     {
         private readonly IDTOHelper _dtoHelper;
         private readonly ISpecificationAttributeApiService _specificationAttributeApiService;
         private readonly ISpecificationAttributeService _specificationAttributeService;
-        
+
         public SpecificationAttributesController(
             IJsonFieldsSerializer jsonFieldsSerializer,
             ICustomerActivityService customerActivityService,
@@ -52,9 +50,9 @@ namespace Nop.Plugin.Api.Controllers
             _specificationAttributeApiService = specificationAttributesApiService;
             _dtoHelper = dtoHelper;
         }
-        
-        
-          /// <summary>
+
+
+        /// <summary>
         ///     Receive a list of all specification attributes
         /// </summary>
         /// <response code="200">OK</response>
@@ -66,7 +64,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [GetRequestsErrorInterceptorActionFilter]
-        public async Task<IActionResult>  GetSpecificationAttributes([FromQuery] SpecificationAttributesParametersModel parameters)
+        public async Task<IActionResult> GetSpecificationAttributes([FromQuery] SpecificationAttributesParametersModel parameters)
         {
             if (parameters.Limit < Constants.Configurations.MinLimit || parameters.Limit > Constants.Configurations.MaxLimit)
             {
@@ -85,9 +83,9 @@ namespace Nop.Plugin.Api.Controllers
             foreach (var specificationAttributeDto in specificationAttributeDtos)
             {
                 var specificationAttributeOptions = await _specificationAttributeService.GetSpecificationAttributeOptionsBySpecificationAttributeAsync(specificationAttributeDto.Id);
-                
+
                 var specificationAttributeOptionsDto = specificationAttributeOptions.Select(x => _dtoHelper.PrepareSpecificationAttributeOptionDto(x)).ToList();
-                
+
                 specificationAttributeDto.SpecificationAttributeOptions = specificationAttributeOptionsDto;
             }
 
@@ -155,11 +153,11 @@ namespace Nop.Plugin.Api.Controllers
 
             var specificationAttributeDto = _dtoHelper.PrepareSpecificationAttributeDto(specificationAttribute);
             var specificationAttributeOptions = await _specificationAttributeService.GetSpecificationAttributeOptionsBySpecificationAttributeAsync(specificationAttributeDto.Id);
-                
+
             var specificationAttributeOptionsDto = specificationAttributeOptions.Select(x => _dtoHelper.PrepareSpecificationAttributeOptionDto(x)).ToList();
-                
+
             specificationAttributeDto.SpecificationAttributeOptions = specificationAttributeOptionsDto;
-            
+
             var specificationAttributesRootObject = new SpecificationAttributesRootObjectDto();
             specificationAttributesRootObject.SpecificationAttributes.Add(specificationAttributeDto);
 
@@ -247,7 +245,7 @@ namespace Nop.Plugin.Api.Controllers
                 };
                 if (specificationAttributeOption.Id == 0) //create
                 {
-                    
+
                     await _specificationAttributeService.InsertSpecificationAttributeOptionAsync(specificationAttributeOption);
                 }
                 else
@@ -262,9 +260,9 @@ namespace Nop.Plugin.Api.Controllers
             // Preparing the result dto of the new product attribute
             var specificationAttributeDto = _dtoHelper.PrepareSpecificationAttributeDto(specificationAttribute);
             var specificationAttributeOptions = await _specificationAttributeService.GetSpecificationAttributeOptionsBySpecificationAttributeAsync(specificationAttributeDto.Id);
-                
+
             var specificationAttributeOptionsDto = specificationAttributeOptions.Select(x => _dtoHelper.PrepareSpecificationAttributeOptionDto(x)).ToList();
-                
+
             specificationAttributeDto.SpecificationAttributeOptions = specificationAttributeOptionsDto;
 
             var specificatoinAttributesRootObjectDto = new SpecificationAttributesRootObjectDto();
@@ -274,7 +272,7 @@ namespace Nop.Plugin.Api.Controllers
 
             return new RawJsonActionResult(json);
         }
-        
+
 
         [HttpDelete]
         [Route("/api/specificationattributes/{id}", Name = "DeleteSpecificationAttribute")]
@@ -297,12 +295,12 @@ namespace Nop.Plugin.Api.Controllers
             }
 
             await _specificationAttributeService.DeleteSpecificationAttributeAsync(specificationAttribute);
-            
+
             //activity log
             await CustomerActivityService.InsertActivityAsync("DeleteSpecAttribute", await LocalizationService.GetResourceAsync("ActivityLog.DeleteSpecAttribute"), specificationAttribute);
 
             return new RawJsonActionResult("{}");
         }
-      
+
     }
 }

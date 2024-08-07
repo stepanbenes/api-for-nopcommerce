@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Nop.Core.Domain.Catalog;
 using Nop.Plugin.Api.Attributes;
 using Nop.Plugin.Api.DTO.Base;
 using Nop.Plugin.Api.DTO.Images;
-using Nop.Plugin.Api.DTO.Languages;
 using Nop.Plugin.Api.DTO.SpecificationAttributes;
 
 namespace Nop.Plugin.Api.DTO.Products
@@ -556,7 +553,7 @@ namespace Nop.Plugin.Api.DTO.Products
                 var productTypeId = _productTypeId;
                 if (productTypeId != null)
                 {
-                    return ((ProductType) productTypeId).ToString();
+                    return ((ProductType)productTypeId).ToString();
                 }
 
                 return null;
@@ -566,7 +563,7 @@ namespace Nop.Plugin.Api.DTO.Products
                 ProductType productTypeId;
                 if (Enum.TryParse(value, out productTypeId))
                 {
-                    _productTypeId = (int) productTypeId;
+                    _productTypeId = (int)productTypeId;
                 }
                 else
                 {

@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Nop.Plugin.Api.Attributes;
 using Nop.Plugin.Api.Delta;
 using Nop.Plugin.Api.Helpers;
 using Nop.Plugin.Api.Validators;
 using Nop.Services.Localization;
+using System.Reflection;
 
 namespace Nop.Plugin.Api.ModelBinders
 {
@@ -89,7 +85,7 @@ namespace Nop.Plugin.Api.ModelBinders
                     result = _jsonHelper.GetRequestJsonDictionaryFromStream(bindingContext.HttpContext.Request.Body, true);
                     var rootPropertyName = _jsonHelper.GetRootPropertyName<T>();
 
-                    result = (Dictionary<string, object>) result[rootPropertyName];
+                    result = (Dictionary<string, object>)result[rootPropertyName];
                 }
                 catch (Exception ex)
                 {

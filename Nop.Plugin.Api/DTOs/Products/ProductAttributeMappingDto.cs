@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Nop.Core.Domain.Catalog;
 using Nop.Plugin.Api.DTO.Base;
 
@@ -55,13 +53,13 @@ namespace Nop.Plugin.Api.DTO.Products
         [JsonProperty("attribute_control_type_name")]
         public string AttributeControlType
         {
-            get => ((AttributeControlType) AttributeControlTypeId).ToString();
+            get => ((AttributeControlType)AttributeControlTypeId).ToString();
             set
             {
                 AttributeControlType attributeControlTypeId;
                 if (Enum.TryParse(value, out attributeControlTypeId))
                 {
-                    AttributeControlTypeId = (int) attributeControlTypeId;
+                    AttributeControlTypeId = (int)attributeControlTypeId;
                 }
             }
         }

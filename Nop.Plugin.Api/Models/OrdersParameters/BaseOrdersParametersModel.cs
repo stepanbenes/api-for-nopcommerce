@@ -1,5 +1,4 @@
-﻿using System;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Nop.Plugin.Api.DTOs.Orders;
 
 namespace Nop.Plugin.Api.Models.OrdersParameters

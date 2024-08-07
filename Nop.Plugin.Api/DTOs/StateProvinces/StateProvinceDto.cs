@@ -1,10 +1,5 @@
 ﻿using Newtonsoft.Json;
 using Nop.Plugin.Api.DTO.Base;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Nop.Plugin.Api.DTOs.StateProvinces
 {
@@ -24,5 +19,5 @@ namespace Nop.Plugin.Api.DTOs.StateProvinces
         [JsonProperty("display_order")]
         public int DisplayOrder { get; set; }
     }
-    
+
 }

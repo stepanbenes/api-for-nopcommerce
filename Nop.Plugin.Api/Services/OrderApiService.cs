@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Nop.Data;
-using Nop.Core.Domain.Orders;
+﻿using Nop.Core.Domain.Orders;
 using Nop.Core.Domain.Payments;
 using Nop.Core.Domain.Shipping;
+using Nop.Data;
 using Nop.Plugin.Api.DataStructures;
 using Nop.Plugin.Api.Infrastructure;
 
@@ -85,17 +82,17 @@ namespace Nop.Plugin.Api.Services
 
             if (status != null)
             {
-                query = query.Where(order => order.OrderStatusId == (int) status);
+                query = query.Where(order => order.OrderStatusId == (int)status);
             }
 
             if (paymentStatus != null)
             {
-                query = query.Where(order => order.PaymentStatusId == (int) paymentStatus);
+                query = query.Where(order => order.PaymentStatusId == (int)paymentStatus);
             }
 
             if (shippingStatus != null)
             {
-                query = query.Where(order => order.ShippingStatusId == (int) shippingStatus);
+                query = query.Where(order => order.ShippingStatusId == (int)shippingStatus);
             }
 
             query = query.Where(order => !order.Deleted);

@@ -1,12 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Nop.Plugin.Api.Attributes;
-using Nop.Plugin.Api.Authorization.Attributes;
 using Nop.Plugin.Api.DTO;
 using Nop.Plugin.Api.DTO.Errors;
 using Nop.Plugin.Api.JSON.ActionResults;
@@ -19,28 +12,29 @@ using Nop.Services.Logging;
 using Nop.Services.Media;
 using Nop.Services.Security;
 using Nop.Services.Stores;
+using System.Net;
 
 namespace Nop.Plugin.Api.Controllers
 {
-	public class CountriesController : BaseApiController
-	{
-		private readonly IAddressApiService addressApiService;
+    public class CountriesController : BaseApiController
+    {
+        private readonly IAddressApiService addressApiService;
 
-		public CountriesController(
-			IJsonFieldsSerializer jsonFieldsSerializer,
-			IAclService aclService,
-			ICustomerService customerService,
-			IStoreMappingService storeMappingService,
-			IStoreService storeService,
-			IDiscountService discountService,
-			ICustomerActivityService customerActivityService,
-			ILocalizationService localizationService,
-			IPictureService pictureService,
-			IAddressApiService addressApiService)
-			: base(jsonFieldsSerializer, aclService, customerService, storeMappingService, storeService, discountService, customerActivityService, localizationService, pictureService)
-		{
-			this.addressApiService = addressApiService;
-		}
+        public CountriesController(
+          IJsonFieldsSerializer jsonFieldsSerializer,
+          IAclService aclService,
+          ICustomerService customerService,
+          IStoreMappingService storeMappingService,
+          IStoreService storeService,
+          IDiscountService discountService,
+          ICustomerActivityService customerActivityService,
+          ILocalizationService localizationService,
+          IPictureService pictureService,
+          IAddressApiService addressApiService)
+          : base(jsonFieldsSerializer, aclService, customerService, storeMappingService, storeService, discountService, customerActivityService, localizationService, pictureService)
+        {
+            this.addressApiService = addressApiService;
+        }
 
         /// <summary>
         ///     Receive a list of all Countries

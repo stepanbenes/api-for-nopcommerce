@@ -1,12 +1,9 @@
-﻿using System;
+﻿using Nop.Core.Infrastructure;
+using Nop.Plugin.Api.Factories;
 using System.Collections;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
-using System.Linq;
 using System.Reflection;
-using Nop.Core.Infrastructure;
-using Nop.Plugin.Api.Factories;
 
 namespace Nop.Plugin.Api.Helpers
 {
@@ -70,7 +67,7 @@ namespace Nop.Plugin.Api.Helpers
                         // Check if there is registered factory for this type.
                         var factoryType = typeof(IFactory<>);
                         var factoryTypeForCurrentProperty = factoryType.MakeGenericType(propertyToUpdate.PropertyType);
-                        var initializerFactory = ((NopEngine) EngineContext.Current).ServiceProvider.GetService(factoryTypeForCurrentProperty);
+                        var initializerFactory = ((NopEngine)EngineContext.Current).ServiceProvider.GetService(factoryTypeForCurrentProperty);
 
                         if (initializerFactory != null)
                         {
@@ -87,7 +84,7 @@ namespace Nop.Plugin.Api.Helpers
                     }
 
                     // We need to use GetValue method to get the actual instance of the jsonProperty. objectProperty is the jsonProperty info.
-                    SetValues((Dictionary<string, object>) propertyValue, valueToUpdate,
+                    SetValues((Dictionary<string, object>)propertyValue, valueToUpdate,
                               propertyToUpdate.PropertyType, objectPropertyNameValuePairs);
                     // We expect the nested properties to be classes which are refrence types.
                     return;
@@ -96,14 +93,14 @@ namespace Nop.Plugin.Api.Helpers
                 if (propertyValue is ICollection<object> propertyValueAsCollection)
                 {
                     var collectionElementsType = propertyToUpdate.PropertyType.GetGenericArguments().FirstOrDefault();
-                    
+
                     // Treat empty arrays as nulls as we can't be sure of the type
                     if (collectionElementsType == null)
                     {
                         propertyToUpdate.SetValue(objectToBeUpdated, null);
                         return;
                     }
-                    
+
                     var collection = propertyToUpdate.GetValue(objectToBeUpdated);
                     if (collection == null)
                     {

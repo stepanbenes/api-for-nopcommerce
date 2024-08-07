@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Nop.Core.Domain.Catalog;
 using Nop.Core.Domain.Discounts;
 using Nop.Core.Domain.Media;
@@ -30,6 +25,7 @@ using Nop.Services.Media;
 using Nop.Services.Security;
 using Nop.Services.Seo;
 using Nop.Services.Stores;
+using System.Net;
 
 namespace Nop.Plugin.Api.Controllers
 {
@@ -73,9 +69,9 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="401">Unauthorized</response>
         [HttpGet]
         [Route("/api/categories", Name = "GetCategories")]
-        [AuthorizePermission("PublicStoreAllowNavigation")]
-        [ProducesResponseType(typeof(CategoriesRootObject), (int) HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ErrorsRootObject), (int) HttpStatusCode.BadRequest)]
+        [AuthorizePermission(StandardPermission.PublicStore.PUBLIC_STORE_ALLOW_NAVIGATION)]
+        [ProducesResponseType(typeof(CategoriesRootObject), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [GetRequestsErrorInterceptorActionFilter]
         public async Task<IActionResult> GetCategories([FromQuery] CategoriesParametersModel parameters)
         {
@@ -98,9 +94,9 @@ namespace Nop.Plugin.Api.Controllers
             IList<CategoryDto> categoriesAsDtos = await allCategories.SelectAwait(async category => await _dtoHelper.PrepareCategoryDTOAsync(category)).ToListAsync();
 
             var categoriesRootObject = new CategoriesRootObject
-                                       {
-                                           Categories = categoriesAsDtos
-                                       };
+            {
+                Categories = categoriesAsDtos
+            };
 
             var json = JsonFieldsSerializer.Serialize(categoriesRootObject, parameters.Fields);
 
@@ -114,10 +110,10 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="401">Unauthorized</response>
         [HttpGet]
         [Route("/api/categories/count", Name = "GetCategoriesCount")]
-        [AuthorizePermission("PublicStoreAllowNavigation")]
-        [ProducesResponseType(typeof(CategoriesCountRootObject), (int) HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(string), (int) HttpStatusCode.Unauthorized)]
-        [ProducesResponseType(typeof(ErrorsRootObject), (int) HttpStatusCode.BadRequest)]
+        [AuthorizePermission(StandardPermission.PublicStore.PUBLIC_STORE_ALLOW_NAVIGATION)]
+        [ProducesResponseType(typeof(CategoriesCountRootObject), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [GetRequestsErrorInterceptorActionFilter]
         public async Task<IActionResult> GetCategoriesCount([FromQuery] CategoriesCountParametersModel parameters)
         {
@@ -126,9 +122,9 @@ namespace Nop.Plugin.Api.Controllers
                                                                             parameters.PublishedStatus, parameters.ProductId, parameters.ParentCategoryId);
 
             var categoriesCountRootObject = new CategoriesCountRootObject
-                                            {
-                                                Count = allCategoriesCount
-                                            };
+            {
+                Count = allCategoriesCount
+            };
 
             return Ok(categoriesCountRootObject);
         }
@@ -143,11 +139,11 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="401">Unauthorized</response>
         [HttpGet]
         [Route("/api/categories/{id}", Name = "GetCategoryById")]
-        [AuthorizePermission("PublicStoreAllowNavigation")]
-        [ProducesResponseType(typeof(CategoriesRootObject), (int) HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ErrorsRootObject), (int) HttpStatusCode.BadRequest)]
-        [ProducesResponseType(typeof(ErrorsRootObject), (int) HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(string), (int) HttpStatusCode.Unauthorized)]
+        [AuthorizePermission(StandardPermission.PublicStore.PUBLIC_STORE_ALLOW_NAVIGATION)]
+        [ProducesResponseType(typeof(CategoriesRootObject), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [GetRequestsErrorInterceptorActionFilter]
         public async Task<IActionResult> GetCategoryById([FromRoute] int id, [FromQuery] string fields = "")
         {
@@ -176,11 +172,11 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpPost]
         [Route("/api/categories", Name = "CreateCategory")]
-        [AuthorizePermission("ManageCategories")]
-        [ProducesResponseType(typeof(CategoriesRootObject), (int) HttpStatusCode.OK)]
+        [AuthorizePermission(StandardPermission.Catalog.CATEGORIES_CREATE_EDIT_DELETE)]
+        [ProducesResponseType(typeof(CategoriesRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), 422)]
-        [ProducesResponseType(typeof(ErrorsRootObject), (int) HttpStatusCode.BadRequest)]
-        [ProducesResponseType(typeof(string), (int) HttpStatusCode.Unauthorized)]
+        [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         public async Task<IActionResult> CreateCategory(
             [FromBody]
             [ModelBinder(typeof(JsonModelBinder<CategoryDto>))]
@@ -244,12 +240,12 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpPut]
         [Route("/api/categories/{id}", Name = "UpdateCategory")]
-        [AuthorizePermission("ManageCategories")]
-        [ProducesResponseType(typeof(CategoriesRootObject), (int) HttpStatusCode.OK)]
+        [AuthorizePermission(StandardPermission.Catalog.CATEGORIES_CREATE_EDIT_DELETE)]
+        [ProducesResponseType(typeof(CategoriesRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), 422)]
-        [ProducesResponseType(typeof(string), (int) HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(string), (int) HttpStatusCode.Unauthorized)]
-        [ProducesResponseType(typeof(ErrorsRootObject), (int) HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> UpdateCategory(
             [FromBody]
             [ModelBinder(typeof(JsonModelBinder<CategoryDto>))]
@@ -307,11 +303,11 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpDelete]
         [Route("/api/categories/{id}", Name = "DeleteCategory")]
-        [AuthorizePermission("ManageCategories")]
-        [ProducesResponseType(typeof(void), (int) HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ErrorsRootObject), (int) HttpStatusCode.BadRequest)]
-        [ProducesResponseType(typeof(string), (int) HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(string), (int) HttpStatusCode.Unauthorized)]
+        [AuthorizePermission(StandardPermission.Catalog.CATEGORIES_CREATE_EDIT_DELETE)]
+        [ProducesResponseType(typeof(void), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [GetRequestsErrorInterceptorActionFilter]
         public async Task<IActionResult> DeleteCategory([FromRoute] int id)
         {
@@ -335,9 +331,9 @@ namespace Nop.Plugin.Api.Controllers
             return new RawJsonActionResult("{}");
         }
 
-		#region Private methods
+        #region Private methods
 
-		private async Task UpdatePictureAsync(Category categoryEntityToUpdate, ImageDto imageDto)
+        private async Task UpdatePictureAsync(Category categoryEntityToUpdate, ImageDto imageDto)
         {
             // no image specified then do nothing
             if (imageDto == null)

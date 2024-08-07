@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Nop.Core.Domain.Catalog;
 using Nop.Core.Domain.Discounts;
 using Nop.Plugin.Api.Attributes;
@@ -30,6 +24,7 @@ using Nop.Services.Media;
 using Nop.Services.Security;
 using Nop.Services.Seo;
 using Nop.Services.Stores;
+using System.Net;
 
 namespace Nop.Plugin.Api.Controllers
 {
@@ -41,6 +36,7 @@ namespace Nop.Plugin.Api.Controllers
         private readonly IProductApiService _productApiService;
         private readonly IProductAttributeService _productAttributeService;
         private readonly IProductService _productService;
+        private readonly ICopyProductService _copyProductService;
         private readonly IProductTagService _productTagService;
         private readonly IUrlRecordService _urlRecordService;
 
@@ -61,7 +57,7 @@ namespace Nop.Plugin.Api.Controllers
             IManufacturerService manufacturerService,
             IProductTagService productTagService,
             IProductAttributeService productAttributeService,
-            IDTOHelper dtoHelper) : base(jsonFieldsSerializer, aclService, customerService, storeMappingService, storeService, discountService,
+            IDTOHelper dtoHelper, ICopyProductService copyProductService) : base(jsonFieldsSerializer, aclService, customerService, storeMappingService, storeService, discountService,
                                          customerActivityService, localizationService, pictureService)
         {
             _productApiService = productApiService;
@@ -72,6 +68,7 @@ namespace Nop.Plugin.Api.Controllers
             _productService = productService;
             _productAttributeService = productAttributeService;
             _dtoHelper = dtoHelper;
+            _copyProductService = copyProductService;
         }
 
         /// <summary>
@@ -82,7 +79,7 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="401">Unauthorized</response>
         [HttpGet]
         [Route("/api/products", Name = "GetProducts")]
-        [AuthorizePermission("PublicStoreAllowNavigation")]
+        [AuthorizePermission(StandardPermission.PublicStore.PUBLIC_STORE_ALLOW_NAVIGATION)]
         [ProducesResponseType(typeof(ProductsRootObjectDto), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -123,7 +120,7 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="401">Unauthorized</response>
         [HttpGet]
         [Route("/api/products/count", Name = "GetProductsCount")]
-        [AuthorizePermission("PublicStoreAllowNavigation")]
+        [AuthorizePermission(StandardPermission.PublicStore.PUBLIC_STORE_ALLOW_NAVIGATION)]
         [ProducesResponseType(typeof(ProductsCountRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -152,7 +149,7 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="401">Unauthorized</response>
         [HttpGet]
         [Route("/api/products/{id}", Name = "GetProductById")]
-        [AuthorizePermission("PublicStoreAllowNavigation")]
+        [AuthorizePermission(StandardPermission.PublicStore.PUBLIC_STORE_ALLOW_NAVIGATION)]
         [ProducesResponseType(typeof(ProductsRootObjectDto), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -184,7 +181,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpGet]
         [Route("/api/products/categories", Name = "GetProductCategories")]
-        [AuthorizePermission("PublicStoreAllowNavigation")]
+        [AuthorizePermission(StandardPermission.PublicStore.PUBLIC_STORE_ALLOW_NAVIGATION)]
         [ProducesResponseType(typeof(ProductCategoriesRootObjectDto), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -218,7 +215,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpPost]
         [Route("/api/products", Name = "CreateProduct")]
-        [AuthorizePermission("ManageProducts")]
+        [AuthorizePermission(StandardPermission.Catalog.PRODUCTS_CREATE_EDIT_DELETE)]
         [ProducesResponseType(typeof(ProductsRootObjectDto), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), 422)]
@@ -277,7 +274,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpPut]
         [Route("/api/products/{id}", Name = "UpdateProduct")]
-        [AuthorizePermission("ManageProducts")]
+        [AuthorizePermission(StandardPermission.Catalog.PRODUCTS_CREATE_EDIT_DELETE)]
         [ProducesResponseType(typeof(ProductsRootObjectDto), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
@@ -349,7 +346,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpDelete]
         [Route("/api/products/{id}", Name = "DeleteProduct")]
-        [AuthorizePermission("ManageProducts")]
+        [AuthorizePermission(StandardPermission.Catalog.PRODUCTS_CREATE_EDIT_DELETE)]
         [ProducesResponseType(typeof(void), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
@@ -629,7 +626,8 @@ namespace Nop.Plugin.Api.Controllers
             }
 
             await _productService.UpdateProductAsync(product);
-            await _productService.UpdateHasDiscountsAppliedAsync(product);
+            // await _productService.UpdateHasDiscountsAppliedAsync(product);
+
         }
 
         private async Task UpdateProductManufacturersAsync(Product product, List<int> passedManufacturerIds)

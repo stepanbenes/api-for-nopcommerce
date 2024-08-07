@@ -1,14 +1,11 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Net;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Newtonsoft.Json;
 using Nop.Core.Infrastructure;
 using Nop.Plugin.Api.DTO.Errors;
-using Nop.Plugin.Api.JSON.ActionResults;
 using Nop.Plugin.Api.JSON.Serializers;
 using Nop.Plugin.Api.Models;
+using System.Net;
 
 namespace Nop.Plugin.Api.Attributes
 {
@@ -36,7 +33,7 @@ namespace Nop.Plugin.Api.Attributes
                 SetError(actionExecutedContext, error);
             }
             else if (actionExecutedContext.HttpContext.Response != null &&
-                     (HttpStatusCode) actionExecutedContext.HttpContext.Response.StatusCode != HttpStatusCode.OK)
+                     (HttpStatusCode)actionExecutedContext.HttpContext.Response.StatusCode != HttpStatusCode.OK)
             {
                 string responseBody;
 
@@ -77,9 +74,9 @@ namespace Nop.Plugin.Api.Attributes
                                };
 
             var errorsRootObject = new ErrorsRootObject
-                                   {
-                                       Errors = bindingError
-                                   };
+            {
+                Errors = bindingError
+            };
 
             var errorJson = _jsonFieldsSerializer.Serialize(errorsRootObject, null);
             var response = new ContentResult();
@@ -87,7 +84,7 @@ namespace Nop.Plugin.Api.Attributes
             response.ContentType = "application/json";
             response.StatusCode = (int)HttpStatusCode.InternalServerError;
             actionExecutedContext.Result = response;
-            
+
         }
     }
 }

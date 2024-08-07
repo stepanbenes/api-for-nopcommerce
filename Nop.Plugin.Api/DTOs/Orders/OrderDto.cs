@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Nop.Plugin.Api.DTO.Base;
-using Nop.Plugin.Api.DTO.Customers;
 using Nop.Plugin.Api.DTO.OrderItems;
 using Nop.Plugin.Api.DTOs.Orders;
 

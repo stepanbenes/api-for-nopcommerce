@@ -1,7 +1,5 @@
-﻿using System.Collections.Generic;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Nop.Plugin.Api.Infrastructure;
-using Nop.Plugin.Api.ModelBinders;
 
 namespace Nop.Plugin.Api.Models.TopicsParameters
 {

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Nop.Core.Domain.Common;
+﻿using Nop.Core.Domain.Common;
 
 namespace Nop.Plugin.Api.Factories
 {
@@ -9,9 +7,9 @@ namespace Nop.Plugin.Api.Factories
         public Task<Address> InitializeAsync()
         {
             var address = new Address
-                          {
-                              CreatedOnUtc = DateTime.UtcNow
-                          };
+            {
+                CreatedOnUtc = DateTime.UtcNow
+            };
 
             return Task.FromResult(address);
         }

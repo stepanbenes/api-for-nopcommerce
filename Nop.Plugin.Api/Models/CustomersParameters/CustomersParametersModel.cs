@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Nop.Plugin.Api.Infrastructure;
 using Nop.Plugin.Api.ModelBinders;

@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Nop.Plugin.Api.DTO.OrderItems;
 using Nop.Plugin.Api.Helpers;
 

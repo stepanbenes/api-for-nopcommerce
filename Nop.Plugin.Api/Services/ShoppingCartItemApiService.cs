@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Nop.Core;
-using Nop.Data;
+﻿using Nop.Core;
 using Nop.Core.Domain.Orders;
+using Nop.Data;
 using Nop.Plugin.Api.DataStructures;
 using Nop.Plugin.Api.Infrastructure;
-using System.Threading.Tasks;
 
 namespace Nop.Plugin.Api.Services
 {

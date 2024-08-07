@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Nop.Core.Domain.Catalog;
 using Nop.Core.Domain.Orders;
 using Nop.Plugin.Api.Attributes;
@@ -29,10 +24,11 @@ using Nop.Services.Orders;
 using Nop.Services.Security;
 using Nop.Services.Stores;
 using Nop.Services.Tax;
+using System.Net;
 
 namespace Nop.Plugin.Api.Controllers
 {
-    [AuthorizePermission("ManageOrders")]
+    [AuthorizePermission(StandardPermission.Orders.ORDERS_CREATE_EDIT_DELETE)]
     public class OrderItemsController : BaseApiController
     {
         private readonly IDTOHelper _dtoHelper;
@@ -360,9 +356,9 @@ namespace Nop.Plugin.Api.Controllers
             return new RawJsonActionResult("{}");
         }
 
-		#region Private methods
+        #region Private methods
 
-		private Product GetProduct(int? productId)
+        private Product GetProduct(int? productId)
         {
             Product product = null;
 
@@ -378,9 +374,11 @@ namespace Nop.Plugin.Api.Controllers
 
         private async Task<OrderItem> PrepareDefaultOrderItemFromProductAsync(Order order, Product product)
         {
+
             var customer = await CustomerService.GetCustomerByIdAsync(order.CustomerId);
             var presetQty = 1;
-            var price = await _priceCalculationService.GetFinalPriceAsync(product, customer, decimal.Zero, true, presetQty);
+            var store = await StoreService.GetStoreByIdAsync(order.StoreId);
+            var price = await _priceCalculationService.GetFinalPriceAsync(product, customer, store, decimal.Zero, true, presetQty);
 
             var (priceInclTax, _) = await _taxService.GetProductPriceAsync(product, price.finalPrice, includingTax: true, customer);
             var (priceExclTax, _) = await _taxService.GetProductPriceAsync(product, price.finalPrice, includingTax: false, customer);
@@ -401,6 +399,6 @@ namespace Nop.Plugin.Api.Controllers
             return orderItem;
         }
 
-		#endregion
-	}
+        #endregion
+    }
 }

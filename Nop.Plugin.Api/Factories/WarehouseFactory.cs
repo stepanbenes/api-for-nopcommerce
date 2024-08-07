@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using Nop.Core.Domain.Shipping;
+﻿using Nop.Core.Domain.Shipping;
 
 namespace Nop.Plugin.Api.Factories
 {
@@ -8,7 +7,7 @@ namespace Nop.Plugin.Api.Factories
         public Task<Warehouse> InitializeAsync()
         {
             var warehouse = new Warehouse();
-            
+
             return Task.FromResult(warehouse);
         }
     }

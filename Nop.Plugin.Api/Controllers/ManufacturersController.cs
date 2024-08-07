@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Nop.Core.Domain.Catalog;
 using Nop.Core.Domain.Discounts;
 using Nop.Core.Domain.Media;
@@ -30,10 +25,11 @@ using Nop.Services.Media;
 using Nop.Services.Security;
 using Nop.Services.Seo;
 using Nop.Services.Stores;
+using System.Net;
 
 namespace Nop.Plugin.Api.Controllers
 {
-    [AuthorizePermission("ManageManufacturers")]
+    [AuthorizePermission(StandardPermission.Catalog.MANUFACTURER_CREATE_EDIT_DELETE)]
     public class ManufacturersController : BaseApiController
     {
         private readonly IDTOHelper _dtoHelper;
@@ -271,7 +267,7 @@ namespace Nop.Plugin.Api.Controllers
 
             await UpdatePictureAsync(manufacturer, manufacturerDelta.Dto.Image);
 
-            await UpdateAclRolesAsync (manufacturer, manufacturerDelta.Dto.RoleIds);
+            await UpdateAclRolesAsync(manufacturer, manufacturerDelta.Dto.RoleIds);
 
             await UpdateDiscountsAsync(manufacturer, manufacturerDelta.Dto.DiscountIds);
 
@@ -328,9 +324,9 @@ namespace Nop.Plugin.Api.Controllers
             return new RawJsonActionResult("{}");
         }
 
-		#region Private methods
+        #region Private methods
 
-		private async Task UpdatePictureAsync(Manufacturer manufacturerEntityToUpdate, ImageDto imageDto)
+        private async Task UpdatePictureAsync(Manufacturer manufacturerEntityToUpdate, ImageDto imageDto)
         {
             // no image specified then do nothing
             if (imageDto == null)

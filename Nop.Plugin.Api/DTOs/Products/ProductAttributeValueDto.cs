@@ -1,5 +1,4 @@
-﻿using System;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Nop.Core.Domain.Catalog;
 using Nop.Plugin.Api.DTO.Base;
 using Nop.Plugin.Api.DTO.Images;
@@ -92,13 +91,13 @@ namespace Nop.Plugin.Api.DTO.Products
         [JsonProperty("type")]
         public string AttributeValueType
         {
-            get => ((AttributeValueType) AttributeValueTypeId).ToString();
+            get => ((AttributeValueType)AttributeValueTypeId).ToString();
             set
             {
                 AttributeValueType attributeValueTypeId;
                 if (Enum.TryParse(value, out attributeValueTypeId))
                 {
-                    AttributeValueTypeId = (int) attributeValueTypeId;
+                    AttributeValueTypeId = (int)attributeValueTypeId;
                 }
             }
         }

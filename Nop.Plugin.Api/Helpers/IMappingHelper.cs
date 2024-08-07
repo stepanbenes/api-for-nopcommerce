@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Nop.Plugin.Api.Helpers
+﻿namespace Nop.Plugin.Api.Helpers
 {
     public interface IMappingHelper
     {

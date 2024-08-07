@@ -2,12 +2,10 @@
 
 using Newtonsoft.Json;
 using Nop.Plugin.Api.DTO.Base;
-using System;
-using System.Collections.Generic;
 
 namespace Nop.Plugin.Api.DTOs.Topics
 {
-    [JsonObject(Title ="topic")]
+    [JsonObject(Title = "topic")]
     public class TopicDto : BaseDto
     {
         /// <summary>

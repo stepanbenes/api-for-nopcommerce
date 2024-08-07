@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Newtonsoft.Json;
+using Nop.Plugin.Api.Helpers;
 using System.ComponentModel;
 using System.Globalization;
 using System.Reflection;
-using Newtonsoft.Json;
-using Nop.Plugin.Api.Helpers;
 
 namespace Nop.Plugin.Api.Validators
 {
@@ -88,7 +86,7 @@ namespace Nop.Plugin.Api.Validators
 
             var isValidMethod = constructedType.GetMethod("IsValid");
 
-            var isCurrentPropertyValid = (bool) isValidMethod.Invoke(typeValidatorForNestedProperty, new object[]
+            var isCurrentPropertyValid = (bool)isValidMethod.Invoke(typeValidatorForNestedProperty, new object[]
                                                                                                      {
                                                                                                          value
                                                                                                      });

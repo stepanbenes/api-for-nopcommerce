@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
-using Newtonsoft.Json;
-using Nop.Core.Caching;
-using Nop.Core.Infrastructure;
+﻿using Newtonsoft.Json;
 using Nop.Plugin.Api.Attributes;
-using Nop.Plugin.Api.Infrastructure;
-using Nop.Services.Caching;
+using System.Reflection;
 
 namespace Nop.Plugin.Api.Maps
 {

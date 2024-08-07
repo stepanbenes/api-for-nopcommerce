@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Nop.Plugin.Api.Validators
+﻿namespace Nop.Plugin.Api.Validators
 {
     public interface IFieldsValidator
     {

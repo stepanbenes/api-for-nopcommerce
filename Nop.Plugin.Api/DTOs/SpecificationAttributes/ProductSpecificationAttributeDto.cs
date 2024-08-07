@@ -1,5 +1,4 @@
-﻿using System;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Nop.Core.Domain.Catalog;
 using Nop.Plugin.Api.DTO.Base;
 
@@ -57,8 +56,8 @@ namespace Nop.Plugin.Api.DTO.SpecificationAttributes
         [JsonProperty("attribute_type")]
         public string AttributeType
         {
-            get => ((SpecificationAttributeType) AttributeTypeId).ToString();
-            set => AttributeTypeId = (int) Enum.Parse(typeof(SpecificationAttributeType), value);
+            get => ((SpecificationAttributeType)AttributeTypeId).ToString();
+            set => AttributeTypeId = (int)Enum.Parse(typeof(SpecificationAttributeType), value);
         }
 
         /// <summary>

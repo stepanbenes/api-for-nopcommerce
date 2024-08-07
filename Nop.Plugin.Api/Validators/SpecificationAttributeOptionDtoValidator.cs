@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using FluentValidation;
+﻿using FluentValidation;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Http;
 using Nop.Plugin.Api.DTO.SpecificationAttributes;
 using Nop.Plugin.Api.Helpers;
-using System.Net.Http;
 
 namespace Nop.Plugin.Api.Validators
 {

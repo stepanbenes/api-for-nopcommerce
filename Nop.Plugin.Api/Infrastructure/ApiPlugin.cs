@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Nop.Core;
+﻿using Nop.Core;
 using Nop.Core.Domain.Customers;
 using Nop.Core.Domain.Logging;
 using Nop.Core.Infrastructure;
@@ -89,7 +86,7 @@ namespace Nop.Plugin.Api.Infrastructure
                 apiRole.Active = true;
                 await _customerService.UpdateCustomerRoleAsync(apiRole);
             }
-            
+
             var activityLogTypeRepository = EngineContext.Current.Resolve<IRepository<ActivityLogType>>();
             var activityLogType = (await activityLogTypeRepository.GetAllAsync(query =>
             {
@@ -136,7 +133,7 @@ namespace Nop.Plugin.Api.Infrastructure
                 apiRole.Active = false;
                 await _customerService.UpdateCustomerRoleAsync(apiRole);
             }
-            
+
             var activityLogTypeRepository = EngineContext.Current.Resolve<IRepository<ActivityLogType>>();
             var activityLogType = (await activityLogTypeRepository.GetAllAsync(query =>
             {

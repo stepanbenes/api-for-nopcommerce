@@ -1,6 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
 using System.Reflection;
-using Newtonsoft.Json;
 
 namespace Nop.Plugin.Api.Helpers
 {

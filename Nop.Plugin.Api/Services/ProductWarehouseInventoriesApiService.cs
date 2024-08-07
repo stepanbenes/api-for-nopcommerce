@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Nop.Core.Domain.Catalog;
+﻿using Nop.Core.Domain.Catalog;
 using Nop.Data;
 using Nop.Plugin.Api.DataStructures;
 using Nop.Plugin.Api.Infrastructure;
@@ -30,7 +27,7 @@ namespace Nop.Plugin.Api.Services
         {
             return GetInventoriesQuery(productId, warehouseId).Count();
         }
-        
+
         public Task<ProductWarehouseInventory> GetByIdAsync(int id)
         {
             if (id <= 0)

@@ -1,6 +1,5 @@
-﻿using System;
+﻿using AutoMapper;
 using System.Reflection;
-using AutoMapper;
 
 namespace Nop.Plugin.Api.MappingExtensions
 {

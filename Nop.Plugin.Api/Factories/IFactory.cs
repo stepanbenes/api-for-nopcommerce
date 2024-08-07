@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace Nop.Plugin.Api.Factories
+﻿namespace Nop.Plugin.Api.Factories
 {
     public interface IFactory<T>
     {

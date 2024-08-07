@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Nop.Plugin.Api.DTO
+﻿namespace Nop.Plugin.Api.DTO
 {
     public interface ISerializableObject
     {

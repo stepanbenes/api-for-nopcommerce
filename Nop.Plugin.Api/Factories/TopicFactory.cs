@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using Nop.Core.Domain.Topics;
+﻿using Nop.Core.Domain.Topics;
 
 namespace Nop.Plugin.Api.Factories
 {

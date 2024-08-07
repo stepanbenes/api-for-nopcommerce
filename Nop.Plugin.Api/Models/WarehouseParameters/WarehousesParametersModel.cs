@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using Newtonsoft.Json;
-using Nop.Plugin.Api.Infrastructure;
+﻿using Newtonsoft.Json;
 
 namespace Nop.Plugin.Api.Models.WarehousesParameters
 {

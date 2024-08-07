@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Nop.Plugin.Api.Converters
+﻿namespace Nop.Plugin.Api.Converters
 {
     public interface IObjectConverter
     {

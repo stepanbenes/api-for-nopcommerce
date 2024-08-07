@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Xml;
-using Nop.Core.Domain.Catalog;
-using Nop.Plugin.Api.Converters;
+﻿using Nop.Core.Domain.Catalog;
 using Nop.Plugin.Api.DTO;
 using Nop.Services.Catalog;
 using Nop.Services.Media;
+using System.Globalization;
+using System.Xml;
 
 namespace Nop.Plugin.Api.Services
 {
@@ -46,102 +41,102 @@ namespace Nop.Plugin.Api.Services
                     case AttributeControlType.RadioList:
                     case AttributeControlType.ColorSquares:
                     case AttributeControlType.ImageSquares:
-                    {
-                        // there should be only one selected value for this attribute
-                        var selectedAttribute = attributeDtos.Where(x => x.Id == attribute.Id).FirstOrDefault();
-                        if (selectedAttribute != null)
                         {
-                            int selectedAttributeValue;
-                            var isInt = int.TryParse(selectedAttribute.Value, out selectedAttributeValue);
-                            if (isInt && selectedAttributeValue > 0)
+                            // there should be only one selected value for this attribute
+                            var selectedAttribute = attributeDtos.Where(x => x.Id == attribute.Id).FirstOrDefault();
+                            if (selectedAttribute != null)
                             {
-                                attributesXml = _productAttributeParser.AddProductAttribute(attributesXml,
-                                                                                            attribute, selectedAttributeValue.ToString());
+                                int selectedAttributeValue;
+                                var isInt = int.TryParse(selectedAttribute.Value, out selectedAttributeValue);
+                                if (isInt && selectedAttributeValue > 0)
+                                {
+                                    attributesXml = _productAttributeParser.AddProductAttribute(attributesXml,
+                                                                                                attribute, selectedAttributeValue.ToString());
+                                }
                             }
                         }
-                    }
                         break;
                     case AttributeControlType.Checkboxes:
-                    {
-                        // there could be more than one selected value for this attribute
-                        var selectedAttributes = attributeDtos.Where(x => x.Id == attribute.Id);
-                        foreach (var selectedAttribute in selectedAttributes)
                         {
-                            int selectedAttributeValue;
-                            var isInt = int.TryParse(selectedAttribute.Value, out selectedAttributeValue);
-                            if (isInt && selectedAttributeValue > 0)
+                            // there could be more than one selected value for this attribute
+                            var selectedAttributes = attributeDtos.Where(x => x.Id == attribute.Id);
+                            foreach (var selectedAttribute in selectedAttributes)
                             {
-                                // currently there is no support for attribute quantity
-                                var quantity = 1;
+                                int selectedAttributeValue;
+                                var isInt = int.TryParse(selectedAttribute.Value, out selectedAttributeValue);
+                                if (isInt && selectedAttributeValue > 0)
+                                {
+                                    // currently there is no support for attribute quantity
+                                    var quantity = 1;
 
-                                attributesXml = _productAttributeParser.AddProductAttribute(attributesXml,
-                                                                                            attribute, selectedAttributeValue.ToString(), quantity);
+                                    attributesXml = _productAttributeParser.AddProductAttribute(attributesXml,
+                                                                                                attribute, selectedAttributeValue.ToString(), quantity);
+                                }
                             }
                         }
-                    }
                         break;
                     case AttributeControlType.ReadonlyCheckboxes:
-                    {
-                        //load read-only(already server - side selected) values
-                        var attributeValues = await _productAttributeService.GetProductAttributeValuesAsync(attribute.Id);
-                        foreach (var selectedAttributeId in attributeValues
-                                                            .Where(v => v.IsPreSelected)
-                                                            .Select(v => v.Id)
-                                                            .ToList())
                         {
-                            attributesXml = _productAttributeParser.AddProductAttribute(attributesXml,
-                                                                                        attribute, selectedAttributeId.ToString());
+                            //load read-only(already server - side selected) values
+                            var attributeValues = await _productAttributeService.GetProductAttributeValuesAsync(attribute.Id);
+                            foreach (var selectedAttributeId in attributeValues
+                                                                .Where(v => v.IsPreSelected)
+                                                                .Select(v => v.Id)
+                                                                .ToList())
+                            {
+                                attributesXml = _productAttributeParser.AddProductAttribute(attributesXml,
+                                                                                            attribute, selectedAttributeId.ToString());
+                            }
                         }
-                    }
                         break;
                     case AttributeControlType.TextBox:
                     case AttributeControlType.MultilineTextbox:
-                    {
-                        var selectedAttribute = attributeDtos.Where(x => x.Id == attribute.Id).FirstOrDefault();
-
-                        if (selectedAttribute != null)
                         {
-                            attributesXml = _productAttributeParser.AddProductAttribute(attributesXml,
-                                                                                        attribute, selectedAttribute.Value);
+                            var selectedAttribute = attributeDtos.Where(x => x.Id == attribute.Id).FirstOrDefault();
+
+                            if (selectedAttribute != null)
+                            {
+                                attributesXml = _productAttributeParser.AddProductAttribute(attributesXml,
+                                                                                            attribute, selectedAttribute.Value);
+                            }
                         }
-                    }
                         break;
                     case AttributeControlType.Datepicker:
-                    {
-                        var selectedAttribute = attributeDtos.Where(x => x.Id == attribute.Id).FirstOrDefault();
-
-                        if (selectedAttribute != null)
                         {
-                            DateTime selectedDate;
+                            var selectedAttribute = attributeDtos.Where(x => x.Id == attribute.Id).FirstOrDefault();
 
-                            // Since nopCommerce uses this format to keep the date in the database to keep it consisten we will expect the same format to be passed
-                            var validDate = DateTime.TryParseExact(selectedAttribute.Value, "D", CultureInfo.CurrentCulture,
-                                                                   DateTimeStyles.None, out selectedDate);
-
-                            if (validDate)
+                            if (selectedAttribute != null)
                             {
-                                attributesXml = _productAttributeParser.AddProductAttribute(attributesXml,
-                                                                                            attribute, selectedDate.ToString("D"));
+                                DateTime selectedDate;
+
+                                // Since nopCommerce uses this format to keep the date in the database to keep it consisten we will expect the same format to be passed
+                                var validDate = DateTime.TryParseExact(selectedAttribute.Value, "D", CultureInfo.CurrentCulture,
+                                                                       DateTimeStyles.None, out selectedDate);
+
+                                if (validDate)
+                                {
+                                    attributesXml = _productAttributeParser.AddProductAttribute(attributesXml,
+                                                                                                attribute, selectedDate.ToString("D"));
+                                }
                             }
                         }
-                    }
                         break;
                     case AttributeControlType.FileUpload:
-                    {
-                        var selectedAttribute = attributeDtos.Where(x => x.Id == attribute.Id).FirstOrDefault();
-
-                        if (selectedAttribute != null)
                         {
-                            Guid downloadGuid;
-                            Guid.TryParse(selectedAttribute.Value, out downloadGuid);
-                            var download = await _downloadService.GetDownloadByGuidAsync(downloadGuid);
-                            if (download != null)
+                            var selectedAttribute = attributeDtos.Where(x => x.Id == attribute.Id).FirstOrDefault();
+
+                            if (selectedAttribute != null)
                             {
-                                attributesXml = _productAttributeParser.AddProductAttribute(attributesXml,
-                                                                                            attribute, download.DownloadGuid.ToString());
+                                Guid downloadGuid;
+                                Guid.TryParse(selectedAttribute.Value, out downloadGuid);
+                                var download = await _downloadService.GetDownloadByGuidAsync(downloadGuid);
+                                if (download != null)
+                                {
+                                    attributesXml = _productAttributeParser.AddProductAttribute(attributesXml,
+                                                                                                attribute, download.DownloadGuid.ToString());
+                                }
                             }
                         }
-                    }
                         break;
                 }
             }
@@ -177,10 +172,10 @@ namespace Nop.Plugin.Api.Services
                                 // no support for quantity yet
                                 //var quantityNode = attributeValue.SelectSingleNode("Quantity");
                                 attributeDtos.Add(new ProductItemAttributeDto
-                                                  {
-                                                      Id = attributeId,
-                                                      Value = value
-                                                  });
+                                {
+                                    Id = attributeId,
+                                    Value = value
+                                });
                             }
                         }
                     }

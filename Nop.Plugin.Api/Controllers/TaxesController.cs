@@ -1,17 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Nop.Core.Domain.Tax;
 using Nop.Plugin.Api.Attributes;
 using Nop.Plugin.Api.Authorization.Attributes;
 using Nop.Plugin.Api.Delta;
 using Nop.Plugin.Api.DTO.Errors;
 using Nop.Plugin.Api.DTOs.Taxes;
-using Nop.Plugin.Api.Factories;
 using Nop.Plugin.Api.Helpers;
 using Nop.Plugin.Api.JSON.ActionResults;
 using Nop.Plugin.Api.JSON.Serializers;
@@ -24,10 +17,11 @@ using Nop.Services.Media;
 using Nop.Services.Security;
 using Nop.Services.Stores;
 using Nop.Services.Tax;
+using System.Net;
 
 namespace Nop.Plugin.Api.Controllers
 {
-    [AuthorizePermission("ManageTaxSettings")]
+    [AuthorizePermission(StandardPermission.Configuration.MANAGE_TAX_SETTINGS)]
     public class TaxesController : BaseApiController
     {
         private readonly ITaxCategoryService _taxCategoryService;
@@ -108,7 +102,7 @@ namespace Nop.Plugin.Api.Controllers
 
             await _taxCategoryService.InsertTaxCategoryAsync(taxCategory);
 
-            var newTaxCategoryDto =  _dtoHelper.prepareTaxCategoryDto(taxCategory);
+            var newTaxCategoryDto = _dtoHelper.prepareTaxCategoryDto(taxCategory);
 
             var root = new TaxCategoriesRootObject();
             root.Taxes.Add(newTaxCategoryDto);

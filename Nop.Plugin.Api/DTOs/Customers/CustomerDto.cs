@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using Newtonsoft.Json;
-using Nop.Plugin.Api.Attributes;
-using Nop.Plugin.Api.DTO.ShoppingCarts;
+﻿using Newtonsoft.Json;
 
 namespace Nop.Plugin.Api.DTO.Customers
 {

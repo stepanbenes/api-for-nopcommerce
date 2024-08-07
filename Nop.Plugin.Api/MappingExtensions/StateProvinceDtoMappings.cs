@@ -1,6 +1,5 @@
 ﻿using Nop.Core.Domain.Directory;
 using Nop.Plugin.Api.AutoMapper;
-using Nop.Plugin.Api.DTO;
 using Nop.Plugin.Api.DTOs.StateProvinces;
 
 namespace Nop.Plugin.Api.MappingExtensions

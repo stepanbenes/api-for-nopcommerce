@@ -1,15 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using Nop.Core.Infrastructure;
+﻿using Nop.Core.Infrastructure;
 using Nop.Plugin.Api.DTO.Images;
 using Nop.Services.Media;
+using System.Text.RegularExpressions;
+
 
 namespace Nop.Plugin.Api.Attributes
 {
@@ -30,6 +23,7 @@ namespace Nop.Plugin.Api.Attributes
 
             var imageSrcSet = imageDto != null && !string.IsNullOrEmpty(imageDto.Src);
             var imageAttachmentSet = imageDto != null && !string.IsNullOrEmpty(imageDto.Attachment);
+
 
             if (imageSrcSet || imageAttachmentSet)
             {
@@ -93,14 +87,18 @@ namespace Nop.Plugin.Api.Attributes
         private void DownloadFromSrc(string imageSrc, ref byte[] imageBytes, ref string mimeType)
         {
             const string Key = "image type";
-            // TODO: discuss if we need our own web client so we can set a custom tmeout - this one's timeout is 100 sec.
-            var client = new WebClient();
+
+            var client = new HttpClient();
 
             try
             {
-                imageBytes = client.DownloadData(imageSrc);
-                // This needs to be after the downloadData is called from client, otherwise there won't be any response headers.
-                mimeType = client.ResponseHeaders["content-type"];
+                //webClient version
+                var response = client.GetAsync(imageSrc).Result;
+                imageBytes = response.Content.ReadAsByteArrayAsync().Result;
+                if (response.Content.Headers.ContentType != null)
+                {
+                    mimeType = response.Content.Headers.ContentType.MediaType;
+                }
 
                 if (imageBytes == null)
                 {
@@ -109,7 +107,7 @@ namespace Nop.Plugin.Api.Attributes
             }
             catch (Exception ex)
             {
-                var message = $"{"src is invalid"} - {ex.Message}";
+                var message = $"src is invalid - {ex.Message}";
 
                 _errors.Add(Key, message);
             }
@@ -130,17 +128,10 @@ namespace Nop.Plugin.Api.Attributes
         private static void ConvertAttachmentToByteArray(string attachment, ref byte[] imageBytes, ref string mimeType)
         {
             imageBytes = Convert.FromBase64String(attachment);
-            mimeType = GetMimeTypeFromByteArray(imageBytes);
+            mimeType = MimeTypes.GetMimeType(attachment);
         }
 
-        private static string GetMimeTypeFromByteArray(byte[] imageBytes)
-        {
-            var stream = new MemoryStream(imageBytes, 0, imageBytes.Length);
-            var image = Image.FromStream(stream, true);
-            var format = image.RawFormat;
-            var codec = ImageCodecInfo.GetImageDecoders().First(c => c.FormatID == format.Guid);
-            return codec.MimeType;
-        }
+
 
         private async Task ValidatePictureByteArrayAsync(byte[] imageBytes, string mimeType)
         {
@@ -148,7 +139,7 @@ namespace Nop.Plugin.Api.Attributes
             {
                 try
                 {
-                    imageBytes = await _pictureService.ValidatePictureAsync(imageBytes, mimeType);
+                    imageBytes = await _pictureService.ValidatePictureAsync(imageBytes, mimeType, "placeholderToFix");
                 }
                 catch (Exception ex)
                 {
