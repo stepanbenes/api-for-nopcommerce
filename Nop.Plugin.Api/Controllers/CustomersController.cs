@@ -32,7 +32,7 @@ using System.Net;
 
 namespace Nop.Plugin.Api.Controllers
 {
-    [AuthorizePermission(StandardPermission.Customers.CUSTOMERS_CREATE_EDIT_DELETE)]
+    [AuthorizePermission(nameof(StandardPermissionProvider.ManageCustomers))]
     public class CustomersController : BaseApiController
     {
         private readonly ICountryService _countryService;
@@ -152,7 +152,7 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="401">Unauthorized</response>
         [HttpGet]
         [Route("/api/customers/me", Name = "GetCurrentCustomer")]
-        [AuthorizePermission(StandardPermission.Customers.CUSTOMERS_CREATE_EDIT_DELETE, ignore: true)] // turn off all permission authorizations, access to this action is allowed to all authenticated customers
+        [AuthorizePermission(nameof(StandardPermissionProvider.ManageCustomers), ignore: true)] // turn off all permission authorizations, access to this action is allowed to all authenticated customers
         [ProducesResponseType(typeof(CustomersRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
@@ -479,7 +479,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpPost]
         [Route("api/customers/{customerId}/billingaddress", Name = "SetBillingAddress")]
-        [AuthorizePermission(StandardPermission.Customers.CUSTOMERS_CREATE_EDIT_DELETE, ignore: true)]
+        [AuthorizePermission(nameof(StandardPermissionProvider.ManageCustomers), ignore: true)]
         [GetRequestsErrorInterceptorActionFilter]
         [ProducesResponseType(typeof(AddressDto), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -505,7 +505,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpPost]
         [Route("api/customers/{customerId}/shippingaddress", Name = "SetShippingAddress")]
-        [AuthorizePermission(StandardPermission.Customers.CUSTOMERS_CREATE_EDIT_DELETE, ignore: true)]
+        [AuthorizePermission(nameof(StandardPermissionProvider.ManageCustomers), ignore: true)]
         [GetRequestsErrorInterceptorActionFilter]
         [ProducesResponseType(typeof(AddressDto), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -574,7 +574,7 @@ namespace Nop.Plugin.Api.Controllers
                 return true;
             }
             // if I want to handle other customer's info, check admin permission
-            return await _permissionService.AuthorizeAsync(StandardPermission.Customers.CUSTOMERS_CREATE_EDIT_DELETE, currentCustomer);
+            return await _permissionService.AuthorizeAsync(nameof(StandardPermissionProvider.ManageCustomers), currentCustomer);
         }
 
 

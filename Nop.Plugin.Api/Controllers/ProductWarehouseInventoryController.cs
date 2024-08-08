@@ -24,7 +24,7 @@ using System.Net;
 
 namespace Nop.Plugin.Api.Controllers
 {
-    [AuthorizePermission(StandardPermission.Catalog.PRODUCTS_CREATE_EDIT_DELETE)]
+    [AuthorizePermission(nameof(StandardPermissionProvider.ManageProducts))]
     public class ProductWarehouseInventoryController : BaseApiController
     {
         private readonly IProductApiService _productApiService;

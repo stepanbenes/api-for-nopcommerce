@@ -189,7 +189,7 @@ namespace Nop.Plugin.Api.Infrastructure
                       a.UseSwaggerUI(c =>
                 {
                     c.RoutePrefix = "api/swagger";
-                    c.SwaggerEndpoint("/api/swagger/v1/swagger.json", "Nop.Plugin.Api v4.80");
+                    c.SwaggerEndpoint("/api/swagger/v1/swagger.json", "Nop.Plugin.Api v4.70");
                     c.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.None);
                 });
                   }

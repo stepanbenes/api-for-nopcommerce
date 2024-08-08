@@ -24,8 +24,8 @@ using System.Net;
 
 namespace Nop.Plugin.Api.Controllers
 {
-    [AuthorizePermission(StandardPermission.Catalog.PRODUCTS_CREATE_EDIT_DELETE)]
-    [AuthorizePermission(StandardPermission.Catalog.MANUFACTURER_CREATE_EDIT_DELETE)]
+    [AuthorizePermission(nameof(StandardPermissionProvider.ManageProducts))]
+    [AuthorizePermission(nameof(StandardPermissionProvider.ManageManufacturers))]
     public class ProductManufacturerMappingsController : BaseApiController
     {
         private readonly IManufacturerApiService _manufacturerApiService;

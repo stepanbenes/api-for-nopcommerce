@@ -21,7 +21,7 @@ using System.Net;
 
 namespace Nop.Plugin.Api.Controllers
 {
-    [AuthorizePermission(StandardPermission.Configuration.MANAGE_TAX_SETTINGS)]
+    [AuthorizePermission(nameof(StandardPermissionProvider.ManageTaxSettings))]
     public class TaxesController : BaseApiController
     {
         private readonly ITaxCategoryService _taxCategoryService;

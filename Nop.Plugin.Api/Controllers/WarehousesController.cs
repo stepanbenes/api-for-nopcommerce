@@ -67,7 +67,7 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="401">Unauthorized</response>
         [HttpGet]
         [Route("/api/warehouses", Name = "GetWarehouses")]
-        [AuthorizePermission(StandardPermission.Configuration.MANAGE_SHIPPING_SETTINGS)]
+        [AuthorizePermission(nameof(StandardPermissionProvider.ManageShippingSettings))]
         [ProducesResponseType(typeof(WarehousesRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [GetRequestsErrorInterceptorActionFilter]
@@ -99,7 +99,7 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="401">Unauthorized</response>
         [HttpGet]
         [Route("/api/warehouses/{id}", Name = "GetWarehouseById")]
-        [AuthorizePermission(StandardPermission.Configuration.MANAGE_SHIPPING_SETTINGS)]
+        [AuthorizePermission(nameof(StandardPermissionProvider.ManageShippingSettings))]
         [ProducesResponseType(typeof(WarehousesRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.NotFound)]
@@ -132,7 +132,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpPost]
         [Route("/api/warehouses", Name = "CreateWarehouse")]
-        [AuthorizePermission(StandardPermission.Configuration.MANAGE_SHIPPING_SETTINGS)]
+        [AuthorizePermission(nameof(StandardPermissionProvider.ManageShippingSettings))]
         [ProducesResponseType(typeof(WarehousesRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), 422)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -183,7 +183,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpPut]
         [Route("/api/warehouses/{id}", Name = "UpdateWarehouse")]
-        [AuthorizePermission(StandardPermission.Configuration.MANAGE_SHIPPING_SETTINGS)]
+        [AuthorizePermission(nameof(StandardPermissionProvider.ManageShippingSettings))]
         [ProducesResponseType(typeof(WarehousesRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), 422)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
@@ -238,7 +238,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpDelete]
         [Route("/api/warehouses/{id}", Name = "DeleteWarehouse")]
-        [AuthorizePermission(StandardPermission.Configuration.MANAGE_SHIPPING_SETTINGS)]
+        [AuthorizePermission(nameof(StandardPermissionProvider.ManageShippingSettings))]
         [ProducesResponseType(typeof(void), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]

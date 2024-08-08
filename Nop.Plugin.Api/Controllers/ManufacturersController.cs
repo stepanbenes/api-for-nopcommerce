@@ -29,7 +29,7 @@ using System.Net;
 
 namespace Nop.Plugin.Api.Controllers
 {
-    [AuthorizePermission(StandardPermission.Catalog.MANUFACTURER_CREATE_EDIT_DELETE)]
+    [AuthorizePermission(nameof(StandardPermissionProvider.ManageManufacturers))]
     public class ManufacturersController : BaseApiController
     {
         private readonly IDTOHelper _dtoHelper;

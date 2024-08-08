@@ -79,7 +79,7 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="401">Unauthorized</response>
         [HttpGet]
         [Route("/api/products", Name = "GetProducts")]
-        [AuthorizePermission(StandardPermission.PublicStore.PUBLIC_STORE_ALLOW_NAVIGATION)]
+        [AuthorizePermission(nameof(StandardPermissionProvider.PublicStoreAllowNavigation))]
         [ProducesResponseType(typeof(ProductsRootObjectDto), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -120,7 +120,7 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="401">Unauthorized</response>
         [HttpGet]
         [Route("/api/products/count", Name = "GetProductsCount")]
-        [AuthorizePermission(StandardPermission.PublicStore.PUBLIC_STORE_ALLOW_NAVIGATION)]
+        [AuthorizePermission(nameof(StandardPermissionProvider.PublicStoreAllowNavigation))]
         [ProducesResponseType(typeof(ProductsCountRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -149,7 +149,7 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="401">Unauthorized</response>
         [HttpGet]
         [Route("/api/products/{id}", Name = "GetProductById")]
-        [AuthorizePermission(StandardPermission.PublicStore.PUBLIC_STORE_ALLOW_NAVIGATION)]
+        [AuthorizePermission(nameof(StandardPermissionProvider.PublicStoreAllowNavigation))]
         [ProducesResponseType(typeof(ProductsRootObjectDto), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -181,7 +181,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpGet]
         [Route("/api/products/categories", Name = "GetProductCategories")]
-        [AuthorizePermission(StandardPermission.PublicStore.PUBLIC_STORE_ALLOW_NAVIGATION)]
+        [AuthorizePermission(nameof(StandardPermissionProvider.PublicStoreAllowNavigation))]
         [ProducesResponseType(typeof(ProductCategoriesRootObjectDto), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -215,7 +215,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpPost]
         [Route("/api/products", Name = "CreateProduct")]
-        [AuthorizePermission(StandardPermission.Catalog.PRODUCTS_CREATE_EDIT_DELETE)]
+        [AuthorizePermission(nameof(StandardPermissionProvider.ManageProducts))]
         [ProducesResponseType(typeof(ProductsRootObjectDto), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), 422)]
@@ -274,7 +274,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpPut]
         [Route("/api/products/{id}", Name = "UpdateProduct")]
-        [AuthorizePermission(StandardPermission.Catalog.PRODUCTS_CREATE_EDIT_DELETE)]
+        [AuthorizePermission(nameof(StandardPermissionProvider.ManageProducts))]
         [ProducesResponseType(typeof(ProductsRootObjectDto), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
@@ -346,7 +346,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpDelete]
         [Route("/api/products/{id}", Name = "DeleteProduct")]
-        [AuthorizePermission(StandardPermission.Catalog.PRODUCTS_CREATE_EDIT_DELETE)]
+        [AuthorizePermission(nameof(StandardPermissionProvider.ManageProducts))]
         [ProducesResponseType(typeof(void), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
