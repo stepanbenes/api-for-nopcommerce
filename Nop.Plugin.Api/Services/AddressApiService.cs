@@ -13,7 +13,7 @@ namespace Nop.Plugin.Api.Services
 {
     public class AddressApiService : IAddressApiService
     {
-        private readonly IShortTermCacheManager _cacheManager;
+        private readonly IShortTermCacheManager _shortTermCacheManager;
         private readonly ICountryService _countryService;
         private readonly IStateProvinceService _stateProvinceService;
         private readonly IRepository<Address> _addressRepository;
@@ -22,13 +22,13 @@ namespace Nop.Plugin.Api.Services
         public AddressApiService(
             IRepository<Address> addressRepository,
             IRepository<CustomerAddressMapping> customerAddressMappingRepository,
-            IShortTermCacheManager staticCacheManager,
+            IShortTermCacheManager staticShortTermCacheManager,
             ICountryService countryService,
             IStateProvinceService stateProvinceService)
         {
             _addressRepository = addressRepository;
             _customerAddressMappingRepository = customerAddressMappingRepository;
-            _cacheManager = staticCacheManager;
+            _shortTermCacheManager = staticShortTermCacheManager;
             _countryService = countryService;
             _stateProvinceService = stateProvinceService;
         }
@@ -44,14 +44,12 @@ namespace Nop.Plugin.Api.Services
         public async Task<IList<AddressDto>> GetAddressesByCustomerIdAsync(int customerId)
         {
             var query = from address in _addressRepository.Table
-                        join cam in _customerAddressMappingRepository.Table on address.Id equals cam.AddressId
-                        where cam.CustomerId == customerId
-                        select address;
+                join cam in _customerAddressMappingRepository.Table on address.Id equals cam.AddressId
+                where cam.CustomerId == customerId
+                select address;
+            
 
-            var key = _cacheManager.PrepareKey(NopCustomerServicesDefaults.CustomerAddressesCacheKey, customerId);
-
-
-            var addresses = await _cacheManager.GetAsync(async () => await query.ToListAsync(), key);
+            var addresses = await _shortTermCacheManager.GetAsync(async () => await query.ToListAsync(),NopCustomerServicesDefaults.CustomerAddressesCacheKey, customerId);
             return addresses.Select(a => a.ToDto()).ToList();
         }
 
@@ -67,13 +65,12 @@ namespace Nop.Plugin.Api.Services
         public async Task<AddressDto> GetCustomerAddressAsync(int customerId, int addressId)
         {
             var query = from address in _addressRepository.Table
-                        join cam in _customerAddressMappingRepository.Table on address.Id equals cam.AddressId
-                        where cam.CustomerId == customerId && address.Id == addressId
-                        select address;
+                join cam in _customerAddressMappingRepository.Table on address.Id equals cam.AddressId
+                where cam.CustomerId == customerId && address.Id == addressId
+                select address;
+ 
 
-            var key = _cacheManager.PrepareKey(NopCustomerServicesDefaults.CustomerAddressesCacheKey, customerId, addressId);
-
-            var addressEntity = await _cacheManager.GetAsync(async () => await query.FirstOrDefaultAsync(), key);
+            var addressEntity = await _shortTermCacheManager.GetAsync( async () => await query.FirstOrDefaultAsync(),NopCustomerServicesDefaults.CustomerAddressCacheKey, customerId, addressId );
             return addressEntity?.ToDto();
         }
 
