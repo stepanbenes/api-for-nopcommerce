@@ -61,7 +61,9 @@ namespace Nop.Plugin.Api.Infrastructure
 
             if (apiConfigSection != null)
             {
-                var apiConfig = Singleton<AppSettings>.Instance.Get<ApiConfiguration>();
+                //fix due to nopCommerce 4.7 invert the order of the plugin initialization and the AppSettings singleton initialization
+               // var apiConfig = Singleton<AppSettings>.Instance.Get<ApiConfiguration>();
+               var apiConfig = new ApiConfiguration();
 
 
                 if (!string.IsNullOrEmpty(apiConfig.SecurityKey))

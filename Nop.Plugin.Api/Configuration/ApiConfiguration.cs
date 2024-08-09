@@ -7,5 +7,7 @@ namespace Nop.Plugin.Api.Configuration
         public int AllowedClockSkewInMinutes { get; set; } = 5;
 
         public string SecurityKey { get; set; } = "NowIsTheTimeForAllGoodMenToComeToTheAideOfTheirCountry";
+        
+
     }
 }

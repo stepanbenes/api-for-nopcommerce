@@ -178,7 +178,9 @@ namespace Nop.Plugin.Api.Controllers
                     claims.Add(new Claim(ClaimTypes.Name, customer.Email));
                 }
             }
-            var apiConfiguration = Singleton<AppSettings>.Instance.Get<ApiConfiguration>();
+            //fix due to nopCommerce 4.7 invert the order of the plugin initialization and the AppSettings singleton initialization
+            //var apiConfiguration = Singleton<AppSettings>.Instance.Get<ApiConfiguration>();
+            var apiConfiguration = new ApiConfiguration();
             var signingCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(apiConfiguration.SecurityKey)), SecurityAlgorithms.HmacSha256);
             var token = new JwtSecurityToken(new JwtHeader(signingCredentials), new JwtPayload(claims));
             var accessToken = new JwtSecurityTokenHandler().WriteToken(token);
