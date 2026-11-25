@@ -4,6 +4,15 @@ This plugin exposes REST endpoints for nopCommerce. This branch is built and tes
 
 See the [feature coverage and upstream issue audit](docs/api-coverage.md), [date and paging filters](docs/query-filters.md), and [checkout discovery endpoints](docs/checkout-discovery.md).
 
+## Install a release
+
+1. Download `Nop.Plugin.Api.zip` and `Nop.Plugin.Api.zip.sha256` from [GitHub Releases](https://github.com/syky27/api-for-nopcommerce/releases). Verify the download with `sha256sum -c Nop.Plugin.Api.zip.sha256` or `shasum -a 256 -c Nop.Plugin.Api.zip.sha256` on macOS.
+2. Set `ApiConfiguration__SecurityKey` in the nopCommerce environment to a securely generated signing key, for example the output of `openssl rand -hex 32`.
+3. In nopCommerce 5.00, open **Configuration → Local plugins → Upload plugin or theme** and upload `Nop.Plugin.Api.zip`. Follow the restart prompt and install **Api plugin** from **Local plugins**.
+4. Assign the **Api Users** role and the required nopCommerce permissions to the API account.
+
+GitHub Actions builds the installable ZIP against pinned nopCommerce `release-5.00.1` and runs the runtime OpenAPI and API integration tests with the plugin extracted from that ZIP. The workflow run provides the ZIP and checksum in the **nopcommerce-api-plugin** artifact. Push a version tag that matches the `Version` in `Nop.Plugin.Api/plugin.json`, prefixed with `v`. For example, `v5.00.1` publishes version `5.00.1` after the API and both generated client checks pass.
+
 ## Run with Docker
 
 Follow the [Docker quickstart](DOCKER.md) to build the plugin and store together, install the database, and assign the API role.

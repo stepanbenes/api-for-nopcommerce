@@ -16,7 +16,7 @@ export NOP_OPENAPI_ADMIN_PASSWORD="$(openssl rand -hex 24)"
 
 project="nop-openapi-$$"
 scratch="$(mktemp -d)"
-compose=(docker compose --project-name "$project")
+compose=(docker compose --project-name "$project" -f "$repository/compose.yaml")
 cleanup() {
     status=$?
     if [[ "$status" != 0 ]]; then
@@ -28,7 +28,31 @@ cleanup() {
 }
 trap cleanup EXIT
 
-"${compose[@]}" up --build -d
+if [[ -n "${NOP_PLUGIN_PACKAGE_DIR:-}" ]]; then
+    NOP_PLUGIN_BUILD_VERSION="$(python3 -c 'import json; print(json.load(open("Nop.Plugin.Api/plugin.json", encoding="utf-8-sig"))["Version"])')"
+    export NOP_PLUGIN_BUILD_VERSION
+    "${compose[@]}" build web
+    "${compose[@]}" run --no-deps --rm -T --entrypoint tar web -C /app/Plugins -cf - Nop.Plugin.Api \
+        | tar -xf - -C "$scratch"
+    python3 scripts/package-plugin.py "$scratch/Nop.Plugin.Api" "$NOP_PLUGIN_PACKAGE_DIR"
+    python3 -m zipfile -e "$NOP_PLUGIN_PACKAGE_DIR/Nop.Plugin.Api.zip" "$scratch/package"
+
+    # Boot nopCommerce with the exact files that will be published.
+    export NOP_PACKAGED_PLUGIN="$scratch/package/Nop.Plugin.Api"
+    cat > "$scratch/compose.package.yaml" <<'YAML'
+services:
+  web:
+    volumes:
+      - type: bind
+        source: ${NOP_PACKAGED_PLUGIN}
+        target: /app/Plugins/Nop.Plugin.Api
+        read_only: true
+YAML
+    compose+=(-f "$scratch/compose.package.yaml")
+    "${compose[@]}" up --no-build -d
+else
+    "${compose[@]}" up --build -d
+fi
 
 python3 - <<'PY'
 import http.cookiejar

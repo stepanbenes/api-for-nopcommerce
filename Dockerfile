@@ -8,6 +8,7 @@ RUN dotnet publish src/Presentation/Nop.Web/Nop.Web.csproj -c Release --no-build
 
 FROM nop-build AS plugin-build
 
+ARG BUILD_BUILDNUMBER
 COPY Nop.Plugin.Api /src/api-for-nopcommerce/Nop.Plugin.Api
 RUN dotnet build /src/api-for-nopcommerce/Nop.Plugin.Api/Nop.Plugin.Api.csproj -c Release -p:NopRoot=/src/nopCommerce
 
