@@ -21,30 +21,6 @@ namespace Nop.Plugin.Api.DTOs.Topics
         public bool IncludeInSitemap { get; set; }
 
         /// <summary>
-        /// Gets or sets the value indicating whether this topic should be included in top menu
-        /// </summary>
-        [JsonProperty("include_in_top_menu")]
-        public bool? IncludeInTopMenu { get; set; }
-
-        /// <summary>
-        /// Gets or sets the value indicating whether this topic should be included in footer (column 1)
-        /// </summary>
-        [JsonProperty("include_in_footer_column1")]
-        public bool? IncludeInFooterColumn1 { get; set; }
-
-        /// <summary>
-        /// Gets or sets the value indicating whether this topic should be included in footer (column 1)
-        /// </summary>
-        [JsonProperty("include_in_footer_column2")]
-        public bool? IncludeInFooterColumn2 { get; set; }
-
-        /// <summary>
-        /// Gets or sets the value indicating whether this topic should be included in footer (column 1)
-        /// </summary>
-        [JsonProperty("include_in_footer_column3")]
-        public bool? IncludeInFooterColumn3 { get; set; }
-
-        /// <summary>
         /// Gets or sets the display order
         /// </summary>
         [JsonProperty("display_order")]

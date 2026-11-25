@@ -191,11 +191,6 @@ namespace Nop.Plugin.Api.Controllers
             if (string.IsNullOrWhiteSpace(categoryDelta.Dto.Name))
                 return Error((HttpStatusCode)422, "name", "invalid name");
 
-            if (categoryDelta.Dto.IncludeInTopMenu.HasValue)
-            {
-                return Error(HttpStatusCode.BadRequest, "include_in_top_menu", "Manage navigation in nopCommerce under Content management > Menus.");
-            }
-
             //If the validation has passed the categoryDelta object won't be null for sure so we don't need to check for this.
 
             Picture insertedPicture = null;
@@ -267,11 +262,6 @@ namespace Nop.Plugin.Api.Controllers
 
             if (categoryDelta.HasProperty(nameof(CategoryDto.Name)) && string.IsNullOrWhiteSpace(categoryDelta.Dto.Name))
                 return Error((HttpStatusCode)422, "name", "invalid name");
-
-            if (categoryDelta.Dto.IncludeInTopMenu.HasValue)
-            {
-                return Error(HttpStatusCode.BadRequest, "include_in_top_menu", "Manage navigation in nopCommerce under Content management > Menus.");
-            }
 
             var category = await _categoryApiService.GetCategoryByIdAsync(categoryDelta.Dto.Id);
 

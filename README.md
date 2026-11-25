@@ -2,7 +2,16 @@
 
 This plugin exposes REST endpoints for nopCommerce. This branch is built and tested against nopCommerce `release-5.00.1` and .NET 10. Use the matching release branch of this plugin for older versions of nopCommerce.
 
-See the [feature coverage and upstream issue audit](docs/api-coverage.md), [date and paging filters](docs/query-filters.md), and [checkout discovery endpoints](docs/checkout-discovery.md).
+The [versioned API documentation](https://stepanbenes.github.io/api-for-nopcommerce/) will be available once GitHub Pages is enabled. In the meantime, browse the released [v5.00.1 API reference in Swagger UI](https://petstore.swagger.io/?url=https%3A%2F%2Fraw.githubusercontent.com%2Fstepanbenes%2Fapi-for-nopcommerce%2Fc9456b59b4a4371b2c584f2f80fc849d222de318%2FClientApp%2Fnopapi.swagger.json&validatorUrl=none). See the [feature coverage and upstream issue audit](docs/api-coverage.md), [date and paging filters](docs/query-filters.md), and [checkout discovery endpoints](docs/checkout-discovery.md) for guidance on this branch.
+
+## Install a release
+
+1. Download `Nop.Plugin.Api.zip` and `Nop.Plugin.Api.zip.sha256` from [GitHub Releases](https://github.com/stepanbenes/api-for-nopcommerce/releases). Verify the download with `sha256sum -c Nop.Plugin.Api.zip.sha256` or `shasum -a 256 -c Nop.Plugin.Api.zip.sha256` on macOS.
+2. Set `ApiConfiguration__SecurityKey` in the nopCommerce environment to a securely generated signing key, for example the output of `openssl rand -hex 32`.
+3. In nopCommerce 5.00, open **Configuration → Local plugins → Upload plugin or theme** and upload `Nop.Plugin.Api.zip`. Follow the restart prompt and install **Api plugin** from **Local plugins**.
+4. Assign the **Api Users** role and the required nopCommerce permissions to the API account.
+
+GitHub Actions builds the installable ZIP against pinned nopCommerce `release-5.00.1` and runs the runtime OpenAPI and API integration tests with the plugin extracted from that ZIP. The workflow run provides the ZIP and checksum in the **nopcommerce-api-plugin** artifact. Push a version tag that matches the `Version` in `Nop.Plugin.Api/plugin.json`, prefixed with `v`. For example, `v5.00.1` publishes version `5.00.1` after the API and both generated client checks pass.
 
 ## Run with Docker
 
@@ -36,9 +45,9 @@ The plugin build places its files in `src/Presentation/Nop.Web/Plugins/Nop.Plugi
 
 ## Navigation menus in 5.00
 
-Configure each store's navigation under **Admin → Content management → Menus**. Omit `include_in_top_menu` from category and topic write payloads and omit `include_in_footer_column1`, `include_in_footer_column2`, and `include_in_footer_column3` from topic write payloads. A non-null value, including `false`, returns HTTP 400. The legacy properties are returned as `null` when included in reads.
+Use `GET /api/menus` to discover menus for the current store and `GET /api/menus/{menuId}/items` to list their links. Add a category or topic link with `POST /api/menus/{menuId}/items`. The body accepts `link_type` of `category` or `topic`, an `entity_id`, and an optional `display_order`. For example, send `{"link_type":"category","entity_id":42,"display_order":20}`. The add request returns HTTP 201 for a new link and 200 if the link already exists. Delete a link with `DELETE /api/menus/{menuId}/items/{itemId}`.
 
-The API account needs the **Api Users** role and the nopCommerce permission to manage menus. Use `GET /api/menus` to discover menus for the current store and `GET /api/menus/{menuId}/items` to list their links. Add a category or topic link with `POST /api/menus/{menuId}/items`. The body accepts `link_type` of `category` or `topic`, an `entity_id`, and an optional `display_order`, as in `{"link_type":"category","entity_id":42,"display_order":20}`. The add request returns HTTP 201 for a new link and 200 if the link already exists. Delete a link with `DELETE /api/menus/{menuId}/items/{itemId}`.
+The API account needs the **Api Users** role and the nopCommerce permission to manage menus. You can also configure menus under **Admin → Content management → Menus**.
 
 ## Checkout attributes
 
@@ -103,6 +112,14 @@ dotnet test ClientApp.Tests/ClientApp.Tests.csproj --configuration Release
 bash scripts/test-python-client.sh
 ```
 
+The **Runtime OpenAPI snapshot** job installs a fresh sample store and PostgreSQL database from the pinned nopCommerce release. It checks the live OpenAPI against the snapshot, runs the full Release API suite, and requires every case to pass, including all three PostgreSQL cases. To run that job locally, install the SDK listed in the upstream checkout's `global.json` and use Docker Compose and Python 3.
+
+```sh
+NOP_ROOT="$(cd ../nopCommerce && pwd)" bash scripts/check-runtime-openapi.sh --test-api
+```
+
+The script generates temporary credentials and removes its dedicated Compose project and volumes on exit.
+
 To refresh the OpenAPI snapshot after changing the API, download it from the installed test store, run the client-generation checks, and review the resulting diff.
 
 ```sh
@@ -110,3 +127,17 @@ curl --fail --silent --show-error "$NOP_API_TEST_URL/api/swagger/v1/swagger.json
 dotnet test ClientApp.Tests/ClientApp.Tests.csproj --configuration Release
 bash scripts/test-python-client.sh
 ```
+
+## Preview or publish the API documentation
+
+The [API documentation workflow](https://github.com/stepanbenes/api-for-nopcommerce/actions/workflows/api-docs.yml?query=event%3Apull_request) uploads an **api-docs-preview** artifact for pull requests. Download and extract it, run `python3 -m http.server --directory extracted-directory 8000` with the path to your extracted directory, and open `http://localhost:8000/unreleased/`. The preview includes its renderer and works offline.
+
+Fetch the full repository history and its tags before building the preview locally.
+
+```sh
+python3 -m pip install Markdown==3.10.2
+python3 scripts/build-docs.py --preview site
+python3 -m http.server --directory site 8000
+```
+
+To host the site, select **GitHub Actions** under **Settings → Pages → Build and deployment → Source**. The workflow deploys the released references on pushes to the default branch and after stable releases are published. If the `github-pages` environment restricts deployments, allow the default branch and release tags (`v*`). Use **Run workflow** from the default branch to rebuild the site manually.

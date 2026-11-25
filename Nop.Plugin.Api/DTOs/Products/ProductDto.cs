@@ -242,12 +242,6 @@ namespace Nop.Plugin.Api.DTO.Products
         public int? TaxCategoryId { get; set; }
 
         /// <summary>
-        ///     Gets or sets a value indicating whether the product is telecommunications or broadcasting or electronic services
-        /// </summary>
-        [JsonProperty("is_telecommunications_or_broadcasting_or_electronic_services")]
-        public bool? IsTelecommunicationsOrBroadcastingOrElectronicServices { get; set; }
-
-        /// <summary>
         ///     Gets or sets a value indicating whether multiple warehouses are used for this product
         /// </summary>
         [JsonProperty("use_multiple_warehouses")]
@@ -382,24 +376,6 @@ namespace Nop.Plugin.Api.DTO.Products
         public decimal? ProductCost { get; set; }
 
         /// <summary>
-        ///     Gets or sets the product special price
-        /// </summary>
-        [JsonProperty("special_price")]
-        public decimal? SpecialPrice { get; set; }
-
-        /// <summary>
-        ///     Gets or sets the start date and time of the special price
-        /// </summary>
-        [JsonProperty("special_price_start_date_time_utc")]
-        public DateTime? SpecialPriceStartDateTimeUtc { get; set; }
-
-        /// <summary>
-        ///     Gets or sets the end date and time of the special price
-        /// </summary>
-        [JsonProperty("special_price_end_date_time_utc")]
-        public DateTime? SpecialPriceEndDateTimeUtc { get; set; }
-
-        /// <summary>
         ///     Gets or sets a value indicating whether a customer enters price
         /// </summary>
         [JsonProperty("customer_enters_price")]
@@ -452,28 +428,6 @@ namespace Nop.Plugin.Api.DTO.Products
         /// </summary>
         [JsonProperty("mark_as_new_end_date_time_utc")]
         public DateTime? MarkAsNewEndDateTimeUtc { get; set; }
-
-        /// <summary>
-        ///     Gets or sets a value indicating whether this product has tier prices configured
-        ///     <remarks>
-        ///         The same as if we run this.TierPrices.Count > 0
-        ///         We use this property for performance optimization:
-        ///         if this property is set to false, then we do not need to load tier prices navigation property
-        ///     </remarks>
-        /// </summary>
-        [JsonProperty("has_tier_prices")]
-        public bool? HasTierPrices { get; set; }
-
-        /// <summary>
-        ///     Gets or sets a value indicating whether this product has discounts applied
-        ///     <remarks>
-        ///         The same as if we run this.AppliedDiscounts.Count > 0
-        ///         We use this property for performance optimization:
-        ///         if this property is set to false, then we do not need to load Applied Discounts navigation property
-        ///     </remarks>
-        /// </summary>
-        [JsonProperty("has_discounts_applied")]
-        public bool? HasDiscountsApplied { get; set; }
 
         /// <summary>
         ///     Gets or sets the weight

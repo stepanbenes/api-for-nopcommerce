@@ -62,33 +62,10 @@ namespace Nop.Plugin.Api.DTO.Categories
         public string? PageSizeOptions { get; set; }
 
         /// <summary>
-        ///     Gets or sets the available price ranges
-        /// </summary>
-        [JsonProperty("price_ranges")]
-        public string? PriceRanges { get; set; }
-
-        /// <summary>
         ///     Gets or sets a value indicating whether to show the category on home page
         /// </summary>
         [JsonProperty("show_on_home_page")]
-        public bool? ShowOnHomePage { get; set; }
-
-        /// <summary>
-        ///     Gets or sets a value indicating whether to include this category in the top menu
-        /// </summary>
-        [JsonProperty("include_in_top_menu")]
-        public bool? IncludeInTopMenu { get; set; }
-
-        /// <summary>
-        ///     Gets or sets a value indicating whether this category has discounts applied
-        ///     <remarks>
-        ///         The same as if we run category.AppliedDiscounts.Count > 0
-        ///         We use this property for performance optimization:
-        ///         if this property is set to false, then we do not need to load Applied Discounts navigation property
-        ///     </remarks>
-        /// </summary>
-        [JsonProperty("has_discounts_applied")]
-        public bool? HasDiscountsApplied { get; set; }
+        public bool? ShowOnHomepage { get; set; }
 
         /// <summary>
         ///     Gets or sets a value indicating whether the entity is published

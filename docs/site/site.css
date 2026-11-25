@@ -1,0 +1,63 @@
+body {
+  margin: 0;
+  color: #182536;
+  background: #fff;
+  font-family: system-ui, sans-serif;
+}
+
+.site-header {
+  padding: .85rem 1.25rem;
+  background: #15273e;
+  color: #e4ecf6;
+}
+
+.site-header nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: .5rem 1.25rem;
+}
+
+.site-header nav + nav {
+  margin-top: .65rem;
+  font-size: .875rem;
+}
+
+.site-header a {
+  color: #fff;
+  text-underline-offset: .18em;
+}
+
+.site-header .site-name,
+.site-header [aria-current] {
+  font-weight: 700;
+}
+
+.guide,
+.reference-heading {
+  padding: 1.25rem;
+}
+
+.reference-heading {
+  border-bottom: 1px solid #d8e0e9;
+}
+
+.guide {
+  max-width: 48rem;
+  margin: auto;
+  line-height: 1.6;
+}
+
+.guide pre {
+  padding: 1rem;
+  overflow-x: auto;
+  background: #edf2f8;
+  border-radius: .25rem;
+}
+
+.guide th,
+.guide td {
+  padding: .4rem .6rem;
+  border-bottom: 1px solid #d8e0e9;
+  text-align: left;
+}

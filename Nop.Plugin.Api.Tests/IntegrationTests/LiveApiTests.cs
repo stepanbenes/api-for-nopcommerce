@@ -127,12 +127,9 @@ public partial class LiveApiTests
         await Send(HttpMethod.Post, path, HttpStatusCode.UnprocessableEntity,
             new { category = new { name = "" } });
 
-        await Send(HttpMethod.Post, path, HttpStatusCode.BadRequest,
-            new { category = new { name = "Legacy navigation", include_in_top_menu = false } });
-
         var name = $"API integration category {Guid.NewGuid():N}";
         var created = await Send(HttpMethod.Post, path, HttpStatusCode.OK,
-            new { category = new { name, description = "Original description", published = true } });
+            new { category = new { name, description = "Original description", published = true, include_in_top_menu = false } });
         var id = created.GetProperty("categories")[0].GetProperty("id").GetInt32();
         var categoryPath = $"{path}/{id}";
 
@@ -145,15 +142,13 @@ public partial class LiveApiTests
 
             await Send(HttpMethod.Put, categoryPath, HttpStatusCode.UnprocessableEntity,
                 new { category = new { name = "" } });
-            await Send(HttpMethod.Put, categoryPath, HttpStatusCode.BadRequest,
-                new { category = new { include_in_top_menu = true } });
             await Send(HttpMethod.Put, categoryPath, HttpStatusCode.OK,
-                new { category = new { name = name + " updated" } });
+                new { category = new { name = name + " updated", include_in_top_menu = true } });
             var updated = await Send(HttpMethod.Get, categoryPath, HttpStatusCode.OK);
             var category = updated.GetProperty("categories")[0];
             TestAssert.That(category.GetProperty("name").GetString(), Is.EqualTo(name + " updated"));
             TestAssert.That(category.GetProperty("description").GetString(), Is.EqualTo("Original description"));
-            TestAssert.That(category.GetProperty("include_in_top_menu").ValueKind, Is.EqualTo(JsonValueKind.Null));
+            TestAssert.That(category.TryGetProperty("include_in_top_menu", out _), Is.False);
         }
         finally
         {
@@ -164,30 +159,26 @@ public partial class LiveApiTests
     }
 
     [Test]
-    public async Task TopicNavigationFlagsAreRejectedOnWrite()
+    public async Task TopicNavigationFlagsAreIgnoredOnWriteAndOmittedOnRead()
     {
         await AuthenticateAdministrator();
         const string path = "/api/topics";
         var systemName = $"api-integration-topic-{Guid.NewGuid():N}";
-        var rejected = await Send(HttpMethod.Post, path, HttpStatusCode.BadRequest,
-            new { topic = new { system_name = systemName, title = "API integration topic", body = "Example", include_in_footer_column1 = false } });
-        TestAssert.That(rejected.GetProperty("errors").TryGetProperty("menu", out _), Is.True);
-
         var created = await Send(HttpMethod.Post, path, HttpStatusCode.OK,
-            new { topic = new { system_name = systemName, title = "API integration topic", body = "Example" } });
+            new { topic = new { system_name = systemName, title = "API integration topic", body = "Example", include_in_footer_column1 = false } });
         var topicPath = $"{path}/{created.GetProperty("topics")[0].GetProperty("id").GetInt32()}";
 
         try
         {
-            await Send(HttpMethod.Put, topicPath, HttpStatusCode.BadRequest,
-                new { topic = new { include_in_top_menu = true } });
             await Send(HttpMethod.Put, topicPath, HttpStatusCode.OK,
-                new { topic = new { title = "Updated integration topic" } });
+                new { topic = new { title = "Updated integration topic", include_in_top_menu = true, include_in_footer_column2 = true, include_in_footer_column3 = true } });
 
             var updated = (await Send(HttpMethod.Get, topicPath, HttpStatusCode.OK)).GetProperty("topics")[0];
             TestAssert.That(updated.GetProperty("title").GetString(), Is.EqualTo("Updated integration topic"));
-            TestAssert.That(updated.GetProperty("include_in_top_menu").ValueKind, Is.EqualTo(JsonValueKind.Null));
-            TestAssert.That(updated.GetProperty("include_in_footer_column1").ValueKind, Is.EqualTo(JsonValueKind.Null));
+            TestAssert.That(updated.TryGetProperty("include_in_top_menu", out _), Is.False);
+            TestAssert.That(updated.TryGetProperty("include_in_footer_column1", out _), Is.False);
+            TestAssert.That(updated.TryGetProperty("include_in_footer_column2", out _), Is.False);
+            TestAssert.That(updated.TryGetProperty("include_in_footer_column3", out _), Is.False);
         }
         finally
         {

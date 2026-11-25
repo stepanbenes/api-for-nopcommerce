@@ -38,7 +38,7 @@ jobs:
   runtime-openapi:
     name: Runtime OpenAPI snapshot
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v6
         with:
@@ -53,7 +53,66 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
-      - name: Check the runtime OpenAPI snapshot
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: upstream-nopcommerce/global.json
+      - name: Verify the packaged plugin against the running store
         env:
           NOP_ROOT: ${{ github.workspace }}/upstream-nopcommerce
-        run: bash scripts/check-runtime-openapi.sh
+          NOP_PLUGIN_PACKAGE_DIR: ${{ runner.temp }}/plugin-package
+        run: bash scripts/check-runtime-openapi.sh --test-api
+      - uses: actions/upload-artifact@v7
+        with:
+          name: nopcommerce-api-plugin
+          path: ${{ runner.temp }}/plugin-package/
+          if-no-files-found: error
+          compression-level: 0
+          overwrite: true
+
+  release:
+    name: Publish the verified plugin
+    if: github.event_name == 'push' && github.ref_type == 'tag' && startsWith(github.ref_name, 'v')
+    needs: [dotnet, python, runtime-openapi]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - name: Validate the release tag
+        shell: bash
+        run: |
+          if [[ ! "$GITHUB_REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Release tags must use the form vMAJOR.MINOR.PATCH." >&2
+            exit 1
+          fi
+      - uses: actions/download-artifact@v8
+        with:
+          name: nopcommerce-api-plugin
+          path: plugin-package
+      - name: Create the GitHub release
+        working-directory: plugin-package
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          sha256sum --check Nop.Plugin.Api.zip.sha256
+          python3 - <<'PY'
+          import json
+          import os
+          from zipfile import ZipFile
+
+          with ZipFile("Nop.Plugin.Api.zip") as archive:
+              descriptor = json.loads(archive.read("Nop.Plugin.Api/plugin.json").decode("utf-8-sig"))
+          if f"v{descriptor['Version']}" != os.environ["GITHUB_REF_NAME"]:
+              raise SystemExit("The release tag must match the Version in plugin.json.")
+          PY
+          gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" \
+            --verify-tag --generate-notes Nop.Plugin.Api.zip Nop.Plugin.Api.zip.sha256
+
+  release-docs:
+    name: Publish release documentation
+    needs: release
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/api-docs.yml

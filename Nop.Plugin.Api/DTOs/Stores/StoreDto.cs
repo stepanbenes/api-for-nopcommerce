@@ -27,12 +27,6 @@ namespace Nop.Plugin.Api.DTO.Stores
         public bool? SslEnabled { get; set; }
 
         /// <summary>
-        ///     Gets or sets the store secure URL (HTTPS)
-        /// </summary>
-        [JsonProperty("secure_url")]
-        public string? SecureUrl { get; set; }
-
-        /// <summary>
         ///     Gets or sets the comma separated list of possible HTTP_HOST values
         /// </summary>
         [JsonProperty("hosts")]

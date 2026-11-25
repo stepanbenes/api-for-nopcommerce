@@ -3,6 +3,8 @@ services:
     restart: unless-stopped
     build:
       context: .
+      args:
+        BUILD_BUILDNUMBER: ${NOP_PLUGIN_BUILD_VERSION:-}
       additional_contexts:
         nopcommerce: ${NOP_ROOT:-../nopCommerce}
     depends_on:

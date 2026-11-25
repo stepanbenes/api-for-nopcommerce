@@ -2,6 +2,22 @@
 
 This audit compares the fork's implemented routes with nopCommerce **5.00.1** and the open issues in the plugin's upstream repository, reviewed on 25 November 2026. An operation counts as covered when an HTTP client can perform it through this plugin. A database field in an order or product response establishes read access to that field only. The baseline at commit `417012f` exposed 124 operations across 72 paths. The current list of methods, request types and responses is in the [OpenAPI document](../ClientApp/nopapi.swagger.json).
 
+### Migrating to this branch's API contract
+
+The OpenAPI document on this branch removes legacy fields that the plugin could no longer read or persist on nopCommerce 5.00.1. This change applies when upgrading to a build from this branch. An existing plugin installation keeps the contract of its installed build.
+
+| Removed fields | What clients can use |
+| --- | --- |
+| Category and topic `include_in_top_menu` and topic `include_in_footer_column1` through `include_in_footer_column3` | Writes ignore these fields and responses omit them. Manage links through the [menu API](../README.md#navigation-menus-in-500). |
+| Product `special_price` and its two date fields, `has_tier_prices`, and `is_telecommunications_or_broadcasting_or_electronic_services` | Use `price` for the base catalog price. Manage tier prices and pricing rules in nopCommerce administration. |
+| Product and category `has_discounts_applied` | Check whether `discount_ids` contains any entries. |
+| Category and manufacturer `price_ranges` | Manage price-range filters in nopCommerce administration. |
+| Store `secure_url` | Read `url` and `ssl_enabled`. |
+| Order `reward_points_were_added` | Check the customer's reward-point history in nopCommerce administration. |
+| Product attribute combination `picture_id` | Use `images` for product-level pictures. Manage combination-specific picture assignments in nopCommerce administration. |
+
+Category `show_on_home_page` and order `pick_up_in_store` keep their existing JSON names. Responses now include their stored values.
+
 ### Where the API still has gaps
 
 | Workflow | Coverage and remaining work |
