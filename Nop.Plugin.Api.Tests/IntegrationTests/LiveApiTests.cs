@@ -242,7 +242,6 @@ public class LiveApiTests
         var roles = (await Send(HttpMethod.Get, "/api/customer_roles", HttpStatusCode.OK)).GetProperty("customer_roles");
         var customerId = await CreateCustomer(RoleId(roles, "Registered"));
         int? productId = null;
-        int? orderId = null;
 
         try
         {
@@ -361,7 +360,7 @@ public class LiveApiTests
 
             var submissions = await Task.WhenAll(Submit(idempotencyKey, HttpStatusCode.OK), Submit(idempotencyKey, HttpStatusCode.OK));
             var order = submissions.Single(submission => !submission.Replayed).Order;
-            orderId = order.GetProperty("id").GetInt32();
+            var orderId = order.GetProperty("id").GetInt32();
             TestAssert.That(submissions.Single(submission => submission.Replayed).Order.GetProperty("id").GetInt32(), Is.EqualTo(orderId));
             var retry = await Submit(idempotencyKey, HttpStatusCode.OK);
             TestAssert.That(retry.Replayed, Is.True);
@@ -369,7 +368,7 @@ public class LiveApiTests
             if (database is not null)
             {
                 var stored = await database.ReadAsync(readOrder, customerId);
-                var storedItem = await database.ReadAsync(readOrderItem, orderId.Value);
+                var storedItem = await database.ReadAsync(readOrderItem, orderId);
                 TestAssert.Multiple(() =>
                 {
                     TestAssert.That(stored.GetProperty("count").GetInt32(), Is.EqualTo(1));
@@ -408,7 +407,6 @@ public class LiveApiTests
             TestAssert.That(shippingAddress.GetProperty("address1").GetString(), Is.EqualTo(address.address1));
 
             await Send(HttpMethod.Delete, orderPath, HttpStatusCode.OK);
-            orderId = null;
             await Submit(idempotencyKey, HttpStatusCode.Conflict);
             if (database is not null)
             {
@@ -421,21 +419,31 @@ public class LiveApiTests
         {
             try
             {
-                if (orderId.HasValue)
-                    await Send(HttpMethod.Delete, $"/api/orders/{orderId}", HttpStatusCode.OK);
-                else if (productId.HasValue)
-                    await Send(HttpMethod.Delete, $"/api/shopping_cart_items?customer_id={customerId}", HttpStatusCode.OK);
+                var orders = await Send(HttpMethod.Get, $"/api/orders/customer/{customerId}", HttpStatusCode.OK);
+                await TestAssert.MultipleAsync(async () =>
+                {
+                    foreach (var order in orders.GetProperty("orders").EnumerateArray())
+                        await Send(HttpMethod.Delete, $"/api/orders/{order.GetProperty("id").GetInt32()}", HttpStatusCode.OK);
+                });
             }
             finally
             {
                 try
                 {
                     if (productId.HasValue)
-                        await Send(HttpMethod.Delete, $"/api/products/{productId}", HttpStatusCode.OK);
+                        await Send(HttpMethod.Delete, $"/api/shopping_cart_items?customer_id={customerId}", HttpStatusCode.OK);
                 }
                 finally
                 {
-                    await Send(HttpMethod.Delete, $"/api/customers/{customerId}", HttpStatusCode.OK);
+                    try
+                    {
+                        if (productId.HasValue)
+                            await Send(HttpMethod.Delete, $"/api/products/{productId}", HttpStatusCode.OK);
+                    }
+                    finally
+                    {
+                        await Send(HttpMethod.Delete, $"/api/customers/{customerId}", HttpStatusCode.OK);
+                    }
                 }
             }
         }

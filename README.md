@@ -70,11 +70,10 @@ dotnet run --project ClientApp -- "$NOP_API_TEST_URL"
 With the [Docker stack](DOCKER.md) running and those API variables set, run the API-to-PostgreSQL cases from the same Compose project. They exercise tax category, product, cart item, and checkout writes against the loopback API and verify the resulting rows using read-only PostgreSQL queries. The checkout case checks that repeated requests with the same idempotency key create one order. The tests run `psql` inside the database container over its local socket. They use the Compose database and user `nopcommerce` and need no published PostgreSQL port or database password.
 
 ```sh
-export NOP_API_TEST_POSTGRES_CONTAINER="$(docker compose ps -q db)"
-dotnet test Nop.Plugin.Api.Tests -c Release -p:NopRoot="$(cd ../nopCommerce && pwd)" --filter 'TestCategory=DatabaseIntegration'
+./docker/test-postgres.sh
 ```
 
-The cases clean up through the API. Tax category and cart item rows are removed. nopCommerce retains soft-deleted rows for the product and order.
+The script requires Python 3 and succeeds only when all three cases run and pass. The cases clean up through the API. Tax category and cart item rows are removed. nopCommerce retains soft-deleted rows for the product and order.
 
 The sample client requests a bearer token and reads catalog and country data. It generates its bindings from [the checked-in OpenAPI snapshot](ClientApp/nopapi.swagger.json). To refresh that snapshot after changing the API, download it from the installed test store, rebuild the client, and review the resulting diff.
 
