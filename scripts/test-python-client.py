@@ -12,6 +12,7 @@ import httpx
 from openapi_python_client.strings import snake_case
 
 from nop_api_client import AuthenticatedClient, Client
+from nop_api_client.api.cache_maintenance import clear_cache
 from nop_api_client.api.categories import create_category
 from nop_api_client.api.customers import set_billing_address
 from nop_api_client.api.menus import add_menu_item, remove_menu_item
@@ -45,7 +46,7 @@ def check_operations(spec):
     operations = [(method, path, operation) for path, item in spec["paths"].items()
                   for method, operation in item.items()
                   if method in {"get", "post", "put", "delete", "patch", "head", "options", "trace"}]
-    assert len(operations) == 133, f"Expected 133 documented operations, got {len(operations)}"
+    assert len(operations) == 134, f"Expected 134 documented operations, got {len(operations)}"
     modules = set()
     for method, path, operation in operations:
         module = f"nop_api_client.api.{snake_case(operation['tags'][0])}.{snake_case(operation['operationId'])}"
@@ -97,6 +98,11 @@ def mock_api():
     assert isinstance(token, TokenResponse) and token.customer_id == 42
     assert token.customer_guid == uuid and token.expires_at_utc == now
     auth = AuthenticatedClient(base_url=url, token=token.access_token, raise_on_unexpected_status=True)
+
+    cache_clear = call(auth, clear_cache, request_to("POST", "/api/admin/cache/clear", status=204))
+    assert cache_clear.status_code == 204 and cache_clear.parsed is None
+    unauthorized = call(auth, clear_cache, request_to("POST", "/api/admin/cache/clear", status=401))
+    assert unauthorized.status_code == 401 and unauthorized.parsed is None
 
     unavailable = call(public, request_token, request_to(
         "POST", "/token", "Token signing is unavailable.", auth=False, status=503, body={"guest": True}),

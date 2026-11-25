@@ -67,6 +67,12 @@ Use `GET /api/taxcategories/{id}` to read a tax category and `PUT /api/taxcatego
 
 Store operators can list and create shipments, update tracking, and mark shipments as shipped, ready for pickup, or delivered. See the [shipment API routes and request examples](Shipments.md).
 
+## Clear the nopCommerce cache
+
+Send `POST /api/admin/cache/clear` with a bearer token and an empty request body to clear the shared nopCommerce static cache. This is the same cache cleared by **Clear cache** in nopCommerce administration and can affect all stores sharing that cache.
+
+The API account needs the **Api Users** role and the `System.ManageMaintenance` permission. The endpoint records the `Api.ClearCache` activity before clearing the cache and returns HTTP 204 with an empty response on success. It returns HTTP 401 when authentication is required, HTTP 403 when access is denied, and HTTP 500 if it cannot record the activity.
+
 ## Tests and generated client
 
 Run the unit tests from this repository. The .NET 10 suite covers services, serializers, validators, and query binding. The legacy controller, model-binder, and mapping sources remain outside the build. Live tests exercise the HTTP controller and binding paths against an installed store.
@@ -82,13 +88,13 @@ dotnet test Nop.Plugin.Api.Tests -p:NopRoot="$(cd ../nopCommerce && pwd)" --filt
 dotnet run --project ClientApp -- "$NOP_API_TEST_URL"
 ```
 
-With the [Docker stack](DOCKER.md) running and those API variables set, run the API-to-PostgreSQL cases from the same Compose project. They exercise tax category, product, cart item, and checkout writes against the loopback API and verify the resulting rows using read-only PostgreSQL queries. The checkout case checks that repeated requests with the same idempotency key create one order. The tests run `psql` inside the database container over its local socket. They use the Compose database and user `nopcommerce` and need no published PostgreSQL port or database password.
+With the [Docker stack](DOCKER.md) running and those API variables set, run the API-to-PostgreSQL cases from the same Compose project. The tests exercise tax category, product, cart item, checkout, and cache-clear operations against the loopback API and verify the resulting rows using read-only PostgreSQL queries. The checkout case checks that repeated requests with the same idempotency key create one order. The cache-clear case verifies that the audit entry identifies the authorized caller. The tests run `psql` inside the database container over its local socket. They use the Compose database and user `nopcommerce` and need no published PostgreSQL port or database password.
 
 ```sh
 ./docker/test-postgres.sh
 ```
 
-The script requires Python 3 and succeeds only when all three cases run and pass. The cases clean up through the API. Tax category and cart item rows are removed. nopCommerce retains soft-deleted rows for the product and order.
+The script requires Python 3 and succeeds only when all four cases run and pass. The cases clean up test entities through the API. Tax category and cart item rows are removed. nopCommerce retains soft-deleted rows for the product and order and keeps the cache-clear audit entry.
 
 ### Place an order with the generated C# client
 
@@ -112,7 +118,7 @@ dotnet test ClientApp.Tests/ClientApp.Tests.csproj --configuration Release
 bash scripts/test-python-client.sh
 ```
 
-The **Runtime OpenAPI snapshot** job installs a fresh sample store and PostgreSQL database from the pinned nopCommerce release. It checks the live OpenAPI against the snapshot, runs the full Release API suite, and requires every case to pass, including all three PostgreSQL cases. To run that job locally, install the SDK listed in the upstream checkout's `global.json` and use Docker Compose and Python 3.
+The **Runtime OpenAPI snapshot** job installs a fresh sample store and PostgreSQL database from the pinned nopCommerce release. It checks the live OpenAPI against the snapshot, runs the full Release API suite, and requires every case to pass, including all four PostgreSQL cases. To run that job locally, install the SDK listed in the upstream checkout's `global.json` and use Docker Compose and Python 3.
 
 ```sh
 NOP_ROOT="$(cd ../nopCommerce && pwd)" bash scripts/check-runtime-openapi.sh --test-api

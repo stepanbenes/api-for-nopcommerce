@@ -4,6 +4,8 @@ namespace Nop.Plugin.Api.Infrastructure
 {
     public static class Constants
     {
+        internal const string ClearCacheActivity = "Api.ClearCache";
+
         public static class Roles
         {
             public const string ApiRoleSystemName = "ApiUserRole";
