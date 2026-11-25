@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿#nullable enable
+
+using Newtonsoft.Json;
 
 namespace Nop.Plugin.Api.DTO.Customers
 {
@@ -6,11 +8,11 @@ namespace Nop.Plugin.Api.DTO.Customers
     //[Validator(typeof(CustomerDtoValidator))]
     public class CustomerDto : BaseCustomerDto
     {
-        private ICollection<AddressDto> _addresses;
+        private ICollection<AddressDto>? _addresses;
 
         [JsonIgnore]
         [JsonProperty("password")]
-        public string Password { get; set; }
+        public string? Password { get; set; }
 
         #region Navigation properties
 
@@ -18,18 +20,19 @@ namespace Nop.Plugin.Api.DTO.Customers
         ///     Default billing address
         /// </summary>
         [JsonProperty("billing_address")]
-        public AddressDto BillingAddress { get; set; }
+        public AddressDto? BillingAddress { get; set; }
 
         /// <summary>
         ///     Default shipping address
         /// </summary>
         [JsonProperty("shipping_address")]
-        public AddressDto ShippingAddress { get; set; }
+        public AddressDto? ShippingAddress { get; set; }
 
         /// <summary>
         ///     Gets or sets customer addresses
         /// </summary>
         [JsonProperty("addresses")]
+        [System.Diagnostics.CodeAnalysis.AllowNull]
         public ICollection<AddressDto> Addresses
         {
             get

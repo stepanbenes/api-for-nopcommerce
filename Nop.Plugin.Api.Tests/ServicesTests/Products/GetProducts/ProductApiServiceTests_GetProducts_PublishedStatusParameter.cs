@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Nop.Core.Data;
+using Nop.Data;
 using Nop.Core.Domain.Catalog;
 using Nop.Core.Domain.Vendors;
 using Nop.Plugin.Api.Services;
 using NUnit.Framework;
-using Rhino.Mocks;
+using Moq;
 
 namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProducts
 {
@@ -31,25 +31,29 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProducts
                 new Product() {Id = 7, Published = false }
             };
 
-            var productRepo = MockRepository.GenerateStub<IRepository<Product>>();
-            productRepo.Stub(x => x.TableNoTracking).Return(_existigProducts.AsQueryable());
+            var productRepo = Mock.Of<IRepository<Product>>();
+            Mock.Get(productRepo).Setup(x => x.Table).Returns(_existigProducts.AsQueryable());
 
-            var productCategoryRepo = MockRepository.GenerateStub<IRepository<ProductCategory>>();
-            var vendorRepo = MockRepository.GenerateStub<IRepository<Vendor>>();
+            var productCategoryRepo = Mock.Of<IRepository<ProductCategory>>();
+            var vendorRepo = Mock.Of<IRepository<Vendor>>();
 
-            var storeMappingService = MockRepository.GenerateStub<IStoreMappingService>();
+            var storeMappingService = Mock.Of<IStoreMappingService>();
+            Mock.Get(storeMappingService).Setup(x => x.ApplyStoreMapping(It.IsAny<IQueryable<Product>>(), 1))
+                .ReturnsAsync((IQueryable<Product> query, int _) => query);
+            var storeContext = Mock.Of<Nop.Core.IStoreContext>();
+            Mock.Get(storeContext).Setup(x => x.GetCurrentStoreAsync()).ReturnsAsync(new Nop.Core.Domain.Stores.Store { Id = 1 });
 
-            _productApiService = new ProductApiService(productRepo, productCategoryRepo, vendorRepo, storeMappingService);
+            _productApiService = new ProductApiService(productRepo, productCategoryRepo, vendorRepo, storeMappingService, storeContext);
         }
 
         [Test]
-        public void WhenAskForOnlyThePublishedProducts_ShouldReturnOnlyThePublishedProductsOrderedByid()
+        public async Task WhenAskForOnlyThePublishedProducts_ShouldReturnOnlyThePublishedProductsOrderedByid()
         {
             // Arange
             var expectedProducts = _existigProducts.Where(x => x.Published && !x.Deleted).OrderBy(x => x.Id);
 
             // Act
-            var products = _productApiService.GetProducts(publishedStatus: true);
+            var products = await _productApiService.GetProductsAsync(publishedStatus: true);
 
             // Assert
             CollectionAssert.IsNotEmpty(products);
@@ -58,13 +62,13 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProducts
         }
 
         [Test]
-        public void WhenAskForOnlyTheUnpublishedProducts_ShouldReturnOnlyTheUnpublishedProductsCount()
+        public async Task WhenAskForOnlyTheUnpublishedProducts_ShouldReturnOnlyTheUnpublishedProductsCount()
         {
             // Arange
             var expectedCollection = _existigProducts.Where(x => !x.Published && !x.Deleted).OrderBy(x => x.Id);
 
             // Act
-            var products = _productApiService.GetProducts(publishedStatus: false);
+            var products = await _productApiService.GetProductsAsync(publishedStatus: false);
 
             // Assert
             CollectionAssert.IsNotEmpty(products);

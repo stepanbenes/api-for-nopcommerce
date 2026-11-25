@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Nop.Core.Data;
+using Nop.Data;
 using Nop.Core.Domain.Orders;
 using Nop.Plugin.Api.DataStructures;
 using Nop.Plugin.Api.Services;
 using NUnit.Framework;
-using Rhino.Mocks;
+using Moq;
 
 namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
 {
@@ -31,22 +31,22 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
             _existigOrders[5].Deleted = true;
             _existigOrders = _existigOrders.OrderBy(x => x.Id).ToList();
 
-            var orderRepo = MockRepository.GenerateStub<IRepository<Order>>();
-            orderRepo.Stub(x => x.TableNoTracking).Return(_existigOrders.AsQueryable());
+            var orderRepo = Mock.Of<IRepository<Order>>();
+            Mock.Get(orderRepo).Setup(x => x.Table).Returns(_existigOrders.AsQueryable());
             
             _orderApiService = new OrderApiService(orderRepo);
         }
 
         [Test]
-        public void WhenCalledWithPageParameter_GivenLimitedOrdersCollection_ShouldReturnThePartOfTheCollectionThatCorrespondsToThePage()
+        public async Task WhenCalledWithPageParameter_GivenLimitedOrdersCollection_ShouldReturnThePartOfTheCollectionThatCorrespondsToThePage()
         {
             //Arange
             var limit = 5;
             var page = 6;
-            var expectedCollection = new ApiList<Order>(_existigOrders.Where(x => !x.Deleted).AsQueryable(), page - 1, limit);
+            var expectedCollection = ApiList<Order>.FromPage(_existigOrders.Where(x => !x.Deleted).AsQueryable(), page - 1, limit);
 
             //Act
-            var orders = _orderApiService.GetOrders(limit: limit, page: page);
+            var orders = await _orderApiService.GetOrdersAsync(limit: limit, page: page);
 
             // Assert
             CollectionAssert.IsNotEmpty(orders);
@@ -55,15 +55,15 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
         }
 
         [Test]
-        public void WhenCalledWithZeroPageParameter_GivenLimitedOrdersCollection_ShouldReturnTheFirstPage()
+        public async Task WhenCalledWithZeroPageParameter_GivenLimitedOrdersCollection_ShouldReturnTheFirstPage()
         {
             //Arange
             var limit = 5;
             var page = 0;
-            var expectedCollection = new ApiList<Order>(_existigOrders.Where(x => !x.Deleted).AsQueryable(), page - 1, limit);
+            var expectedCollection = ApiList<Order>.FromPage(_existigOrders.Where(x => !x.Deleted).AsQueryable(), page - 1, limit);
 
             //Act
-            var orders = _orderApiService.GetOrders(limit: limit, page: page);
+            var orders = await _orderApiService.GetOrdersAsync(limit: limit, page: page);
 
             // Assert
             CollectionAssert.IsNotEmpty(orders);
@@ -73,15 +73,15 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
         }
 
         [Test]
-        public void WhenCalledWithNegativePageParameter_GivenLimitedOrdersCollection_ShouldReturnTheFirstPage()
+        public async Task WhenCalledWithNegativePageParameter_GivenLimitedOrdersCollection_ShouldReturnTheFirstPage()
         {
             //Arange
             var limit = 5;
             var page = -30;
-            var expectedCollection = new ApiList<Order>(_existigOrders.Where(x => !x.Deleted).AsQueryable(), page - 1, limit);
+            var expectedCollection = ApiList<Order>.FromPage(_existigOrders.Where(x => !x.Deleted).AsQueryable(), page - 1, limit);
 
             //Act
-            var orders = _orderApiService.GetOrders(limit: limit, page: page);
+            var orders = await _orderApiService.GetOrdersAsync(limit: limit, page: page);
 
             // Assert
             CollectionAssert.IsNotEmpty(orders);
@@ -91,14 +91,14 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
         }
 
         [Test]
-        public void WhenCalledWithTooBigPageParameter_GivenLimitedOrdersCollection_ShouldReturnEmptyCollection()
+        public async Task WhenCalledWithTooBigPageParameter_GivenLimitedOrdersCollection_ShouldReturnEmptyCollection()
         {
             //Arange
             var limit = 5;
             var page = _existigOrders.Count / limit + 100;
             
             //Act
-            var orders = _orderApiService.GetOrders(limit: limit, page: page);
+            var orders = await _orderApiService.GetOrdersAsync(limit: limit, page: page);
 
             // Assert
             CollectionAssert.IsEmpty(orders);

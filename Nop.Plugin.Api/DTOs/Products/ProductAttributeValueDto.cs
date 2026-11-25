@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿#nullable enable
+
+using Newtonsoft.Json;
 using Nop.Core.Domain.Catalog;
 using Nop.Plugin.Api.DTO.Base;
 using Nop.Plugin.Api.DTO.Images;
@@ -25,19 +27,19 @@ namespace Nop.Plugin.Api.DTO.Products
         ///     Gets or sets the product attribute name
         /// </summary>
         [JsonProperty("name")]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         /// <summary>
         ///     Gets or sets the color RGB value (used with "Color squares" attribute type)
         /// </summary>
         [JsonProperty("color_squares_rgb")]
-        public string ColorSquaresRgb { get; set; }
+        public string? ColorSquaresRgb { get; set; }
 
         /// <summary>
         ///     Gets or sets the picture ID for image square (used with "Image squares" attribute type)
         /// </summary>
         [JsonProperty("image_squares_image")]
-        public ImageDto ImageSquaresImage { get; set; }
+        public ImageDto? ImageSquaresImage { get; set; }
 
         /// <summary>
         ///     Gets or sets the price adjustment (used only with AttributeValueType.Simple)
@@ -91,7 +93,7 @@ namespace Nop.Plugin.Api.DTO.Products
         [JsonProperty("type")]
         public string AttributeValueType
         {
-            get => ((AttributeValueType)AttributeValueTypeId).ToString();
+            get => ((AttributeValueType)AttributeValueTypeId!).ToString();
             set
             {
                 AttributeValueType attributeValueTypeId;

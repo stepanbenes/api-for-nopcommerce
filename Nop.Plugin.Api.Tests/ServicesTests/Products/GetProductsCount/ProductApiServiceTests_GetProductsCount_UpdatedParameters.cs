@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Nop.Core.Data;
+using Nop.Data;
 using Nop.Core.Domain.Catalog;
 using Nop.Core.Domain.Vendors;
 using Nop.Plugin.Api.Services;
 using NUnit.Framework;
-using Rhino.Mocks;
+using Moq;
 
 namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProductsCount
 {
@@ -35,20 +35,23 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProductsCount
                 new Product() {Id = 7, Published = false, UpdatedOnUtc = _baseDate.AddMonths(4) }
             };
 
-            var productRepo = MockRepository.GenerateStub<IRepository<Product>>();
-            productRepo.Stub(x => x.TableNoTracking).Return(_existigProducts.AsQueryable());
+            var productRepo = Mock.Of<IRepository<Product>>();
+            Mock.Get(productRepo).Setup(x => x.Table).Returns(_existigProducts.AsQueryable());
 
-            var productCategoryRepo = MockRepository.GenerateStub<IRepository<ProductCategory>>();
-            var vendorRepo = MockRepository.GenerateStub<IRepository<Vendor>>();
+            var productCategoryRepo = Mock.Of<IRepository<ProductCategory>>();
+            var vendorRepo = Mock.Of<IRepository<Vendor>>();
 
-            var storeMappingService = MockRepository.GenerateStub<IStoreMappingService>();
-            storeMappingService.Stub(x => x.Authorize(Arg<Product>.Is.Anything)).Return(true);
+            var storeMappingService = Mock.Of<IStoreMappingService>();
+            Mock.Get(storeMappingService).Setup(x => x.ApplyStoreMapping(It.IsAny<IQueryable<Product>>(), 1))
+                .ReturnsAsync((IQueryable<Product> query, int _) => query);
+            var storeContext = Mock.Of<Nop.Core.IStoreContext>();
+            Mock.Get(storeContext).Setup(x => x.GetCurrentStoreAsync()).ReturnsAsync(new Nop.Core.Domain.Stores.Store { Id = 1 });
 
-            _productApiService = new ProductApiService(productRepo, productCategoryRepo, vendorRepo, storeMappingService);
+            _productApiService = new ProductApiService(productRepo, productCategoryRepo, vendorRepo, storeMappingService, storeContext);
         }
 
         [Test]
-        public void WhenCalledWithUpdatedAtMinParameter_GivenSomeProductsUpdatedAfterThatDate_ShouldReturnTheirCount()
+        public async Task WhenCalledWithUpdatedAtMinParameter_GivenSomeProductsUpdatedAfterThatDate_ShouldReturnTheirCount()
         {
             // Arange
             DateTime updatedAtMinDate = _baseDate.AddMonths(5);
@@ -56,27 +59,27 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProductsCount
             var expectedProductsCount = expectedCollection.Count();
 
             // Act
-            var productsCount = _productApiService.GetProductsCount(updatedAtMin: updatedAtMinDate);
+            var productsCount = await _productApiService.GetProductsCountAsync(updatedAtMin: updatedAtMinDate);
 
             // Assert
             Assert.AreEqual(expectedProductsCount, productsCount);
         }
 
         [Test]
-        public void WhenCalledWithUpdatedAtMinParameter_GivenAllProductsUpdatedBeforeThatDate_ShouldReturnZero()
+        public async Task WhenCalledWithUpdatedAtMinParameter_GivenAllProductsUpdatedBeforeThatDate_ShouldReturnZero()
         {
             // Arange
             DateTime updatedAtMinDate = _baseDate.AddMonths(7);
 
             // Act
-            var productsCount = _productApiService.GetProductsCount(updatedAtMin: updatedAtMinDate);
+            var productsCount = await _productApiService.GetProductsCountAsync(updatedAtMin: updatedAtMinDate);
 
             // Assert
             Assert.AreEqual(0, productsCount);
         }
 
         [Test]
-        public void WhenCalledWithUpdatedAtMaxParameter_GivenSomeProductsUpdatedBeforeThatDate_ShouldReturnTheirCount()
+        public async Task WhenCalledWithUpdatedAtMaxParameter_GivenSomeProductsUpdatedBeforeThatDate_ShouldReturnTheirCount()
         {
             // Arange
             DateTime updatedAtMaxDate = _baseDate.AddMonths(5);
@@ -85,20 +88,20 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProductsCount
             var expectedProductsCount = expectedCollection.Count();
 
             // Act
-            var productsCount = _productApiService.GetProductsCount(updatedAtMax: updatedAtMaxDate);
+            var productsCount = await _productApiService.GetProductsCountAsync(updatedAtMax: updatedAtMaxDate);
 
             // Assert
             Assert.AreEqual(expectedProductsCount, productsCount);
         }
 
         [Test]
-        public void WhenCalledWithUpdatedAtMaxParameter_GivenAllProductsUpdatedAfterThatDate_ShouldReturnZero()
+        public async Task WhenCalledWithUpdatedAtMaxParameter_GivenAllProductsUpdatedAfterThatDate_ShouldReturnZero()
         {
             // Arange
             DateTime updatedAtMaxDate = _baseDate.Subtract(new TimeSpan(365)); // subtract one year
 
             // Act
-            var productsCount = _productApiService.GetProductsCount(updatedAtMax: updatedAtMaxDate);
+            var productsCount = await _productApiService.GetProductsCountAsync(updatedAtMax: updatedAtMaxDate);
 
             // Assert
             Assert.AreEqual(0, productsCount);

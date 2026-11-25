@@ -4,6 +4,6 @@ namespace Nop.Plugin.Api.Services
 {
     public interface IProductPictureService
     {
-        ProductPicture GetProductPictureByPictureId(int pictureId);
+        Task<ProductPicture> GetProductPictureByPictureIdAsync(int pictureId);
     }
 }

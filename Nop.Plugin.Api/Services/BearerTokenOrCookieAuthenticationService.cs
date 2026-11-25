@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Nop.Core.Domain.Customers;
+using Nop.Plugin.Api.Authorization.Requirements;
 using Nop.Services.Authentication;
 using Nop.Services.Customers;
 
@@ -9,6 +10,7 @@ namespace Nop.Plugin.Api.Services
     {
         #region Fields
 
+        private readonly IHttpContextAccessor httpContextAccessor;
         private readonly Nop.Services.Authentication.IAuthenticationService bearerTokenAuthenticationService;
         private readonly Nop.Services.Authentication.IAuthenticationService cookieAuthenticationService;
 
@@ -20,7 +22,8 @@ namespace Nop.Plugin.Api.Services
           ICustomerService customerService,
           IHttpContextAccessor httpContextAccessor)
         {
-            bearerTokenAuthenticationService = new BearerTokenAuthenticationService(customerSettings, customerService, httpContextAccessor);
+            this.httpContextAccessor = httpContextAccessor;
+            bearerTokenAuthenticationService = new BearerTokenAuthenticationService(customerService, httpContextAccessor);
             cookieAuthenticationService = new CookieAuthenticationService(customerSettings, customerService, httpContextAccessor);
         }
 
@@ -48,13 +51,11 @@ namespace Nop.Plugin.Api.Services
             await cookieAuthenticationService.SignOutAsync();
         }
 
-        public async Task<Customer> GetAuthenticatedCustomerAsync()
+        public Task<Customer> GetAuthenticatedCustomerAsync()
         {
-            var customer = await bearerTokenAuthenticationService.GetAuthenticatedCustomerAsync();
-            if (customer is not null)
-                return customer;
-            customer = await cookieAuthenticationService.GetAuthenticatedCustomerAsync();
-            return customer;
+            return AuthorizationSchemeRequirement.HasBearerCredential(httpContextAccessor.HttpContext?.Request.Headers)
+                ? bearerTokenAuthenticationService.GetAuthenticatedCustomerAsync()
+                : cookieAuthenticationService.GetAuthenticatedCustomerAsync();
         }
 
         #endregion

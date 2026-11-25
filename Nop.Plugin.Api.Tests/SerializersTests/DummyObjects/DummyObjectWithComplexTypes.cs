@@ -35,5 +35,7 @@ namespace Nop.Plugin.Api.Tests.SerializersTests.DummyObjects
 
             return false;
         }
+
+        public override int GetHashCode() => HashCode.Combine(StringProperty, IntProperty, BoolProperty, ListOfDummyObjectWithSimpleTypes, DummyObjectWithSimpleTypes);
     }
 }

@@ -92,6 +92,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [GetRequestsErrorInterceptorActionFilter]
+        [UnpagedCollection]
         public async Task<IActionResult> GetShoppingCartItems([FromQuery] ShoppingCartItemsParametersModel parameters)
         {
             if (parameters.Limit.HasValue && (parameters.Limit < Constants.Configurations.MinLimit || parameters.Limit > Constants.Configurations.MaxLimit))
@@ -116,12 +117,12 @@ namespace Nop.Plugin.Api.Controllers
                 return AccessDenied();
             }
 
-            IList<ShoppingCartItem> shoppingCartItems = _shoppingCartItemApiService.GetShoppingCartItems(parameters.CustomerId,
+            IList<ShoppingCartItem> shoppingCartItems = await _shoppingCartItemApiService.GetShoppingCartItemsAsync(parameters.CustomerId,
                                                            parameters.CreatedAtMin,
                                                            parameters.CreatedAtMax,
                                                            parameters.UpdatedAtMin,
                                                            parameters.UpdatedAtMax,
-                                                           parameters.Limit,
+                                                           GetCollectionLimit(parameters.Limit),
                                                            parameters.Page,
                                                            shoppingCartType);
 
@@ -210,7 +211,7 @@ namespace Nop.Plugin.Api.Controllers
 
             var attributesXml = await _productAttributeConverter.ConvertToXmlAsync(shoppingCartItemDelta.Dto.Attributes, product.Id);
 
-            var currentStoreId = _storeContext.GetCurrentStore().Id;
+            var currentStoreId = (await _storeContext.GetCurrentStoreAsync()).Id;
 
             var warnings = await _shoppingCartService.AddToCartAsync(customer, product, (ShoppingCartType)shoppingCartItemDelta.Dto.ShoppingCartType, currentStoreId, attributesXml, 0M,
                                     newShoppingCartItem.RentalStartDateUtc, newShoppingCartItem.RentalEndDateUtc,
@@ -227,7 +228,7 @@ namespace Nop.Plugin.Api.Controllers
             }
 
             // load current shopping cart and return it as result of request
-            var shoppingCartsRootObject = await LoadCurrentShoppingCartItems((ShoppingCartType)shoppingCartItemDelta.Dto.ShoppingCartType, customer);
+            var shoppingCartsRootObject = await LoadCurrentShoppingCartItems((ShoppingCartType)shoppingCartItemDelta.Dto.ShoppingCartType, customer, currentStoreId);
 
             var json = JsonFieldsSerializer.Serialize(shoppingCartsRootObject, string.Empty);
 
@@ -245,6 +246,9 @@ namespace Nop.Plugin.Api.Controllers
       [ModelBinder(typeof(JsonModelBinder<ShoppingCartItemsCreateParametersModel>))]
       Delta<ShoppingCartItemsCreateParametersModel> parameters)
         {
+            if (!ModelState.IsValid)
+                return Error();
+
             var customer = await CustomerService.GetCustomerByIdAsync(parameters.Dto.CustomerId);
 
             if (customer == null)
@@ -257,6 +261,7 @@ namespace Nop.Plugin.Api.Controllers
                 return AccessDenied();
             }
 
+            var currentStoreId = (await _storeContext.GetCurrentStoreAsync()).Id;
             List<string> allWarnings = new();
 
             // add all items to cart
@@ -281,8 +286,6 @@ namespace Nop.Plugin.Api.Controllers
 
                 var attributesXml = await _productAttributeConverter.ConvertToXmlAsync(shoppingCartItemDto.Attributes, product.Id);
 
-                var currentStoreId = _storeContext.GetCurrentStore().Id;
-
                 var warnings = await _shoppingCartService.AddToCartAsync(customer, product, (ShoppingCartType)parameters.Dto.ShoppingCartType, currentStoreId, attributesXml, 0M,
                                         shoppingCartItemDto.RentalStartDateUtc, shoppingCartItemDto.RentalEndDateUtc,
                                         shoppingCartItemDto.Quantity ?? 1);
@@ -301,7 +304,7 @@ namespace Nop.Plugin.Api.Controllers
             }
 
             // load current shopping cart and return it as result of request
-            var shoppingCartsRootObject = await LoadCurrentShoppingCartItems((ShoppingCartType)parameters.Dto.ShoppingCartType, customer);
+            var shoppingCartsRootObject = await LoadCurrentShoppingCartItems((ShoppingCartType)parameters.Dto.ShoppingCartType, customer, currentStoreId);
 
             var json = JsonFieldsSerializer.Serialize(shoppingCartsRootObject, string.Empty);
 
@@ -320,7 +323,7 @@ namespace Nop.Plugin.Api.Controllers
       Delta<ShoppingCartItemDto> shoppingCartItemDelta) // NOTE: id parameter is missing intentionally to fix the generation of swagger json
         {
             // We kno that the id will be valid integer because the validation for this happens in the validator which is executed by the model binder.
-            var shoppingCartItemForUpdate = await _shoppingCartItemApiService.GetShoppingCartItemAsync(shoppingCartItemDelta.Dto.Id);
+            var shoppingCartItemForUpdate = await GetAuthorizedCustomerCartItemAsync(shoppingCartItemDelta.Dto.Id);
 
             if (shoppingCartItemForUpdate == null)
             {
@@ -332,25 +335,24 @@ namespace Nop.Plugin.Api.Controllers
                 return AccessDenied();
             }
 
-            shoppingCartItemDelta.Merge(shoppingCartItemForUpdate);
-
-            if (!(await _productService.GetProductByIdAsync(shoppingCartItemForUpdate.ProductId)).IsRental)
-            {
-                shoppingCartItemForUpdate.RentalStartDateUtc = null;
-                shoppingCartItemForUpdate.RentalEndDateUtc = null;
-            }
-
-            if (shoppingCartItemDelta.Dto.Attributes != null)
-            {
-                shoppingCartItemForUpdate.AttributesXml = await _productAttributeConverter.ConvertToXmlAsync(shoppingCartItemDelta.Dto.Attributes, shoppingCartItemForUpdate.ProductId);
-            }
-
             var customer = await CustomerService.GetCustomerByIdAsync(shoppingCartItemForUpdate.CustomerId);
-            // The update time is set in the service.
+            var product = await _productService.GetProductByIdAsync(shoppingCartItemForUpdate.ProductId);
+            if (customer is null || product is null)
+                return Error(HttpStatusCode.NotFound, "shopping_cart_item", "not found");
+
+            var dto = shoppingCartItemDelta.Dto;
+            var attributesXml = dto.Attributes is null
+                ? shoppingCartItemForUpdate.AttributesXml
+                : await _productAttributeConverter.ConvertToXmlAsync(dto.Attributes, product.Id);
+            var rentalStart = shoppingCartItemDelta.HasProperty(nameof(dto.RentalStartDateUtc))
+                ? dto.RentalStartDateUtc : shoppingCartItemForUpdate.RentalStartDateUtc;
+            var rentalEnd = shoppingCartItemDelta.HasProperty(nameof(dto.RentalEndDateUtc))
+                ? dto.RentalEndDateUtc : shoppingCartItemForUpdate.RentalEndDateUtc;
+
             var warnings = await _shoppingCartService.UpdateShoppingCartItemAsync(customer, shoppingCartItemForUpdate.Id,
-                                           shoppingCartItemForUpdate.AttributesXml, shoppingCartItemForUpdate.CustomerEnteredPrice,
-                                           shoppingCartItemForUpdate.RentalStartDateUtc, shoppingCartItemForUpdate.RentalEndDateUtc,
-                                           shoppingCartItemForUpdate.Quantity);
+                attributesXml, dto.CustomerEnteredPrice ?? shoppingCartItemForUpdate.CustomerEnteredPrice,
+                product.IsRental ? rentalStart : null, product.IsRental ? rentalEnd : null,
+                dto.Quantity ?? shoppingCartItemForUpdate.Quantity);
 
             if (warnings.Count > 0)
             {
@@ -361,9 +363,12 @@ namespace Nop.Plugin.Api.Controllers
 
                 return Error(HttpStatusCode.BadRequest);
             }
-            shoppingCartItemForUpdate = await _shoppingCartItemApiService.GetShoppingCartItemAsync(shoppingCartItemForUpdate.Id);
+            shoppingCartItemForUpdate = await _shoppingCartItemApiService.GetShoppingCartItemAsync(shoppingCartItemForUpdate.Id, customer.Id);
 
-            // Preparing the result dto of the new product category mapping
+            if (shoppingCartItemForUpdate is null)
+                return Error(HttpStatusCode.NotFound, "shopping_cart_item", "not found");
+
+            // Prepare the updated cart item.
             var newShoppingCartItemDto = await _dtoHelper.PrepareShoppingCartItemDTOAsync(shoppingCartItemForUpdate);
 
             var shoppingCartsRootObject = new ShoppingCartItemsRootObject();
@@ -388,7 +393,10 @@ namespace Nop.Plugin.Api.Controllers
                 return Error(HttpStatusCode.BadRequest, "id", "invalid id");
             }
 
-            var shoppingCartItemForDelete = await _shoppingCartItemApiService.GetShoppingCartItemAsync(id);
+            var shoppingCartItemForDelete = await GetAuthorizedCustomerCartItemAsync(id);
+
+            if (shoppingCartItemForDelete is null)
+                return Error(HttpStatusCode.NotFound, "shopping_cart_item", "not found");
 
             if (!await CheckPermissions(shoppingCartItemForDelete.CustomerId, shoppingCartItemForDelete.ShoppingCartType))
             {
@@ -411,55 +419,32 @@ namespace Nop.Plugin.Api.Controllers
         [GetRequestsErrorInterceptorActionFilter]
         public async Task<IActionResult> DeleteShoppingCartItems([FromQuery] ShoppingCartItemsDeleteParametersModel parameters)
         {
-            ShoppingCartType? shoppingCartType = null;
+            if (parameters.ShoppingCartType.HasValue && !Enum.IsDefined(parameters.ShoppingCartType.Value))
+                return Error(HttpStatusCode.BadRequest, "shopping_cart_type", "invalid shopping cart type");
 
-            if (parameters.ShoppingCartType.HasValue && Enum.IsDefined(parameters.ShoppingCartType.Value))
-            {
-                shoppingCartType = (ShoppingCartType)parameters.ShoppingCartType.Value;
-            }
+            var shoppingCartType = (ShoppingCartType?)parameters.ShoppingCartType;
+            var currentCustomer = await _authenticationService.GetAuthenticatedCustomerAsync();
+            if (currentCustomer is null)
+                return Unauthorized();
 
-            int customerId;
-            if (parameters.CustomerId.HasValue)
-            {
-                customerId = parameters.CustomerId.Value;
-            }
-            else
-            {
-                var currentCustomer = await _authenticationService.GetAuthenticatedCustomerAsync();
-                if (currentCustomer is null)
-                    return Unauthorized();
-                customerId = currentCustomer.Id;
-            }
+            var customerId = parameters.CustomerId ?? currentCustomer.Id;
+            if (customerId <= 0)
+                return Error(HttpStatusCode.BadRequest, "customer_id", "invalid customer id");
 
             if (!await CheckPermissions(customerId, shoppingCartType))
-            {
                 return AccessDenied();
-            }
 
-            if (parameters.Ids is { Count: > 0 })
-            {
-                foreach (int id in parameters.Ids)
-                {
-                    var item = await _shoppingCartItemApiService.GetShoppingCartItemAsync(id);
-                    if (item is not null)
-                    {
-                        await deleteShoppingCartItem(item);
-                    }
-                }
-            }
-            else
-            {
-                var shoppingCartItemsForDelete = _shoppingCartItemApiService.GetShoppingCartItems(customerId: customerId, shoppingCartType: shoppingCartType);
-                foreach (var item in shoppingCartItemsForDelete)
-                {
-                    await deleteShoppingCartItem(item);
-                }
-            }
+            var ids = parameters.Ids?.Distinct().ToArray() ?? Array.Empty<int>();
+            if (ids.Any(id => id <= 0))
+                return Error(HttpStatusCode.BadRequest, "ids", "invalid id");
 
-            async Task deleteShoppingCartItem(ShoppingCartItem item)
+            var items = await _shoppingCartItemApiService.GetShoppingCartItemsForDeletionAsync(customerId, shoppingCartType, ids);
+            if (ids.Length > 0 && items.Count != ids.Length)
+                return Error(HttpStatusCode.NotFound, "shopping_cart_item", "not found");
+
+            foreach (var item in items)
             {
                 await _shoppingCartService.DeleteShoppingCartItemAsync(item);
-                //activity log
                 await CustomerActivityService.InsertActivityAsync("DeleteShoppingCartItem", await LocalizationService.GetResourceAsync("ActivityLog.DeleteShoppingCartItem"), item);
             }
 
@@ -467,6 +452,21 @@ namespace Nop.Plugin.Api.Controllers
         }
 
         #region Private methods
+
+        private async Task<ShoppingCartItem> GetAuthorizedCustomerCartItemAsync(int id)
+        {
+            var customer = await _authenticationService.GetAuthenticatedCustomerAsync();
+            if (customer is null)
+                return null;
+
+            var item = await _shoppingCartItemApiService.GetShoppingCartItemAsync(id, customer.Id);
+            if (item is not null)
+                return item;
+
+            return await _permissionService.AuthorizeAsync(StandardPermission.Orders.ORDERS_CREATE_EDIT_DELETE, customer)
+                ? await _shoppingCartItemApiService.GetShoppingCartItemAsync(id)
+                : null;
+        }
 
         private async Task<bool> CheckPermissions(int? customerId, ShoppingCartType? shoppingCartType)
         {
@@ -491,9 +491,10 @@ namespace Nop.Plugin.Api.Controllers
             return await _permissionService.AuthorizeAsync(StandardPermission.Orders.ORDERS_CREATE_EDIT_DELETE, currentCustomer);
         }
 
-        private async Task<ShoppingCartItemsRootObject> LoadCurrentShoppingCartItems(ShoppingCartType shoppingCartType, Core.Domain.Customers.Customer customer)
+        private async Task<ShoppingCartItemsRootObject> LoadCurrentShoppingCartItems(ShoppingCartType shoppingCartType, Core.Domain.Customers.Customer customer, int? storeId = null)
         {
-            var updatedShoppingCart = await _shoppingCartService.GetShoppingCartAsync(customer, shoppingCartType);
+            var currentStoreId = storeId ?? (await _storeContext.GetCurrentStoreAsync()).Id;
+            var updatedShoppingCart = await _shoppingCartService.GetShoppingCartAsync(customer, shoppingCartType, currentStoreId);
 
             var shoppingCartsRootObject = new ShoppingCartItemsRootObject();
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Nop.Plugin.Api.Converters;
 using Nop.Plugin.Api.Tests.ConvertersTests.ObjectConverter.DummyObjects;
 using NUnit.Framework;
-using Rhino.Mocks;
+using Moq;
 
 namespace Nop.Plugin.Api.Tests.ConvertersTests.ObjectConverter
 {
@@ -14,7 +14,7 @@ namespace Nop.Plugin.Api.Tests.ConvertersTests.ObjectConverter
         public void WhenCollectionIsNull_ShouldNotCallAnyOfTheApiTypeConverterMethods()
         {
             //Arange
-            IApiTypeConverter apiTypeConverterMock = MockRepository.GenerateMock<IApiTypeConverter>();
+            IApiTypeConverter apiTypeConverterMock = Mock.Of<IApiTypeConverter>();
 
             IObjectConverter objectConverter = new Converters.ObjectConverter(apiTypeConverterMock);
 
@@ -24,18 +24,18 @@ namespace Nop.Plugin.Api.Tests.ConvertersTests.ObjectConverter
             objectConverter.ToObject<SomeTestingObject>(nullCollection);
 
             //Assert
-            apiTypeConverterMock.AssertWasNotCalled(x => x.ToInt(Arg<string>.Is.Anything));
-            apiTypeConverterMock.AssertWasNotCalled(x => x.ToIntNullable(Arg<string>.Is.Anything));
-            apiTypeConverterMock.AssertWasNotCalled(x => x.ToUtcDateTimeNullable(Arg<string>.Is.Anything));
-            apiTypeConverterMock.AssertWasNotCalled(x => x.ToListOfInts(Arg<string>.Is.Anything));
-            apiTypeConverterMock.AssertWasNotCalled(x => x.ToStatus(Arg<string>.Is.Anything));
+            Mock.Get(apiTypeConverterMock).Verify(x => x.ToInt(It.IsAny<string>()), Times.Never());
+            Mock.Get(apiTypeConverterMock).Verify(x => x.ToIntNullable(It.IsAny<string>()), Times.Never());
+            Mock.Get(apiTypeConverterMock).Verify(x => x.ToUtcDateTimeNullable(It.IsAny<string>()), Times.Never());
+            Mock.Get(apiTypeConverterMock).Verify(x => x.ToListOfInts(It.IsAny<string>()), Times.Never());
+            Mock.Get(apiTypeConverterMock).Verify(x => x.ToBoolean(It.IsAny<string>()), Times.Never());
         }
 
         [Test]
         public void WhenCollectionIsNull_ShouldReturnInstanceOfAnObjectOfTheSpecifiedType()
         {
             //Arange
-            IApiTypeConverter apiTypeConverterStub = MockRepository.GenerateStub<IApiTypeConverter>();
+            IApiTypeConverter apiTypeConverterStub = Mock.Of<IApiTypeConverter>();
 
             IObjectConverter objectConverter = new Converters.ObjectConverter(apiTypeConverterStub);
 
@@ -53,7 +53,7 @@ namespace Nop.Plugin.Api.Tests.ConvertersTests.ObjectConverter
         public void WhenCollectionIsNull_ShouldReturnInstanceOfAnObjectWithUnsetProperties()
         {
             //Arange
-            IApiTypeConverter apiTypeConverterStub = MockRepository.GenerateStub<IApiTypeConverter>();
+            IApiTypeConverter apiTypeConverterStub = Mock.Of<IApiTypeConverter>();
 
             IObjectConverter objectConverter = new Converters.ObjectConverter(apiTypeConverterStub);
 
@@ -73,7 +73,7 @@ namespace Nop.Plugin.Api.Tests.ConvertersTests.ObjectConverter
         public void WhenCollectionIsEmpty_ShouldReturnInstanceOfAnObjectWithUnsetProperties()
         {
             //Arange
-            IApiTypeConverter apiTypeConverterStub = MockRepository.GenerateStub<IApiTypeConverter>();
+            IApiTypeConverter apiTypeConverterStub = Mock.Of<IApiTypeConverter>();
 
             IObjectConverter objectConverter = new Converters.ObjectConverter(apiTypeConverterStub);
 
@@ -92,7 +92,7 @@ namespace Nop.Plugin.Api.Tests.ConvertersTests.ObjectConverter
         public void WhenCollectionIsEmpty_ShoulNotCallAnyOfTheApiTypeConverterMethods()
         {
             //Arange
-            IApiTypeConverter apiTypeConverterMock = MockRepository.GenerateMock<IApiTypeConverter>();
+            IApiTypeConverter apiTypeConverterMock = Mock.Of<IApiTypeConverter>();
 
             IObjectConverter objectConverter = new Converters.ObjectConverter(apiTypeConverterMock);
 
@@ -102,11 +102,11 @@ namespace Nop.Plugin.Api.Tests.ConvertersTests.ObjectConverter
             objectConverter.ToObject<SomeTestingObject>(emptyCollection);
 
             //Assert
-            apiTypeConverterMock.AssertWasNotCalled(x => x.ToInt(Arg<string>.Is.Anything));
-            apiTypeConverterMock.AssertWasNotCalled(x => x.ToIntNullable(Arg<string>.Is.Anything));
-            apiTypeConverterMock.AssertWasNotCalled(x => x.ToUtcDateTimeNullable(Arg<string>.Is.Anything));
-            apiTypeConverterMock.AssertWasNotCalled(x => x.ToListOfInts(Arg<string>.Is.Anything));
-            apiTypeConverterMock.AssertWasNotCalled(x => x.ToStatus(Arg<string>.Is.Anything));
+            Mock.Get(apiTypeConverterMock).Verify(x => x.ToInt(It.IsAny<string>()), Times.Never());
+            Mock.Get(apiTypeConverterMock).Verify(x => x.ToIntNullable(It.IsAny<string>()), Times.Never());
+            Mock.Get(apiTypeConverterMock).Verify(x => x.ToUtcDateTimeNullable(It.IsAny<string>()), Times.Never());
+            Mock.Get(apiTypeConverterMock).Verify(x => x.ToListOfInts(It.IsAny<string>()), Times.Never());
+            Mock.Get(apiTypeConverterMock).Verify(x => x.ToBoolean(It.IsAny<string>()), Times.Never());
         }
 
         [Test]
@@ -119,8 +119,8 @@ namespace Nop.Plugin.Api.Tests.ConvertersTests.ObjectConverter
         {
             //Arange
             int expectedInt = 5;
-            IApiTypeConverter apiTypeConverterMock = MockRepository.GenerateMock<IApiTypeConverter>();
-            apiTypeConverterMock.Expect(x => x.ToInt(Arg<string>.Is.Anything)).IgnoreArguments().Return(expectedInt);
+            IApiTypeConverter apiTypeConverterMock = Mock.Of<IApiTypeConverter>();
+            Mock.Get(apiTypeConverterMock).Setup(x => x.ToInt(It.IsAny<string>())).Returns(expectedInt).Verifiable();
 
             IObjectConverter objectConverter = new Converters.ObjectConverter(apiTypeConverterMock);
 
@@ -133,7 +133,7 @@ namespace Nop.Plugin.Api.Tests.ConvertersTests.ObjectConverter
             objectConverter.ToObject<SomeTestingObject>(collection);
 
             //Assert
-            apiTypeConverterMock.VerifyAllExpectations();
+            Mock.Get(apiTypeConverterMock).Verify();
         }
         
         [Test]
@@ -142,7 +142,7 @@ namespace Nop.Plugin.Api.Tests.ConvertersTests.ObjectConverter
         public void WhenCollectionContainsInvalidIntProperty_ShouldNotCallTheToIntMethod(string invalidIntPropertyName)
         {
             //Arange
-            IApiTypeConverter apiTypeConverterMock = MockRepository.GenerateMock<IApiTypeConverter>();
+            IApiTypeConverter apiTypeConverterMock = Mock.Of<IApiTypeConverter>();
 
             IObjectConverter objectConverter = new Converters.ObjectConverter(apiTypeConverterMock);
 
@@ -155,7 +155,7 @@ namespace Nop.Plugin.Api.Tests.ConvertersTests.ObjectConverter
             objectConverter.ToObject<SomeTestingObject>(collection);
 
             //Assert
-            apiTypeConverterMock.AssertWasNotCalled(x => x.ToInt(Arg<string>.Is.Anything));
+            Mock.Get(apiTypeConverterMock).Verify(x => x.ToInt(It.IsAny<string>()), Times.Never());
         }
 
         [Test]
@@ -167,7 +167,7 @@ namespace Nop.Plugin.Api.Tests.ConvertersTests.ObjectConverter
         public void WhenCollectionContainsValidStringProperty_ShouldSetTheObjectStringPropertyValueToTheCollectionStringPropertyValue(string stringPropertyName)
         {
             //Arange
-            IApiTypeConverter apiTypeConverterStub = MockRepository.GenerateStub<IApiTypeConverter>();
+            IApiTypeConverter apiTypeConverterStub = Mock.Of<IApiTypeConverter>();
 
             IObjectConverter objectConverter = new Converters.ObjectConverter(apiTypeConverterStub);
 
@@ -188,7 +188,7 @@ namespace Nop.Plugin.Api.Tests.ConvertersTests.ObjectConverter
         public void WhenCollectionContainsInvalidStringProperty_ShouldReturnTheObjectWithItsStringPropertySetToTheDefaultValue(string invalidStringPropertyName)
         {
             //Arange
-            IApiTypeConverter apiTypeConverterStub = MockRepository.GenerateStub<IApiTypeConverter>();
+            IApiTypeConverter apiTypeConverterStub = Mock.Of<IApiTypeConverter>();
 
             IObjectConverter objectConverter = new Converters.ObjectConverter(apiTypeConverterStub);
 
@@ -214,7 +214,7 @@ namespace Nop.Plugin.Api.Tests.ConvertersTests.ObjectConverter
         public void WhenCollectionContainsValidOrInvalidStringProperty_ShouldNotCallAnyOfTheApiTypeConverterMethods(string stringProperty)
         {
             //Arange
-            IApiTypeConverter apiTypeConverterMock = MockRepository.GenerateMock<IApiTypeConverter>();
+            IApiTypeConverter apiTypeConverterMock = Mock.Of<IApiTypeConverter>();
 
             IObjectConverter objectConverter = new Converters.ObjectConverter(apiTypeConverterMock);
 
@@ -227,11 +227,11 @@ namespace Nop.Plugin.Api.Tests.ConvertersTests.ObjectConverter
             objectConverter.ToObject<SomeTestingObject>(collection);
 
             //Assert
-            apiTypeConverterMock.AssertWasNotCalled(x => x.ToInt(Arg<string>.Is.Anything));
-            apiTypeConverterMock.AssertWasNotCalled(x => x.ToIntNullable(Arg<string>.Is.Anything));
-            apiTypeConverterMock.AssertWasNotCalled(x => x.ToUtcDateTimeNullable(Arg<string>.Is.Anything));
-            apiTypeConverterMock.AssertWasNotCalled(x => x.ToListOfInts(Arg<string>.Is.Anything));
-            apiTypeConverterMock.AssertWasNotCalled(x => x.ToStatus(Arg<string>.Is.Anything));
+            Mock.Get(apiTypeConverterMock).Verify(x => x.ToInt(It.IsAny<string>()), Times.Never());
+            Mock.Get(apiTypeConverterMock).Verify(x => x.ToIntNullable(It.IsAny<string>()), Times.Never());
+            Mock.Get(apiTypeConverterMock).Verify(x => x.ToUtcDateTimeNullable(It.IsAny<string>()), Times.Never());
+            Mock.Get(apiTypeConverterMock).Verify(x => x.ToListOfInts(It.IsAny<string>()), Times.Never());
+            Mock.Get(apiTypeConverterMock).Verify(x => x.ToBoolean(It.IsAny<string>()), Times.Never());
         }
 
         [Test]
@@ -243,8 +243,8 @@ namespace Nop.Plugin.Api.Tests.ConvertersTests.ObjectConverter
         public void WhenCollectionContainsValidDateTimeProperty_ShouldCallTheToDateTimeNullableMethod(string dateTimePropertyName)
         {
             //Arange
-            IApiTypeConverter apiTypeConverterMock = MockRepository.GenerateMock<IApiTypeConverter>();
-            apiTypeConverterMock.Expect(x => x.ToUtcDateTimeNullable(Arg<string>.Is.Anything)).IgnoreArguments().Return(DateTime.Now);
+            IApiTypeConverter apiTypeConverterMock = Mock.Of<IApiTypeConverter>();
+            Mock.Get(apiTypeConverterMock).Setup(x => x.ToUtcDateTimeNullable(It.IsAny<string>())).Returns(DateTime.Now).Verifiable();
 
             IObjectConverter objectConverter = new Converters.ObjectConverter(apiTypeConverterMock);
 
@@ -257,7 +257,7 @@ namespace Nop.Plugin.Api.Tests.ConvertersTests.ObjectConverter
             objectConverter.ToObject<SomeTestingObject>(collection);
 
             //Assert
-            apiTypeConverterMock.AssertWasCalled(x => x.ToUtcDateTimeNullable(Arg<string>.Is.Anything));
+            Mock.Get(apiTypeConverterMock).Verify(x => x.ToUtcDateTimeNullable(It.IsAny<string>()), Times.AtLeastOnce());
         }
 
         [Test]
@@ -265,8 +265,8 @@ namespace Nop.Plugin.Api.Tests.ConvertersTests.ObjectConverter
         public void WhenCollectionContainsInvalidDateTimeNullableProperty_ShouldNotCallTheDateTimeNullableMethod(string invalidDateTimeNullablePropertyName)
         {
             //Arange
-            IApiTypeConverter apiTypeConverterMock = MockRepository.GenerateMock<IApiTypeConverter>();
-            apiTypeConverterMock.Expect(x => x.ToUtcDateTimeNullable(Arg<string>.Is.Anything)).IgnoreArguments();
+            IApiTypeConverter apiTypeConverterMock = Mock.Of<IApiTypeConverter>();
+            Mock.Get(apiTypeConverterMock).Setup(x => x.ToUtcDateTimeNullable(It.IsAny<string>())).Verifiable();
 
             IObjectConverter objectConverter = new Converters.ObjectConverter(apiTypeConverterMock);
 
@@ -279,7 +279,7 @@ namespace Nop.Plugin.Api.Tests.ConvertersTests.ObjectConverter
             objectConverter.ToObject<SomeTestingObject>(collection);
 
             //Assert
-            apiTypeConverterMock.AssertWasNotCalled(x => x.ToUtcDateTimeNullable(Arg<string>.Is.Anything));
+            Mock.Get(apiTypeConverterMock).Verify(x => x.ToUtcDateTimeNullable(It.IsAny<string>()), Times.Never());
         }
 
         [Test]
@@ -296,8 +296,8 @@ namespace Nop.Plugin.Api.Tests.ConvertersTests.ObjectConverter
         public void WhenCollectionContainsValidBooleanStatusPropertyAndPublishedValue_ShouldCallTheToStatusMethod(string booleanStatusPropertyName)
         {
             //Arange
-            IApiTypeConverter apiTypeConverterMock = MockRepository.GenerateMock<IApiTypeConverter>();
-            apiTypeConverterMock.Expect(x => x.ToStatus(Arg<string>.Is.Anything)).IgnoreArguments().Return(true);
+            IApiTypeConverter apiTypeConverterMock = Mock.Of<IApiTypeConverter>();
+            Mock.Get(apiTypeConverterMock).Setup(x => x.ToBoolean(It.IsAny<string>())).Returns(true).Verifiable();
 
             IObjectConverter objectConverter = new Converters.ObjectConverter(apiTypeConverterMock);
 
@@ -310,7 +310,7 @@ namespace Nop.Plugin.Api.Tests.ConvertersTests.ObjectConverter
             objectConverter.ToObject<SomeTestingObject>(collection);
 
             //Assert
-            apiTypeConverterMock.AssertWasCalled(x => x.ToStatus(Arg<string>.Is.Anything));
+            Mock.Get(apiTypeConverterMock).Verify(x => x.ToBoolean(It.IsAny<string>()), Times.AtLeastOnce());
         }
 
         [Test]
@@ -318,8 +318,8 @@ namespace Nop.Plugin.Api.Tests.ConvertersTests.ObjectConverter
         public void WhenCollectionContainsInvalidBooleanNullableStatusProperty_ShouldNotCallTheToStatusMethod(string invalidBooleanNullableStatusPropertyName)
         {
             //Arange
-            IApiTypeConverter apiTypeConverterMock = MockRepository.GenerateMock<IApiTypeConverter>();
-            apiTypeConverterMock.Expect(x => x.ToStatus(Arg<string>.Is.Anything)).IgnoreArguments();
+            IApiTypeConverter apiTypeConverterMock = Mock.Of<IApiTypeConverter>();
+            Mock.Get(apiTypeConverterMock).Setup(x => x.ToBoolean(It.IsAny<string>())).Verifiable();
 
             IObjectConverter objectConverter = new Converters.ObjectConverter(apiTypeConverterMock);
 
@@ -332,7 +332,7 @@ namespace Nop.Plugin.Api.Tests.ConvertersTests.ObjectConverter
             objectConverter.ToObject<SomeTestingObject>(collection);
 
             //Assert
-            apiTypeConverterMock.AssertWasNotCalled(x => x.ToStatus(Arg<string>.Is.Anything));
+            Mock.Get(apiTypeConverterMock).Verify(x => x.ToBoolean(It.IsAny<string>()), Times.Never());
         }
 
         [Test]
@@ -351,8 +351,8 @@ namespace Nop.Plugin.Api.Tests.ConvertersTests.ObjectConverter
         public void WhenCollectionContainsValidNullableEnumProperty_ShouldCallTheToEnumNullableMethod(string enumNullableProperty)
         {
             //Arange
-            IApiTypeConverter apiTypeConverterMock = MockRepository.GenerateMock<IApiTypeConverter>();
-            apiTypeConverterMock.Expect(x => x.ToEnumNullable(Arg<string>.Is.Anything, Arg<Type>.Is.Anything)).IgnoreArguments().Return(null);
+            IApiTypeConverter apiTypeConverterMock = Mock.Of<IApiTypeConverter>();
+            Mock.Get(apiTypeConverterMock).Setup(x => x.ToEnumNullable(It.IsAny<string>(), It.IsAny<Type>())).Returns(null).Verifiable();
 
             IObjectConverter objectConverter = new Converters.ObjectConverter(apiTypeConverterMock);
 
@@ -365,7 +365,7 @@ namespace Nop.Plugin.Api.Tests.ConvertersTests.ObjectConverter
             objectConverter.ToObject<SomeTestingObject>(collection);
 
             //Assert
-            apiTypeConverterMock.AssertWasCalled(x => x.ToEnumNullable(Arg<string>.Is.Anything, Arg<Type>.Is.Anything));
+            Mock.Get(apiTypeConverterMock).Verify(x => x.ToEnumNullable(It.IsAny<string>(), It.IsAny<Type>()), Times.AtLeastOnce());
         }
 
         [Test]
@@ -373,8 +373,8 @@ namespace Nop.Plugin.Api.Tests.ConvertersTests.ObjectConverter
         public void WhenCollectionContainsInvalidNullableEnumProperty_ShouldNotCallTheToEnumNullableMethod(string invalidEnumNullableProperty)
         {
             //Arange
-            IApiTypeConverter apiTypeConverterMock = MockRepository.GenerateMock<IApiTypeConverter>();
-            apiTypeConverterMock.Expect(x => x.ToEnumNullable(Arg<string>.Is.Anything, Arg<Type>.Is.Anything)).IgnoreArguments();
+            IApiTypeConverter apiTypeConverterMock = Mock.Of<IApiTypeConverter>();
+            Mock.Get(apiTypeConverterMock).Setup(x => x.ToEnumNullable(It.IsAny<string>(), It.IsAny<Type>())).Verifiable();
 
             IObjectConverter objectConverter = new Converters.ObjectConverter(apiTypeConverterMock);
 
@@ -387,7 +387,7 @@ namespace Nop.Plugin.Api.Tests.ConvertersTests.ObjectConverter
             objectConverter.ToObject<SomeTestingObject>(collection);
 
             //Assert
-            apiTypeConverterMock.AssertWasNotCalled(x => x.ToEnumNullable(Arg<string>.Is.Anything, Arg<Type>.Is.Anything));
+            Mock.Get(apiTypeConverterMock).Verify(x => x.ToEnumNullable(It.IsAny<string>(), It.IsAny<Type>()), Times.Never());
         }
     }   
 }

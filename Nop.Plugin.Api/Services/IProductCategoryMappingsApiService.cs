@@ -5,11 +5,11 @@ namespace Nop.Plugin.Api.Services
 {
     public interface IProductCategoryMappingsApiService
     {
-        IList<ProductCategory> GetMappings(
+        Task<IList<ProductCategory>> GetMappingsAsync(
             int? productId = null, int? categoryId = null, int limit = Constants.Configurations.DefaultLimit,
             int page = Constants.Configurations.DefaultPageValue, int sinceId = Constants.Configurations.DefaultSinceId);
 
-        int GetMappingsCount(int? productId = null, int? categoryId = null);
+        Task<int> GetMappingsCountAsync(int? productId = null, int? categoryId = null);
 
         Task<ProductCategory> GetByIdAsync(int id);
     }

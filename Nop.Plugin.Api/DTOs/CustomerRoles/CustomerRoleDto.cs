@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿#nullable enable
+
+using Newtonsoft.Json;
 using Nop.Plugin.Api.DTO.Base;
 
 namespace Nop.Plugin.Api.DTO.CustomerRoles
@@ -10,7 +12,7 @@ namespace Nop.Plugin.Api.DTO.CustomerRoles
         ///     Gets or sets the customer role name
         /// </summary>
         [JsonProperty("name")]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         /// <summary>
         ///     Gets or sets a value indicating whether the customer role is marked as free shiping
@@ -41,7 +43,7 @@ namespace Nop.Plugin.Api.DTO.CustomerRoles
         ///     Gets or sets the customer role system name
         /// </summary>
         [JsonProperty("system_name")]
-        public string SystemName { get; set; }
+        public string? SystemName { get; set; }
 
         /// <summary>
         ///     Gets or sets a value indicating whether the customers must change passwords after a specified time

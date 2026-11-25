@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿#nullable enable
+
+using Newtonsoft.Json;
 using Nop.Plugin.Api.Attributes;
 
 namespace Nop.Plugin.Api.DTO.Images
@@ -7,15 +9,15 @@ namespace Nop.Plugin.Api.DTO.Images
     public class ImageDto
     {
         [JsonProperty("src")]
-        public string Src { get; set; }
+        public string? Src { get; set; }
 
         [JsonProperty("attachment")]
-        public string Attachment { get; set; }
+        public string? Attachment { get; set; }
 
         [JsonIgnore]
-        public byte[] Binary { get; set; }
+        public byte[]? Binary { get; set; }
 
         [JsonIgnore]
-        public string MimeType { get; set; }
+        public string? MimeType { get; set; }
     }
 }

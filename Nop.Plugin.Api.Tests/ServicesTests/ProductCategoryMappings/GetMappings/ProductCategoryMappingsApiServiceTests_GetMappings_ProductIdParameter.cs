@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Nop.Core.Data;
+using Nop.Data;
 using Nop.Core.Domain.Catalog;
 using Nop.Plugin.Api.Services;
 using NUnit.Framework;
-using Rhino.Mocks;
+using Moq;
 
 namespace Nop.Plugin.Api.Tests.ServicesTests.ProductCategoryMappings.GetMappings
 {
@@ -15,7 +15,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ProductCategoryMappings.GetMappings
         [Test]
         [TestCase(0)]
         [TestCase(-132340)]
-        public void GivenNegativeOrZeroProductId_ShouldReturnEmptyCollection(int productId)
+        public async Task GivenNegativeOrZeroProductId_ShouldReturnEmptyCollection(int productId)
         {
             var repo = new List<ProductCategory>();
 
@@ -33,20 +33,20 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ProductCategoryMappings.GetMappings
             }
 
             // Arange
-            var mappingRepo = MockRepository.GenerateStub<IRepository<ProductCategory>>();
-            mappingRepo.Stub(x => x.TableNoTracking).Return(repo.AsQueryable());
+            var mappingRepo = Mock.Of<IRepository<ProductCategory>>();
+            Mock.Get(mappingRepo).Setup(x => x.Table).Returns(repo.AsQueryable());
 
             // Act
             var cut = new ProductCategoryMappingsApiService(mappingRepo);
 
-            var result = cut.GetMappings(productId: productId);
+            var result = await cut.GetMappingsAsync(productId: productId);
 
             // Assert
             Assert.IsEmpty(result);
         }
 
         [Test]
-        public void GivenPositiveProductId_ShouldReturnCollectionContainingAllMappingsWithThisProductId()
+        public async Task GivenPositiveProductId_ShouldReturnCollectionContainingAllMappingsWithThisProductId()
         {
             var repo = new List<ProductCategory>();
 
@@ -61,13 +61,13 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ProductCategoryMappings.GetMappings
             });
 
             // Arange
-            var mappingRepo = MockRepository.GenerateStub<IRepository<ProductCategory>>();
-            mappingRepo.Stub(x => x.TableNoTracking).Return(repo.AsQueryable());
+            var mappingRepo = Mock.Of<IRepository<ProductCategory>>();
+            Mock.Get(mappingRepo).Setup(x => x.Table).Returns(repo.AsQueryable());
 
             // Act
             var cut = new ProductCategoryMappingsApiService(mappingRepo);
 
-            var result = cut.GetMappings(productId: productId);
+            var result = await cut.GetMappingsAsync(productId: productId);
 
             // Assert
             Assert.IsTrue(result.Select(x => new { x.CategoryId, x.ProductId })

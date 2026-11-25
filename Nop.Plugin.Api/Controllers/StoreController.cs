@@ -64,7 +64,7 @@ namespace Nop.Plugin.Api.Controllers
         [GetRequestsErrorInterceptorActionFilter]
         public async Task<IActionResult> GetCurrentStore([FromQuery] string fields = "")
         {
-            var store = _storeContext.GetCurrentStore();
+            var store = (await _storeContext.GetCurrentStoreAsync());
 
             if (store == null)
             {

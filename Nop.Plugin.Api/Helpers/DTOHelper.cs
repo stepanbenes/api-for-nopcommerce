@@ -490,16 +490,14 @@ namespace Nop.Plugin.Api.Helpers
                     productAttributeValueDto.ImageSquaresImage = imageDto;
                 }
 
-                if (productAttributeValue.PictureId > 0)
+                var valuePictures = await _productAttributeService.GetProductAttributeValuePicturesAsync(productAttributeValue.Id);
+                if (valuePictures.Count > 0)
                 {
-                    // make sure that the picture is mapped to the product
-                    // This is needed since if you delete the product picture mapping from the nopCommerce administrationthe
-                    // then the attribute value is not updated and it will point to a picture that has been deleted
-                    var productPicture = (await _productService.GetProductPicturesByProductIdAsync(product.Id)).FirstOrDefault(pp => pp.PictureId == productAttributeValue.PictureId);
-                    if (productPicture != null)
-                    {
-                        productAttributeValueDto.ProductPictureId = productPicture.Id;
-                    }
+                    // Preserve the single picture in the API response by picking the first valid association.
+                    var productPictures = await _productService.GetProductPicturesByProductIdAsync(product.Id);
+                    productAttributeValueDto.ProductPictureId = valuePictures
+                        .Select(valuePicture => productPictures.FirstOrDefault(picture => picture.PictureId == valuePicture.PictureId))
+                        .FirstOrDefault(picture => picture != null)?.Id;
                 }
             }
 

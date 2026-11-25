@@ -7,17 +7,17 @@ namespace Nop.Plugin.Api.Services
 {
     public interface IOrderApiService
     {
-        IList<Order> GetOrdersByCustomerId(int customerId);
+        Task<IList<Order>> GetOrdersByCustomerIdAsync(int customerId, int? storeId = null);
 
-        IList<Order> GetOrders(
+        Task<IList<Order>> GetOrdersAsync(
             IList<int> ids = null, DateTime? createdAtMin = null, DateTime? createdAtMax = null,
             int limit = Constants.Configurations.DefaultLimit, int page = Constants.Configurations.DefaultPageValue,
             int sinceId = Constants.Configurations.DefaultSinceId, OrderStatus? status = null, PaymentStatus? paymentStatus = null,
             ShippingStatus? shippingStatus = null, int? customerId = null, int? storeId = null);
 
-        Order GetOrderById(int orderId);
+        Task<Order> GetOrderByIdAsync(int orderId, int? storeId = null);
 
-        int GetOrdersCount(
+        Task<int> GetOrdersCountAsync(
             DateTime? createdAtMin = null, DateTime? createdAtMax = null, OrderStatus? status = null,
             PaymentStatus? paymentStatus = null, ShippingStatus? shippingStatus = null,
             int? customerId = null, int? storeId = null);

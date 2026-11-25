@@ -40,27 +40,29 @@ namespace Nop.Plugin.Api.Validators
 
         private void SetCustomerAddressesRule()
         {
-            var key = "addresses";
-            if (RequestJsonDictionary.ContainsKey(key))
+            if (!RequestJsonDictionary.TryGetValue("addresses", out var value) || value is not List<object> submittedAddresses)
+                return;
+
+            RuleFor(customer => customer.Addresses).Custom((addresses, validationContext) =>
             {
-                RuleForEach(c => c.Addresses)
-                    .Custom((addressDto, validationContext) =>
+                foreach (var (addressDto, submittedAddress) in addresses.Zip(submittedAddresses))
+                {
+                    if (submittedAddress is not Dictionary<string, object> addressFields)
                     {
-                        var addressJsonDictionary = GetRequestJsonDictionaryCollectionItemDictionary(key, addressDto);
+                        validationContext.AddFailure("addresses", "each address must be an object");
+                        continue;
+                    }
 
-                        var validator = new AddressDtoValidator(HttpContextAccessor, JsonHelper, addressJsonDictionary);
+                    if (addressDto.Id == 0 && addressFields.ContainsKey("id"))
+                    {
+                        addressFields = new Dictionary<string, object>(addressFields);
+                        addressFields.Remove("id");
+                    }
 
-                        //force create validation for new addresses
-                        if (addressDto.Id == 0)
-                        {
-                            validator.HttpMethod = HttpMethod.Post;
-                        }
-
-                        var validationResult = validator.Validate(addressDto);
-
-                        MergeValidationResult(validationContext, validationResult);
-                    });
-            }
+                    var validator = new AddressDtoValidator(HttpContextAccessor, JsonHelper, addressFields);
+                    MergeValidationResult(validationContext, validator.Validate(addressDto));
+                }
+            });
         }
 
         private void SetBillingAddressRule()

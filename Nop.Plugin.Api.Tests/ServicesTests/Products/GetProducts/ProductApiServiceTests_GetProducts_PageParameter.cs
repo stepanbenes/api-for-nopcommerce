@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Nop.Core.Data;
+using Nop.Data;
 using Nop.Core.Domain.Catalog;
 using Nop.Core.Domain.Vendors;
 using Nop.Plugin.Api.DataStructures;
 using Nop.Plugin.Api.Services;
 using NUnit.Framework;
-using Rhino.Mocks;
+using Moq;
 
 namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProducts
 {
@@ -35,27 +35,31 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProducts
             _existigProducts[51].Published = false;
             _existigProducts = _existigProducts.OrderBy(x => x.Id).ToList();
 
-            var productRepo = MockRepository.GenerateStub<IRepository<Product>>();
-            productRepo.Stub(x => x.TableNoTracking).Return(_existigProducts.AsQueryable());
+            var productRepo = Mock.Of<IRepository<Product>>();
+            Mock.Get(productRepo).Setup(x => x.Table).Returns(_existigProducts.AsQueryable());
 
-            var productCategoryRepo = MockRepository.GenerateStub<IRepository<ProductCategory>>();
-            var vendorRepo = MockRepository.GenerateStub<IRepository<Vendor>>();
+            var productCategoryRepo = Mock.Of<IRepository<ProductCategory>>();
+            var vendorRepo = Mock.Of<IRepository<Vendor>>();
 
-            var storeMappingService = MockRepository.GenerateStub<IStoreMappingService>();
+            var storeMappingService = Mock.Of<IStoreMappingService>();
+            Mock.Get(storeMappingService).Setup(x => x.ApplyStoreMapping(It.IsAny<IQueryable<Product>>(), 1))
+                .ReturnsAsync((IQueryable<Product> query, int _) => query);
+            var storeContext = Mock.Of<Nop.Core.IStoreContext>();
+            Mock.Get(storeContext).Setup(x => x.GetCurrentStoreAsync()).ReturnsAsync(new Nop.Core.Domain.Stores.Store { Id = 1 });
 
-            _productApiService = new ProductApiService(productRepo, productCategoryRepo, vendorRepo, storeMappingService);
+            _productApiService = new ProductApiService(productRepo, productCategoryRepo, vendorRepo, storeMappingService, storeContext);
         }
 
         [Test]
-        public void WhenCalledWithPageParameter_GivenLimitedProductsCollection_ShouldReturnThePartOfTheCollectionThatCorrespondsToThePage()
+        public async Task WhenCalledWithPageParameter_GivenLimitedProductsCollection_ShouldReturnThePartOfTheCollectionThatCorrespondsToThePage()
         {
             //Arange
             var limit = 5;
             var page = 6;
-            var expectedCollection = new ApiList<Product>(_existigProducts.Where(x => !x.Deleted).AsQueryable(), page - 1, limit);
+            var expectedCollection = ApiList<Product>.FromPage(_existigProducts.Where(x => !x.Deleted).AsQueryable(), page - 1, limit);
 
             //Act
-            var products = _productApiService.GetProducts(limit: limit, page: page);
+            var products = await _productApiService.GetProductsAsync(limit: limit, page: page);
 
             // Assert
             CollectionAssert.IsNotEmpty(products);
@@ -64,15 +68,15 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProducts
         }
 
         [Test]
-        public void WhenCalledWithZeroPageParameter_GivenLimitedProductsCollection_ShouldReturnTheFirstPage()
+        public async Task WhenCalledWithZeroPageParameter_GivenLimitedProductsCollection_ShouldReturnTheFirstPage()
         {
             //Arange
             var limit = 5;
             var page = 0;
-            var expectedCollection = new ApiList<Product>(_existigProducts.Where(x => !x.Deleted).AsQueryable(), page - 1, limit);
+            var expectedCollection = ApiList<Product>.FromPage(_existigProducts.Where(x => !x.Deleted).AsQueryable(), page - 1, limit);
 
             //Act
-            var products = _productApiService.GetProducts(limit: limit, page: page);
+            var products = await _productApiService.GetProductsAsync(limit: limit, page: page);
 
             // Assert
             CollectionAssert.IsNotEmpty(products);
@@ -82,15 +86,15 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProducts
         }
 
         [Test]
-        public void WhenCalledWithNegativePageParameter_GivenLimitedProductsCollection_ShouldReturnTheFirstPage()
+        public async Task WhenCalledWithNegativePageParameter_GivenLimitedProductsCollection_ShouldReturnTheFirstPage()
         {
             //Arange
             var limit = 5;
             var page = -30;
-            var expectedCollection = new ApiList<Product>(_existigProducts.Where(x => !x.Deleted).AsQueryable(), page - 1, limit);
+            var expectedCollection = ApiList<Product>.FromPage(_existigProducts.Where(x => !x.Deleted).AsQueryable(), page - 1, limit);
 
             //Act
-            var products = _productApiService.GetProducts(limit: limit, page: page);
+            var products = await _productApiService.GetProductsAsync(limit: limit, page: page);
 
             // Assert
             CollectionAssert.IsNotEmpty(products);
@@ -100,14 +104,14 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProducts
         }
 
         [Test]
-        public void WhenCalledWithTooBigPageParameter_GivenLimitedProductsCollection_ShouldReturnEmptyCollection()
+        public async Task WhenCalledWithTooBigPageParameter_GivenLimitedProductsCollection_ShouldReturnEmptyCollection()
         {
             //Arange
             var limit = 5;
             var page = _existigProducts.Count / limit + 100;
             
             //Act
-            var products = _productApiService.GetProducts(limit: limit, page: page);
+            var products = await _productApiService.GetProductsAsync(limit: limit, page: page);
 
             // Assert
             CollectionAssert.IsEmpty(products);

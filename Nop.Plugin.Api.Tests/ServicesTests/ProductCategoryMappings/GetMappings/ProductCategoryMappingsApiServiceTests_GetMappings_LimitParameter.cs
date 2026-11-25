@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Nop.Core.Data;
+using Nop.Data;
 using Nop.Core.Domain.Catalog;
 using Nop.Plugin.Api.Services;
 using NUnit.Framework;
-using Rhino.Mocks;
+using Moq;
 
 namespace Nop.Plugin.Api.Tests.ServicesTests.ProductCategoryMappings.GetMappings
 {
@@ -32,20 +32,20 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ProductCategoryMappings.GetMappings
                 });
             }
 
-            var productCategoryRepo = MockRepository.GenerateStub<IRepository<ProductCategory>>();
-            productCategoryRepo.Stub(x => x.TableNoTracking).Return(_existigMappings.AsQueryable());
+            var productCategoryRepo = Mock.Of<IRepository<ProductCategory>>();
+            Mock.Get(productCategoryRepo).Setup(x => x.Table).Returns(_existigMappings.AsQueryable());
 
             _productCategoryMappingsService = new ProductCategoryMappingsApiService(productCategoryRepo);
         }
 
         [Test]
-        public void WhenCalledWithLimitParameter_GivenMappingsAboveTheLimit_ShouldReturnCollectionWithCountEqualToTheLimit()
+        public async Task WhenCalledWithLimitParameter_GivenMappingsAboveTheLimit_ShouldReturnCollectionWithCountEqualToTheLimit()
         {
             //Arange
             var expectedLimit = 5;
 
             //Act
-            var categories = _productCategoryMappingsService.GetMappings(limit: expectedLimit);
+            var categories = await _productCategoryMappingsService.GetMappingsAsync(limit: expectedLimit);
 
             // Assert
             // Not Empty assert is a good practice when you assert something about collection. Because you can get a false positive if the collection is empty.
@@ -54,13 +54,13 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ProductCategoryMappings.GetMappings
         }
 
         [Test]
-        public void WhenCalledWithLimitParameter_GivenMappingsBellowTheLimit_ShouldReturnCollectionWithCountEqualToTheAvailableCategories()
+        public async Task WhenCalledWithLimitParameter_GivenMappingsBellowTheLimit_ShouldReturnCollectionWithCountEqualToTheAvailableCategories()
         {
             //Arange
             var expectedLimit = _existigMappings.Count();
 
             //Act
-            var categories = _productCategoryMappingsService.GetMappings(limit: expectedLimit + 10);
+            var categories = await _productCategoryMappingsService.GetMappingsAsync(limit: expectedLimit + 10);
 
             // Assert
             // Not Empty assert is a good practice when you assert something about collection. Because you can get a false positive if the collection is empty.
@@ -69,26 +69,26 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ProductCategoryMappings.GetMappings
         }
 
         [Test]
-        public void WhenCalledWithZeroLimitParameter_GivenSomeMappings_ShouldReturnEmptyCollection()
+        public async Task WhenCalledWithZeroLimitParameter_GivenSomeMappings_ShouldReturnEmptyCollection()
         {
             //Arange
             var expectedLimit = 0;
 
             //Act
-            var categories = _productCategoryMappingsService.GetMappings(limit: expectedLimit);
+            var categories = await _productCategoryMappingsService.GetMappingsAsync(limit: expectedLimit);
 
             // Assert
             CollectionAssert.IsEmpty(categories);
         }
 
         [Test]
-        public void WhenCalledWithNegativeLimitParameter_GivenSomeMappings_ShouldReturnEmptyCollection()
+        public async Task WhenCalledWithNegativeLimitParameter_GivenSomeMappings_ShouldReturnEmptyCollection()
         {
             //Arange
             var expectedLimit = -10;
 
             //Act
-            var categories = _productCategoryMappingsService.GetMappings(limit: expectedLimit);
+            var categories = await _productCategoryMappingsService.GetMappingsAsync(limit: expectedLimit);
 
             // Assert
             CollectionAssert.IsEmpty(categories);

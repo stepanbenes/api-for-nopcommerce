@@ -1,116 +1,62 @@
-﻿using System;
+using System;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
-using System.Text.Json;
 using System.Threading.Tasks;
+using ApiBindings;
 using ApiBindings.NopApi;
 using ApiBindings.NopApi.DTOs;
 
-namespace ClientApp
+namespace ClientApp;
+
+internal static class Program
 {
-	class Program
-	{
-		static async Task Main(string[] args)
-		{
-			Console.WriteLine("Types in this assembly:");
-			foreach (Type t in typeof(Program).Assembly.GetTypes())
-			{
-				Console.WriteLine(t.FullName);
-			}
+    private static async Task<int> Main(string[] args)
+    {
+        var username = Environment.GetEnvironmentVariable("NOP_API_TEST_USER");
+        var password = Environment.GetEnvironmentVariable("NOP_API_TEST_PASSWORD");
+        var checkout = args.Length > 1 ? CheckoutExample.Parse(args) : null;
+        if (args.Length == 0 || (args.Length > 1 && checkout is null) ||
+            !Uri.TryCreate(args[0], UriKind.Absolute, out var baseAddress) ||
+            baseAddress.Scheme is not ("http" or "https") ||
+            string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+        {
+            Console.Error.WriteLine("Set NOP_API_TEST_USER and NOP_API_TEST_PASSWORD.");
+            Console.Error.WriteLine("Usage: ClientApp URL [(checkout|checkout-retry) BILLING_ADDRESS_ID SHIPPING_ADDRESS_ID UUID [ATTRIBUTE_ID=VALUE]]");
+            return 1;
+        }
 
-			// Create api client
-			var cookieContainer = new CookieContainer();
-			using var handler = new HttpClientHandler() { CookieContainer = cookieContainer, UseCookies = true };
-			using var httpClient = new HttpClient(handler) { BaseAddress = new Uri(args[0]) };
+        using var handler = new HttpClientHandler { UseCookies = false, AllowAutoRedirect = false };
+        using var httpClient = new HttpClient(handler) { BaseAddress = baseAddress };
+        var client = new NopApiClient(httpClient);
 
-			INopApiClient nopApiClient = new NopApiClient(httpClient);
+        try
+        {
+            var token = await client.RequestToken(new TokenRequest { Username = username, Password = password });
+            if (token?.AccessToken is null)
+            {
+                Console.Error.WriteLine("The store did not return an access token.");
+                return 1;
+            }
 
-			try
-			{
-				Console.WriteLine("Authenticating...");
+            client.SetAuthorizationHeader(token.TokenType ?? "Bearer", token.AccessToken);
+            if (checkout is not null)
+                return await checkout.PlaceAsync(client, token.CustomerId);
 
-				var tokenResponse = await nopApiClient.RequestToken(new TokenRequest { Username = args[1], Password = args[2], RememberMe = true });
-
-				if (tokenResponse is { AccessToken: string token, TokenType: var type })
-				{
-					nopApiClient.SetAuthorizationHeader(type ?? "Bearer", token);
-					//nopApiClient.RemoveAuthorizationHeader();
-				}
-
-				Console.WriteLine("Requesting categories...");
-				var categories = await nopApiClient.GetCategories();
-
-				if (categories?.Categories is not null)
-				{
-					foreach (var category in categories.Categories)
-					{
-						Console.WriteLine(category.ToString());
-					}
-				}
-				Console.WriteLine("Requesting countries...");
-				var countries = await nopApiClient.GetCountries();
-
-				if (countries?.Countries is not null)
-				{
-					foreach (var country in countries.Countries)
-					{
-						Console.WriteLine(country.ToString());
-					}
-				}
-
-				Console.WriteLine("Adding product...");
-				var createProductResult = await nopApiClient.CreateProduct(new ProductDtoDelta { Product = new ProductDto { Name = "Test product", ShortDescription = "The best product" } });
-
-				var newProduct = createProductResult?.Products?.SingleOrDefault();
-
-				Console.WriteLine("Creating shopping cart item...");
-				var result = await nopApiClient.CreateShoppingCartItem(new ShoppingCartItemDtoDelta
-				{
-					ShoppingCartItem = new ShoppingCartItemDto(ShoppingCartType.ShoppingCart)
-					{
-						CustomerId = tokenResponse?.CustomerId,
-						ProductId = newProduct?.Id,
-						Quantity = 2
-					}
-				});
-
-				var newShoppingCartItem = result?.ShoppingCarts?.SingleOrDefault();
-
-				result = await nopApiClient.GetShoppingCartItems(CustomerId: tokenResponse?.CustomerId);
-
-				if (newShoppingCartItem is not null)
-				{
-					Console.WriteLine("Updating shopping cart item...");
-					_ = await nopApiClient.UpdateShoppingCartItem(new ShoppingCartItemDtoDelta { ShoppingCartItem = newShoppingCartItem with { Quantity = 3 }, }, newShoppingCartItem.Id.ToString());
-				}
-
-				result = await nopApiClient.GetShoppingCartItems(CustomerId: tokenResponse?.CustomerId);
-
-				if (newShoppingCartItem is not null)
-				{
-					Console.WriteLine("Deleting shopping cart item...");
-					await nopApiClient.DeleteShoppingCartItem(newShoppingCartItem.Id);
-					//await nopApiClient.DeleteShoppingCartItems(Ids: new[] { newShoppingCartItem.Id });
-				}
-
-
-				result = await nopApiClient.GetShoppingCartItems(CustomerId: tokenResponse?.CustomerId);
-
-				if (newProduct is not null)
-				{
-					Console.WriteLine("Deleting product...");
-					await nopApiClient.DeleteProduct(newProduct.Id);
-				}
-
-				//var invoiceDocument = await nopApiClient.GetPdfInvoice(orderId: 1);
-			}
-			catch (ApiBindings.ApiException ex)
-			{
-				Console.WriteLine(ex.Message);
-			}
-
-			Console.ReadKey();
-		}
-	}
+            var categories = await client.GetCategories();
+            var countries = await client.GetCountries();
+            Console.WriteLine($"Categories returned: {categories?.Categories?.Count() ?? 0}");
+            Console.WriteLine($"Countries returned: {countries?.Countries?.Count() ?? 0}");
+            return 0;
+        }
+        catch (ApiException ex)
+        {
+            Console.Error.WriteLine($"API request failed with status {(int)ex.StatusCode}.");
+            return 1;
+        }
+        catch (HttpRequestException ex)
+        {
+            Console.Error.WriteLine($"Could not reach the API. {ex.Message}");
+            return 1;
+        }
+    }
 }

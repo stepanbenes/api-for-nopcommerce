@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Nop.Core.Data;
+using Nop.Data;
 using Nop.Core.Domain.Catalog;
 using Nop.Plugin.Api.Services;
 using NUnit.Framework;
-using Rhino.Mocks;
+using Moq;
 
 namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategoriesCount
 {
@@ -30,38 +30,41 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategoriesCount
                 new Category() {Id = 7, Published = false }
             };
 
-            var categoryRepo = MockRepository.GenerateStub<IRepository<Category>>();
-            categoryRepo.Stub(x => x.TableNoTracking).Return(_existigCategories.AsQueryable());
+            var categoryRepo = Mock.Of<IRepository<Category>>();
+            Mock.Get(categoryRepo).Setup(x => x.Table).Returns(_existigCategories.AsQueryable());
 
-            var productCategoryRepo = MockRepository.GenerateStub<IRepository<ProductCategory>>();
+            var productCategoryRepo = Mock.Of<IRepository<ProductCategory>>();
 
-            var storeMappingService = MockRepository.GenerateStub<IStoreMappingService>();
-            storeMappingService.Stub(x => x.Authorize(Arg<Category>.Is.Anything)).Return(true);
+            var storeMappingService = Mock.Of<IStoreMappingService>();
+            Mock.Get(storeMappingService).Setup(x => x.ApplyStoreMapping(It.IsAny<IQueryable<Category>>(), 1))
+                .ReturnsAsync((IQueryable<Category> query, int _) => query);
+            var storeContext = Mock.Of<Nop.Core.IStoreContext>();
+            Mock.Get(storeContext).Setup(x => x.GetCurrentStoreAsync()).ReturnsAsync(new Nop.Core.Domain.Stores.Store { Id = 1 });
 
-            _categoryApiService = new CategoryApiService(categoryRepo, productCategoryRepo, storeMappingService);
+            _categoryApiService = new CategoryApiService(categoryRepo, productCategoryRepo, storeMappingService, storeContext, Mock.Of<Nop.Services.Catalog.ICategoryService>());
         }
 
         [Test]
-        public void WhenAskForOnlyThePublishedCategories_ShouldReturnOnlyThePublishedCategoriesCount()
+        public async Task WhenAskForOnlyThePublishedCategories_ShouldReturnOnlyThePublishedCategoriesCount()
         {
             // Arange
             var expectedCategoriesCount = _existigCategories.Count(x => x.Published && !x.Deleted);
 
             // Act
-            var categoriesCount = _categoryApiService.GetCategoriesCount(publishedStatus: true);
+            var categoriesCount = await _categoryApiService.GetCategoriesCountAsync(publishedStatus: true);
 
             // Assert
             Assert.AreEqual(expectedCategoriesCount, categoriesCount);
         }
 
         [Test]
-        public void WhenAskForOnlyTheUnpublishedCategories_ShouldReturnOnlyTheUnpublishedCategoriesCount()
+        public async Task WhenAskForOnlyTheUnpublishedCategories_ShouldReturnOnlyTheUnpublishedCategoriesCount()
         {
             // Arange
             var expectedCollectionCount = _existigCategories.Count(x => !x.Published && !x.Deleted);
 
             // Act
-            var categoriesCount = _categoryApiService.GetCategoriesCount(publishedStatus: false);
+            var categoriesCount = await _categoryApiService.GetCategoriesCountAsync(publishedStatus: false);
 
             // Assert
             Assert.AreEqual(expectedCollectionCount, categoriesCount);

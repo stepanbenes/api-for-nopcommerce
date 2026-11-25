@@ -22,7 +22,7 @@ namespace Nop.Plugin.Api.Services
             _localizedPropertyRepository = localizedPropertyRepository;
         }
 
-        public IList<Manufacturer> GetManufacturers(
+        public async Task<IList<Manufacturer>> GetManufacturersAsync(
             IList<int> ids = null,
             DateTime? createdAtMin = null, DateTime? createdAtMax = null, DateTime? updatedAtMin = null, DateTime? updatedAtMax = null,
             int limit = Constants.Configurations.DefaultLimit, int page = Constants.Configurations.DefaultPageValue,
@@ -35,37 +35,44 @@ namespace Nop.Plugin.Api.Services
             {
                 query = query.Where(c => c.Id > sinceId);
             }
-            var list = new ApiList<Manufacturer>(query, page - 1, limit);
+            var list = await ApiList<Manufacturer>.CreateAsync(query, page - 1, limit);
 
-            if (languageId.HasValue)
+            if (languageId is int requestedLanguageId && list.Count > 0)
             {
-                var localizedNames = _localizedPropertyRepository.Table.Where(x => x.LocaleKeyGroup == "Manufacturer" && languageId == languageId.Value);
-                foreach (var cat in list)
+                var pageIds = list.Select(manufacturer => manufacturer.Id).ToArray();
+                var localizedNames = await _localizedPropertyRepository.Table
+                    .Where(property => pageIds.Contains(property.EntityId) &&
+                        property.LocaleKeyGroup == nameof(Manufacturer) &&
+                        property.LocaleKey == nameof(Manufacturer.Name) &&
+                        property.LanguageId == requestedLanguageId)
+                    .OrderBy(property => property.Id)
+                    .ToListAsync();
+                var namesByManufacturer = localizedNames.ToLookup(property => property.EntityId);
+
+                foreach (var manufacturer in list)
                 {
-                    var localizedName = localizedNames.FirstOrDefault(x => x.EntityId == cat.Id);
+                    var localizedName = namesByManufacturer[manufacturer.Id].FirstOrDefault();
                     if (localizedName != null)
-                    {
-                        cat.Name = localizedName.LocaleValue;
-                    }
+                        manufacturer.Name = localizedName.LocaleValue;
                 }
             }
 
             return list;
         }
 
-        public Manufacturer GetManufacturerById(int id)
+        public async Task<Manufacturer> GetManufacturerByIdAsync(int id)
         {
             if (id <= 0)
             {
                 return null;
             }
 
-            var manufacturer = _manufacturerRepository.Table.FirstOrDefault(man => man.Id == id && !man.Deleted);
+            var manufacturer = await _manufacturerRepository.Table.FirstOrDefaultAsync(man => man.Id == id && !man.Deleted);
 
             return manufacturer;
         }
 
-        public int GetManufacturersCount(
+        public async Task<int> GetManufacturersCountAsync(
             DateTime? createdAtMin = null, DateTime? createdAtMax = null,
             DateTime? updatedAtMin = null, DateTime? updatedAtMax = null,
             bool? publishedStatus = null, int? productId = null)
@@ -73,7 +80,7 @@ namespace Nop.Plugin.Api.Services
             var query = GetManufacturersQuery(createdAtMin, createdAtMax, updatedAtMin, updatedAtMax,
                                               publishedStatus, productId);
 
-            return query.Count();
+            return await query.CountAsync();
         }
 
         private IQueryable<Manufacturer> GetManufacturersQuery(

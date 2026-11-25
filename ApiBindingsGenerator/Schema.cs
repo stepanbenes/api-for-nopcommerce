@@ -76,10 +76,11 @@ namespace ApiBindingsGenerator
 		public Dictionary<string, TypeDescriptor> Content { get; } = Content;
 	}
 
-	record Response(HttpStatusCode StatusCode, Dictionary<string, TypeDescriptor>? Content = null, string? Description = null)
+	record Response(HttpStatusCode StatusCode, Dictionary<string, TypeDescriptor>? Content = null, string? Description = null, string[]? HeaderNames = null)
 	{
 		public HttpStatusCode StatusCode { get; } = StatusCode;
 		public Dictionary<string, TypeDescriptor>? Content { get; } = Content;
 		public string? Description { get; } = Description;
+		public string[]? HeaderNames { get; } = HeaderNames;
 	}
 }

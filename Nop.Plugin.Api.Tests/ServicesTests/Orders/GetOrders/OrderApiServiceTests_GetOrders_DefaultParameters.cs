@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Nop.Core.Data;
+using Nop.Data;
 using Nop.Core.Domain.Orders;
 using Nop.Plugin.Api.Services;
 using NUnit.Framework;
-using Rhino.Mocks;
+using Moq;
 
 namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
 {
@@ -12,41 +12,41 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
     public class OrderApiServiceTests_GetOrders_DefaultParameters
     {
         [Test]
-        public void WhenCalledWithDefaultParameters_GivenNoOrdersExist_ShouldReturnEmptyCollection()
+        public async Task WhenCalledWithDefaultParameters_GivenNoOrdersExist_ShouldReturnEmptyCollection()
         {
             // Arange
-            var ordersRepo = MockRepository.GenerateStub<IRepository<Order>>();
-            ordersRepo.Stub(x => x.TableNoTracking).Return(new List<Order>().AsQueryable());
+            var ordersRepo = Mock.Of<IRepository<Order>>();
+            Mock.Get(ordersRepo).Setup(x => x.Table).Returns(new List<Order>().AsQueryable());
             
             // Act
             var cut = new OrderApiService(ordersRepo);
-            var orders = cut.GetOrders();
+            var orders = await cut.GetOrdersAsync();
 
             // Assert
             CollectionAssert.IsEmpty(orders);
         }
 
         [Test]
-        public void WhenCalledWithDefaultParameters_GivenOnlyDeletedOrdersExist_ShouldReturnEmptyCollection()
+        public async Task WhenCalledWithDefaultParameters_GivenOnlyDeletedOrdersExist_ShouldReturnEmptyCollection()
         {
             var existingOrders = new List<Order>();
             existingOrders.Add(new Order() { Id = 1, Deleted = true });
             existingOrders.Add(new Order() { Id = 2, Deleted = true });
 
             // Arange
-            var orderRepo = MockRepository.GenerateStub<IRepository<Order>>();
-            orderRepo.Stub(x => x.TableNoTracking).Return(existingOrders.AsQueryable());
+            var orderRepo = Mock.Of<IRepository<Order>>();
+            Mock.Get(orderRepo).Setup(x => x.Table).Returns(existingOrders.AsQueryable());
             
             // Act
             var cut = new OrderApiService(orderRepo);
-            var orders = cut.GetOrders();
+            var orders = await cut.GetOrdersAsync();
 
             // Assert
             CollectionAssert.IsEmpty(orders);
         }
 
         [Test]
-        public void WhenCalledWithDefaultParameters_GivenSomeNotDeletedOrdersExist_ShouldReturnThemSortedById()
+        public async Task WhenCalledWithDefaultParameters_GivenSomeNotDeletedOrdersExist_ShouldReturnThemSortedById()
         {
             var existingOrders = new List<Order>();
             existingOrders.Add(new Order() { Id = 1 });
@@ -56,12 +56,12 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
             var expectedCollection = existingOrders.Where(x => !x.Deleted).OrderBy(x => x.Id);
 
             // Arange
-            var orderRepo = MockRepository.GenerateStub<IRepository<Order>>();
-            orderRepo.Stub(x => x.TableNoTracking).Return(existingOrders.AsQueryable());
+            var orderRepo = Mock.Of<IRepository<Order>>();
+            Mock.Get(orderRepo).Setup(x => x.Table).Returns(existingOrders.AsQueryable());
             
             // Act
             var cut = new OrderApiService(orderRepo);
-            var orders = cut.GetOrders();
+            var orders = await cut.GetOrdersAsync();
 
             // Assert
             CollectionAssert.IsNotEmpty(orders);
@@ -70,7 +70,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
         }
 
         [Test]
-        public void WhenCalledWithDefaultParameters_GivenSomeOrdersExist_ShouldReturnThemSortedById()
+        public async Task WhenCalledWithDefaultParameters_GivenSomeOrdersExist_ShouldReturnThemSortedById()
         {
             var existingOrders = new List<Order>();
             existingOrders.Add(new Order() { Id = 2 });
@@ -80,12 +80,12 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
             var expectedCollection = existingOrders.Where(x => !x.Deleted).OrderBy(x => x.Id);
 
             // Arange
-            var orderRepo = MockRepository.GenerateStub<IRepository<Order>>();
-            orderRepo.Stub(x => x.TableNoTracking).Return(existingOrders.AsQueryable());
+            var orderRepo = Mock.Of<IRepository<Order>>();
+            Mock.Get(orderRepo).Setup(x => x.Table).Returns(existingOrders.AsQueryable());
             
             // Act
             var cut = new OrderApiService(orderRepo);
-            var orders = cut.GetOrders();
+            var orders = await cut.GetOrdersAsync();
 
             // Assert
             CollectionAssert.IsNotEmpty(orders);

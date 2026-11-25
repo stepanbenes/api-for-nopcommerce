@@ -4,6 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
+    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
     <Version>0.9.2</Version>
     <Authors>Štěpán Beneš</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -18,25 +19,25 @@
     <IncludeBuildOutput>false</IncludeBuildOutput>
   </PropertyGroup>
     
-  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+  <PropertyGroup>
     <GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
   </PropertyGroup>
 
-  <Target Condition="'$(Configuration)'=='Debug'" Name="GetDependencyTargetPaths">
+  <Target Name="GetDependencyTargetPaths">
     <ItemGroup>
       <TargetPathWithTargetPlatformMoniker Include="$(PKGNewtonsoft_Json)\lib\netstandard2.0\Newtonsoft.Json.dll" IncludeRuntimeDependency="false" />
     </ItemGroup>
   </Target>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.2">
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.9.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.8.0" PrivateAssets="all" />
     <!-- Take a private dependency on Newtonsoft.Json (PrivateAssets=all) Consumers of this generator will not reference it.
          Set GeneratePathProperty=true so we can reference the binaries via the PKGNewtonsoft_Json property -->
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" PrivateAssets="all" GeneratePathProperty="true" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" PrivateAssets="all" GeneratePathProperty="true" />
 
     <!-- Package the generator in the analyzer directory of the nuget package -->
     <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />

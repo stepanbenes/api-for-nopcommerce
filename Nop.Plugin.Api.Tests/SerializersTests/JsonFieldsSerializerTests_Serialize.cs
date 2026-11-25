@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using NUnit.Framework;
 using Newtonsoft.Json;
-using Nop.Plugin.Api.DTOs;
+using Nop.Plugin.Api.DTO;
 using Nop.Plugin.Api.Tests.SerializersTests.DummyObjects;
-using Rhino.Mocks;
 
 namespace Nop.Plugin.Api.Tests.SerializersTests
 {
@@ -54,7 +53,7 @@ namespace Nop.Plugin.Api.Tests.SerializersTests
             IJsonFieldsSerializer cut = new JsonFieldsSerializer();
 
             //Act
-            cut.Serialize(Arg<ISerializableObject>.Is.Null, Arg<string>.Is.Anything);
+            cut.Serialize(null, null);
         }
 
         [Test]

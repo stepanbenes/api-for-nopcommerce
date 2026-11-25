@@ -1,10 +1,12 @@
-﻿using Newtonsoft.Json;
+﻿#nullable enable
+
+using Newtonsoft.Json;
 
 namespace Nop.Plugin.Api.DTO.Orders
 {
     public class SingleOrderRootObject
     {
         [JsonProperty("order")]
-        public OrderDto Order { get; set; }
+        public OrderDto Order { get; set; } = null!;
     }
 }

@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Nop.Core.Data;
+using Nop.Data;
 using Nop.Core.Domain.Orders;
 using Nop.Plugin.Api.Services;
 using NUnit.Framework;
-using Rhino.Mocks;
+using Moq;
 
 namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
 {
@@ -28,14 +28,14 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
                 new Order() {Id = 7, CustomerId = 2}
             };
 
-            var productRepo = MockRepository.GenerateStub<IRepository<Order>>();
-            productRepo.Stub(x => x.TableNoTracking).Return(_existigOrders.AsQueryable());
+            var productRepo = Mock.Of<IRepository<Order>>();
+            Mock.Get(productRepo).Setup(x => x.Table).Returns(_existigOrders.AsQueryable());
             
             _orderApiService = new OrderApiService(productRepo);
         }
 
         [Test]
-        public void WhenCalledWithValidCustomerId_ShouldReturnOnlyTheOrdersForThisCustomer()
+        public async Task WhenCalledWithValidCustomerId_ShouldReturnOnlyTheOrdersForThisCustomer()
         {
             // Arange
             int customerId = 1;
@@ -43,7 +43,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
                 _existigOrders.Where(x => x.CustomerId == customerId && !x.Deleted).OrderBy(x => x.Id);
 
             // Act
-            var orders = _orderApiService.GetOrders(customerId: customerId);
+            var orders = await _orderApiService.GetOrdersAsync(customerId: customerId);
 
             // Assert
             CollectionAssert.IsNotEmpty(orders);
@@ -54,10 +54,10 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
         [Test]
         [TestCase(0)]
         [TestCase(-10)]
-        public void WhenCalledWithNegativeOrZeroCustomerId_ShouldReturnEmptyCollection(int customerId)
+        public async Task WhenCalledWithNegativeOrZeroCustomerId_ShouldReturnEmptyCollection(int customerId)
         {
             // Act
-            var orders = _orderApiService.GetOrders(customerId: customerId);
+            var orders = await _orderApiService.GetOrdersAsync(customerId: customerId);
 
             // Assert
             CollectionAssert.IsEmpty(orders);
@@ -68,10 +68,10 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
         [TestCase(int.MinValue)]
         [TestCase(-1)]
         [TestCase(5465464)]
-        public void WhenCalledWithCustomerIdThatDoesNotExistInTheMappings_ShouldReturnEmptyCollection(int customerId)
+        public async Task WhenCalledWithCustomerIdThatDoesNotExistInTheMappings_ShouldReturnEmptyCollection(int customerId)
         {
             // Act
-            var orders = _orderApiService.GetOrders(customerId: customerId);
+            var orders = await _orderApiService.GetOrdersAsync(customerId: customerId);
 
             // Assert
             CollectionAssert.IsEmpty(orders);

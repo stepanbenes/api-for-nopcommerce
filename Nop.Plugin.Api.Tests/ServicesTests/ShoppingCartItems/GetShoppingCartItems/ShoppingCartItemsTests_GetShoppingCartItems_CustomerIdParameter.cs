@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Nop.Core.Data;
+using Nop.Data;
 using Nop.Core.Domain.Catalog;
 using Nop.Core.Domain.Orders;
-using Nop.Plugin.Api.Constants;
+using Nop.Plugin.Api.Infrastructure;
 using Nop.Plugin.Api.Services;
 using NUnit.Framework;
-using Rhino.Mocks;
+using Moq;
 
 namespace Nop.Plugin.Api.Tests.ServicesTests.ShoppingCartItems.GetShoppingCartItems
 {
@@ -36,27 +36,27 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ShoppingCartItems.GetShoppingCartIt
                 });
             }
 
-            var shoppingCartItemsRepo = MockRepository.GenerateStub<IRepository<ShoppingCartItem>>();
-            shoppingCartItemsRepo.Stub(x => x.TableNoTracking).Return(_shoppingCartItems.AsQueryable());
+            var shoppingCartItemsRepo = Mock.Of<IRepository<ShoppingCartItem>>();
+            Mock.Get(shoppingCartItemsRepo).Setup(x => x.Table).Returns(_shoppingCartItems.AsQueryable());
 
-            var storeContext = MockRepository.GenerateStub<IStoreContext>();
-            storeContext.Stub(x => x.CurrentStore).Return(new Store()
+            var storeContext = Mock.Of<IStoreContext>();
+            Mock.Get(storeContext).Setup(x => x.GetCurrentStoreAsync()).ReturnsAsync(new Store()
             {
                 Id = 0
             });
 
-            _shoppingCartItemApiService = new ShoppingCartItemApiService(shoppingCartItemsRepo, storeContext);
+            _shoppingCartItemApiService = new ShoppingCartItemApiService(shoppingCartItemsRepo, storeContext, new ShoppingCartSettings());
         }
         
         [Test]
-        public void WhenPassedPositiveCustomerId_GivenShoppingCartItemsForThisCustomer_ShouldReturnOnlyTheShoppingCartItemsForThisCustomerSortedById()
+        public async Task WhenPassedPositiveCustomerId_GivenShoppingCartItemsForThisCustomer_ShouldReturnOnlyTheShoppingCartItemsForThisCustomerSortedById()
         {
             // Arange
             int customerId = 5;
-            var expectedResult = _shoppingCartItems.Where(x => x.CustomerId == customerId).OrderBy(x => x.Id).Take(Configurations.DefaultLimit);
+            var expectedResult = _shoppingCartItems.Where(x => x.CustomerId == customerId).OrderBy(x => x.Id).Take(Constants.Configurations.DefaultLimit);
 
             // Act 
-            var result = _shoppingCartItemApiService.GetShoppingCartItems(customerId);
+            var result = await _shoppingCartItemApiService.GetShoppingCartItemsAsync(customerId);
 
             // Assert
             Assert.IsTrue(expectedResult.Select(x => new {x.Id, x.CustomerId})
@@ -66,23 +66,23 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ShoppingCartItems.GetShoppingCartIt
         [Test]
         [TestCase(0)]
         [TestCase(-10)]
-        public void WhenPassedNegativeOrZeroCustomerId_ShouldReturnEmptyCollection(int customerId)
+        public async Task WhenPassedNegativeOrZeroCustomerId_ShouldReturnEmptyCollection(int customerId)
         {
             // Act 
-            var result = _shoppingCartItemApiService.GetShoppingCartItems(customerId);
+            var result = await _shoppingCartItemApiService.GetShoppingCartItemsAsync(customerId);
 
             // Assert
             Assert.IsEmpty(result);
         }
         
         [Test]
-        public void WhenPassedNonExistentCustomerId_ShouldReturnEmptyCollection()
+        public async Task WhenPassedNonExistentCustomerId_ShouldReturnEmptyCollection()
         {
             // Arange
             int nonExistendCustomerId = int.MaxValue;
 
             // Act 
-            var result = _shoppingCartItemApiService.GetShoppingCartItems(nonExistendCustomerId);
+            var result = await _shoppingCartItemApiService.GetShoppingCartItemsAsync(nonExistendCustomerId);
 
             // Assert
             Assert.IsEmpty(result);

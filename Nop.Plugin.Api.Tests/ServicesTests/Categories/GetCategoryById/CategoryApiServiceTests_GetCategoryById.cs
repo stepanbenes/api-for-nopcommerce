@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Nop.Core.Data;
+using Nop.Data;
 using Nop.Core.Domain.Catalog;
 using Nop.Plugin.Api.Services;
 using NUnit.Framework;
-using Rhino.Mocks;
+using Moq;
 
 namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategoryById
 {
@@ -14,22 +14,25 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategoryById
     public class CategoryApiServiceTests_GetCategoryById
     {
         [Test]
-        public void WhenNullIsReturnedByTheRepository_ShouldReturnNull()
+        public async Task WhenNullIsReturnedByTheRepository_ShouldReturnNull()
         {
             int categoryId = 3;
             
             // Arange
-            var categoryRepo = MockRepository.GenerateStub<IRepository<Category>>();
-            categoryRepo.Stub(x => x.Table).Return((new List<Category>()).AsQueryable());
-            categoryRepo.Stub(x => x.GetById(categoryId)).Return(null);
+            var categoryRepo = Mock.Of<IRepository<Category>>();
+            Mock.Get(categoryRepo).Setup(x => x.Table).Returns((new List<Category>()).AsQueryable());
 
-            var productCategoryRepo = MockRepository.GenerateStub<IRepository<ProductCategory>>();
+            var productCategoryRepo = Mock.Of<IRepository<ProductCategory>>();
 
-            var storeMappingService = MockRepository.GenerateStub<IStoreMappingService>();
+            var storeMappingService = Mock.Of<IStoreMappingService>();
+            Mock.Get(storeMappingService).Setup(x => x.ApplyStoreMapping(It.IsAny<IQueryable<Category>>(), 1))
+                .ReturnsAsync((IQueryable<Category> query, int _) => query);
+            var storeContext = Mock.Of<Nop.Core.IStoreContext>();
+            Mock.Get(storeContext).Setup(x => x.GetCurrentStoreAsync()).ReturnsAsync(new Nop.Core.Domain.Stores.Store { Id = 1 });
 
             // Act
-            var cut = new CategoryApiService(categoryRepo, productCategoryRepo, storeMappingService);
-            var result = cut.GetCategoryById(categoryId);
+            var cut = new CategoryApiService(categoryRepo, productCategoryRepo, storeMappingService, storeContext, Mock.Of<Nop.Services.Catalog.ICategoryService>());
+            var result = await cut.GetCategoryByIdAsync(categoryId);
 
             // Assert
             Assert.IsNull(result);
@@ -38,45 +41,52 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategoryById
         [Test]
         [TestCase(-2)]
         [TestCase(0)]
-        public void WhenNegativeOrZeroCategoryIdPassed_ShouldReturnNull(int negativeOrZeroCategoryId)
+        public async Task WhenNegativeOrZeroCategoryIdPassed_ShouldReturnNull(int negativeOrZeroCategoryId)
         {
             // Aranges
-            var categoryRepoStub = MockRepository.GenerateStub<IRepository<Category>>();
-            var productCategoryRepo = MockRepository.GenerateStub<IRepository<ProductCategory>>();
+            var categoryRepoStub = Mock.Of<IRepository<Category>>();
+            var productCategoryRepo = Mock.Of<IRepository<ProductCategory>>();
 
-            var storeMappingService = MockRepository.GenerateStub<IStoreMappingService>();
+            var storeMappingService = Mock.Of<IStoreMappingService>();
+            Mock.Get(storeMappingService).Setup(x => x.ApplyStoreMapping(It.IsAny<IQueryable<Category>>(), 1))
+                .ReturnsAsync((IQueryable<Category> query, int _) => query);
+            var storeContext = Mock.Of<Nop.Core.IStoreContext>();
+            Mock.Get(storeContext).Setup(x => x.GetCurrentStoreAsync()).ReturnsAsync(new Nop.Core.Domain.Stores.Store { Id = 1 });
 
             // Act
-            var cut = new CategoryApiService(categoryRepoStub, productCategoryRepo, storeMappingService);
-            var result = cut.GetCategoryById(negativeOrZeroCategoryId);
+            var cut = new CategoryApiService(categoryRepoStub, productCategoryRepo, storeMappingService, storeContext, Mock.Of<Nop.Services.Catalog.ICategoryService>());
+            var result = await cut.GetCategoryByIdAsync(negativeOrZeroCategoryId);
 
             // Assert
             Assert.IsNull(result);
         }
 
         [Test]
-        public void WhenCategoryIsReturnedByTheRepository_ShouldReturnTheSameCategory()
+        public async Task WhenCategoryIsReturnedByTheRepository_ShouldReturnTheSameCategory()
         {
             int categoryId = 3;
             Category category = new Category() { Id = 3, Name = "some name" };
 
             // Arange
-            var categoryRepo = MockRepository.GenerateStub<IRepository<Category>>();
+            var categoryRepo = Mock.Of<IRepository<Category>>();
 
             var list = new List<Category>();
             list.Add(category);
 
-            categoryRepo.Stub(x => x.Table).Return(list.AsQueryable());
+            Mock.Get(categoryRepo).Setup(x => x.Table).Returns(list.AsQueryable());
 
-            categoryRepo.Stub(x => x.GetById(categoryId)).Return(category);
 
-            var productCategoryRepo = MockRepository.GenerateStub<IRepository<ProductCategory>>();
+            var productCategoryRepo = Mock.Of<IRepository<ProductCategory>>();
 
-            var storeMappingService = MockRepository.GenerateStub<IStoreMappingService>();
+            var storeMappingService = Mock.Of<IStoreMappingService>();
+            Mock.Get(storeMappingService).Setup(x => x.ApplyStoreMapping(It.IsAny<IQueryable<Category>>(), 1))
+                .ReturnsAsync((IQueryable<Category> query, int _) => query);
+            var storeContext = Mock.Of<Nop.Core.IStoreContext>();
+            Mock.Get(storeContext).Setup(x => x.GetCurrentStoreAsync()).ReturnsAsync(new Nop.Core.Domain.Stores.Store { Id = 1 });
 
             // Act
-            var cut = new CategoryApiService(categoryRepo, productCategoryRepo, storeMappingService);
-            var result = cut.GetCategoryById(categoryId);
+            var cut = new CategoryApiService(categoryRepo, productCategoryRepo, storeMappingService, storeContext, Mock.Of<Nop.Services.Catalog.ICategoryService>());
+            var result = await cut.GetCategoryByIdAsync(categoryId);
 
             // Assert
             Assert.AreSame(category, result);

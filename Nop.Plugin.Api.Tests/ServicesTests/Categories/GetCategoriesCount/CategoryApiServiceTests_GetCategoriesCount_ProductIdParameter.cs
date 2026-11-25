@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Nop.Core.Data;
+using Nop.Data;
 using Nop.Core.Domain.Catalog;
 using Nop.Plugin.Api.Services;
 using NUnit.Framework;
-using Rhino.Mocks;
+using Moq;
 
 namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategoriesCount
 {
@@ -31,8 +31,8 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategoriesCount
                 new Category() {Id = 7 }
             };
 
-            var categoryRepo = MockRepository.GenerateStub<IRepository<Category>>();
-            categoryRepo.Stub(x => x.TableNoTracking).Return(_existigCategories.AsQueryable());
+            var categoryRepo = Mock.Of<IRepository<Category>>();
+            Mock.Get(categoryRepo).Setup(x => x.Table).Returns(_existigCategories.AsQueryable());
 
             _existingCategoryMappings= new List<ProductCategory>()
             {
@@ -44,17 +44,20 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategoriesCount
                 new ProductCategory() { CategoryId = 5, ProductId = 5 }
             };
 
-            var productCategoryRepo = MockRepository.GenerateStub<IRepository<ProductCategory>>();
-            productCategoryRepo.Stub(x => x.TableNoTracking).Return(_existingCategoryMappings.AsQueryable());
+            var productCategoryRepo = Mock.Of<IRepository<ProductCategory>>();
+            Mock.Get(productCategoryRepo).Setup(x => x.Table).Returns(_existingCategoryMappings.AsQueryable());
 
-            var storeMappingService = MockRepository.GenerateStub<IStoreMappingService>();
-            storeMappingService.Stub(x => x.Authorize(Arg<Category>.Is.Anything)).Return(true);
+            var storeMappingService = Mock.Of<IStoreMappingService>();
+            Mock.Get(storeMappingService).Setup(x => x.ApplyStoreMapping(It.IsAny<IQueryable<Category>>(), 1))
+                .ReturnsAsync((IQueryable<Category> query, int _) => query);
+            var storeContext = Mock.Of<Nop.Core.IStoreContext>();
+            Mock.Get(storeContext).Setup(x => x.GetCurrentStoreAsync()).ReturnsAsync(new Nop.Core.Domain.Stores.Store { Id = 1 });
 
-            _categoryApiService = new CategoryApiService(categoryRepo, productCategoryRepo, storeMappingService);
+            _categoryApiService = new CategoryApiService(categoryRepo, productCategoryRepo, storeMappingService, storeContext, Mock.Of<Nop.Services.Catalog.ICategoryService>());
         }
 
         [Test]
-        public void WhenCalledWithValidProductId_ShouldReturnOnlyTheCountOfTheCategoriesMappedToThisProduct()
+        public async Task WhenCalledWithValidProductId_ShouldReturnOnlyTheCountOfTheCategoriesMappedToThisProduct()
         {
             // Arange
             int productId = 3;
@@ -65,7 +68,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategoriesCount
                                           select cat).Count();
 
             // Act
-            var categoriesCount = _categoryApiService.GetCategoriesCount(productId: productId);
+            var categoriesCount = await _categoryApiService.GetCategoriesCountAsync(productId: productId);
 
             // Assert
             Assert.AreEqual(expectedCollectionCount, categoriesCount);
@@ -74,10 +77,10 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategoriesCount
         [Test]
         [TestCase(0)]
         [TestCase(-10)]
-        public void WhenCalledWithNegativeOrZeroProductId_ShouldReturnZero(int productId)
+        public async Task WhenCalledWithNegativeOrZeroProductId_ShouldReturnZero(int productId)
         {
             // Act
-            var categoriesCount = _categoryApiService.GetCategoriesCount(productId: productId);
+            var categoriesCount = await _categoryApiService.GetCategoriesCountAsync(productId: productId);
 
             // Assert
             Assert.AreEqual(0, categoriesCount);
@@ -88,10 +91,10 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategoriesCount
         [TestCase(int.MinValue)]
         [TestCase(-1)]
         [TestCase(5465464)]
-        public void WhenCalledWithProductIdThatDoesNotExistInTheMappings_ShouldReturnZero(int productId)
+        public async Task WhenCalledWithProductIdThatDoesNotExistInTheMappings_ShouldReturnZero(int productId)
         {
             // Act
-            var categoriesCount = _categoryApiService.GetCategoriesCount(productId: productId);
+            var categoriesCount = await _categoryApiService.GetCategoriesCountAsync(productId: productId);
 
             // Assert
             Assert.AreEqual(0, categoriesCount);

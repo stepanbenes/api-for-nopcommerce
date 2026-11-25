@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿#nullable enable
+
+using Newtonsoft.Json;
 using Nop.Plugin.Api.DTO.Base;
 
 namespace Nop.Plugin.Api.DTO.NewsLetterSubscriptions
@@ -10,7 +12,7 @@ namespace Nop.Plugin.Api.DTO.NewsLetterSubscriptions
         ///     Gets or sets the email
         /// </summary>
         [JsonProperty("email")]
-        public string Email { get; set; }
+        public string? Email { get; set; }
 
         /// <summary>
         ///     Gets or sets whether the subscription is active

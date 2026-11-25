@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿#nullable enable
+
+using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Nop.Plugin.Api.DTO.Base;
 
@@ -8,19 +10,19 @@ namespace Nop.Plugin.Api.DTO
     public class CurrencyDto : BaseDto
     {
         [JsonProperty("name")]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         [JsonProperty("currency_code")]
-        public string CurrencyCode { get; set; }
+        public string? CurrencyCode { get; set; }
 
         [JsonProperty("rate")]
         public decimal Rate { get; set; }
 
         [JsonProperty("display_locale")]
-        public string DisplayLocale { get; set; }
+        public string? DisplayLocale { get; set; }
 
         [JsonProperty("custom_formatting")]
-        public string CustomFormatting { get; set; }
+        public string? CustomFormatting { get; set; }
 
         [JsonProperty("limited_to_stores")]
         public bool LimitedToStores { get; set; }
@@ -44,7 +46,7 @@ namespace Nop.Plugin.Api.DTO
         ///     Gets or sets the store ids in which the language is enabled
         /// </summary>
         [JsonProperty("store_ids")]
-        public List<int> StoreIds { get; set; }
+        public List<int>? StoreIds { get; set; }
     }
 
     [JsonConverter(typeof(StringEnumConverter))]

@@ -5,12 +5,12 @@ namespace Nop.Plugin.Api.Services
 {
     public interface ISpecificationAttributeApiService
     {
-        IList<ProductSpecificationAttribute> GetProductSpecificationAttributes(
+        Task<IList<ProductSpecificationAttribute>> GetProductSpecificationAttributesAsync(
             int? productId = null, int? specificationAttributeOptionId = null, bool? allowFiltering = null, bool? showOnProductPage = null,
             int limit = Constants.Configurations.DefaultLimit, int page = Constants.Configurations.DefaultPageValue,
             int sinceId = Constants.Configurations.DefaultSinceId);
 
-        IList<SpecificationAttribute> GetSpecificationAttributes(
+        Task<IList<SpecificationAttribute>> GetSpecificationAttributesAsync(
             int limit = Constants.Configurations.DefaultLimit, int page = Constants.Configurations.DefaultPageValue,
             int sinceId = Constants.Configurations.DefaultSinceId);
     }

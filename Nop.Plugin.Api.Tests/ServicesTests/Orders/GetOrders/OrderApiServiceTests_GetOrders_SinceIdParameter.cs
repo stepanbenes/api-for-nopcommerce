@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Nop.Core.Data;
+using Nop.Data;
 using Nop.Core.Domain.Orders;
 using Nop.Plugin.Api.Services;
 using NUnit.Framework;
-using Rhino.Mocks;
+using Moq;
 
 namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
 {
@@ -28,21 +28,21 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
                 new Order() {Id = 7 }
             };
 
-            var orderRepo = MockRepository.GenerateStub<IRepository<Order>>();
-            orderRepo.Stub(x => x.TableNoTracking).Return(_existigOrders.AsQueryable());
+            var orderRepo = Mock.Of<IRepository<Order>>();
+            Mock.Get(orderRepo).Setup(x => x.Table).Returns(_existigOrders.AsQueryable());
             
             _orderApiService = new OrderApiService(orderRepo);
         }
 
         [Test]
-        public void WhenCalledWithValidSinceId_ShouldReturnOnlyTheOrdersAfterThisIdSortedById()
+        public async Task WhenCalledWithValidSinceId_ShouldReturnOnlyTheOrdersAfterThisIdSortedById()
         {
             // Arange
             int sinceId = 3;
             var expectedCollection = _existigOrders.Where(x => x.Id > sinceId && !x.Deleted).OrderBy(x => x.Id);
 
             // Act
-            var orders = _orderApiService.GetOrders(sinceId: sinceId);
+            var orders = await _orderApiService.GetOrdersAsync(sinceId: sinceId);
 
             // Assert
             CollectionAssert.IsNotEmpty(orders);
@@ -52,13 +52,13 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
         [Test]
         [TestCase(0)]
         [TestCase(-10)]
-        public void WhenCalledZeroOrNegativeSinceId_ShouldReturnAllTheOrdersSortedById(int sinceId)
+        public async Task WhenCalledZeroOrNegativeSinceId_ShouldReturnAllTheOrdersSortedById(int sinceId)
         {
             // Arange
             var expectedCollection = _existigOrders.Where(x => x.Id > sinceId && !x.Deleted).OrderBy(x => x.Id);
 
             // Act
-            var orders = _orderApiService.GetOrders(sinceId: sinceId);
+            var orders = await _orderApiService.GetOrdersAsync(sinceId: sinceId);
 
             // Assert
             CollectionAssert.IsNotEmpty(orders);
@@ -66,13 +66,13 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
         }
 
         [Test]
-        public void WhenCalledSinceIdOutsideOfTheOrdersIdsRange_ShouldReturnEmptyCollection()
+        public async Task WhenCalledSinceIdOutsideOfTheOrdersIdsRange_ShouldReturnEmptyCollection()
         {
             // Arange
             int sinceId = int.MaxValue;
         
             // Act
-            var orders = _orderApiService.GetOrders(sinceId: sinceId);
+            var orders = await _orderApiService.GetOrdersAsync(sinceId: sinceId);
             
             // Assert
             CollectionAssert.IsEmpty(orders);

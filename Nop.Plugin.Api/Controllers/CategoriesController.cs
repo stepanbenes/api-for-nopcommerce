@@ -73,6 +73,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(CategoriesRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [GetRequestsErrorInterceptorActionFilter]
+        [UnpagedCollection]
         public async Task<IActionResult> GetCategories([FromQuery] CategoriesParametersModel parameters)
         {
             if (parameters.Limit < Constants.Configurations.MinLimit || parameters.Limit > Constants.Configurations.MaxLimit)
@@ -85,13 +86,12 @@ namespace Nop.Plugin.Api.Controllers
                 return Error(HttpStatusCode.BadRequest, "page", "Invalid page parameter");
             }
 
-            var allCategories = _categoryApiService.GetCategories(parameters.Ids, parameters.CreatedAtMin, parameters.CreatedAtMax,
+            var allCategories = await _categoryApiService.GetCategoriesAsync(parameters.Ids, parameters.CreatedAtMin, parameters.CreatedAtMax,
                                                                   parameters.UpdatedAtMin, parameters.UpdatedAtMax,
-                                                                  parameters.Limit, parameters.Page, parameters.SinceId,
-                                                                  parameters.ProductId, parameters.PublishedStatus, parameters.ParentCategoryId)
-                                                   .WhereAwait(async c => await StoreMappingService.AuthorizeAsync(c));
+                                                                  GetCollectionLimit(parameters.Limit), parameters.Page, parameters.SinceId,
+                                                                  parameters.ProductId, parameters.PublishedStatus, parameters.ParentCategoryId);
 
-            IList<CategoryDto> categoriesAsDtos = await allCategories.SelectAwait(async category => await _dtoHelper.PrepareCategoryDTOAsync(category)).ToListAsync();
+            IList<CategoryDto> categoriesAsDtos = await allCategories.ToAsyncEnumerable().Select(async (Category category, CancellationToken _) => await _dtoHelper.PrepareCategoryDTOAsync(category)).ToListAsync();
 
             var categoriesRootObject = new CategoriesRootObject
             {
@@ -152,7 +152,7 @@ namespace Nop.Plugin.Api.Controllers
                 return Error(HttpStatusCode.BadRequest, "id", "invalid id");
             }
 
-            var category = _categoryApiService.GetCategoryById(id);
+            var category = await _categoryApiService.GetCategoryByIdAsync(id);
 
             if (category == null)
             {
@@ -186,6 +186,14 @@ namespace Nop.Plugin.Api.Controllers
             if (!ModelState.IsValid)
             {
                 return Error();
+            }
+
+            if (string.IsNullOrWhiteSpace(categoryDelta.Dto.Name))
+                return Error((HttpStatusCode)422, "name", "invalid name");
+
+            if (categoryDelta.Dto.IncludeInTopMenu.HasValue)
+            {
+                return Error(HttpStatusCode.BadRequest, "include_in_top_menu", "Manage navigation in nopCommerce under Content management > Menus.");
             }
 
             //If the validation has passed the categoryDelta object won't be null for sure so we don't need to check for this.
@@ -257,7 +265,15 @@ namespace Nop.Plugin.Api.Controllers
                 return Error();
             }
 
-            var category = _categoryApiService.GetCategoryById(categoryDelta.Dto.Id);
+            if (categoryDelta.HasProperty(nameof(CategoryDto.Name)) && string.IsNullOrWhiteSpace(categoryDelta.Dto.Name))
+                return Error((HttpStatusCode)422, "name", "invalid name");
+
+            if (categoryDelta.Dto.IncludeInTopMenu.HasValue)
+            {
+                return Error(HttpStatusCode.BadRequest, "include_in_top_menu", "Manage navigation in nopCommerce under Content management > Menus.");
+            }
+
+            var category = await _categoryApiService.GetCategoryByIdAsync(categoryDelta.Dto.Id);
 
             if (category == null)
             {
@@ -316,7 +332,7 @@ namespace Nop.Plugin.Api.Controllers
                 return Error(HttpStatusCode.BadRequest, "id", "invalid id");
             }
 
-            var categoryToDelete = _categoryApiService.GetCategoryById(id);
+            var categoryToDelete = await _categoryApiService.GetCategoryByIdAsync(id);
 
             if (categoryToDelete == null)
             {

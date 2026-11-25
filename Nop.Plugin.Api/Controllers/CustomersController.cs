@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Nop.Core;
 using Nop.Core.Domain.Common;
 using Nop.Core.Domain.Customers;
 using Nop.Core.Infrastructure;
+using Nop.Data;
 using Nop.Plugin.Api.Attributes;
 using Nop.Plugin.Api.Authorization.Attributes;
 using Nop.Plugin.Api.Delta;
@@ -36,17 +38,15 @@ namespace Nop.Plugin.Api.Controllers
     public class CustomersController : BaseApiController
     {
         private readonly ICountryService _countryService;
+        private readonly INopDataProvider _dataProvider;
         private readonly ICustomerApiService _customerApiService;
-        private readonly ICustomerRolesHelper _customerRolesHelper;
         private readonly IEncryptionService _encryptionService;
         private readonly IFactory<Customer> _factory;
-        private readonly IGenericAttributeService _genericAttributeService;
         private readonly ILanguageService _languageService;
         private readonly IPermissionService _permissionService;
         private readonly IAddressService _addressService;
         private readonly IAuthenticationService _authenticationService;
         private readonly ICurrencyService _currencyService;
-        private readonly IMappingHelper _mappingHelper;
         private readonly INewsLetterSubscriptionService _newsLetterSubscriptionService;
 
         // We resolve the customer settings this way because of the tests.
@@ -63,25 +63,23 @@ namespace Nop.Plugin.Api.Controllers
           IDiscountService discountService,
           ICustomerActivityService customerActivityService,
           ILocalizationService localizationService,
-          ICustomerRolesHelper customerRolesHelper,
-          IGenericAttributeService genericAttributeService,
           IEncryptionService encryptionService,
           IFactory<Customer> factory,
           ICountryService countryService,
-          IMappingHelper mappingHelper,
           INewsLetterSubscriptionService newsLetterSubscriptionService,
           IPictureService pictureService, ILanguageService languageService,
           IPermissionService permissionService,
           IAddressService addressService,
           IAuthenticationService authenticationService,
-          ICurrencyService currencyService) :
+          ICurrencyService currencyService,
+          INopDataProvider dataProvider) :
           base(jsonFieldsSerializer, aclService, customerService, storeMappingService, storeService, discountService, customerActivityService,
              localizationService, pictureService)
         {
             _customerApiService = customerApiService;
+            _dataProvider = dataProvider;
             _factory = factory;
             _countryService = countryService;
-            _mappingHelper = mappingHelper;
             _newsLetterSubscriptionService = newsLetterSubscriptionService;
             _languageService = languageService;
             _permissionService = permissionService;
@@ -89,8 +87,6 @@ namespace Nop.Plugin.Api.Controllers
             _authenticationService = authenticationService;
             _currencyService = currencyService;
             _encryptionService = encryptionService;
-            _genericAttributeService = genericAttributeService;
-            _customerRolesHelper = customerRolesHelper;
         }
 
         private CustomerSettings CustomerSettings
@@ -118,6 +114,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [GetRequestsErrorInterceptorActionFilter]
+        [UnpagedCollection]
         public async Task<IActionResult> GetCustomers([FromQuery] CustomersParametersModel parameters)
         {
             if (parameters.Limit < Constants.Configurations.MinLimit || parameters.Limit > Constants.Configurations.MaxLimit)
@@ -130,7 +127,7 @@ namespace Nop.Plugin.Api.Controllers
                 return Error(HttpStatusCode.BadRequest, "page", "Invalid request parameters");
             }
 
-            var allCustomers = await _customerApiService.GetCustomersDtosAsync(parameters.CreatedAtMin, parameters.CreatedAtMax, parameters.Limit, parameters.Page, parameters.SinceId);
+            var allCustomers = await _customerApiService.GetCustomersDtosAsync(parameters.CreatedAtMin, parameters.CreatedAtMax, GetCollectionLimit(parameters.Limit), parameters.Page, parameters.SinceId);
 
             var customersRootObject = new CustomersRootObject
             {
@@ -253,9 +250,10 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(CustomersRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
+        [UnpagedCollection]
         public async Task<IActionResult> Search([FromQuery] CustomersSearchParametersModel parameters)
         {
-            if (parameters.Limit <= Constants.Configurations.MinLimit || parameters.Limit > Constants.Configurations.MaxLimit)
+            if (parameters.Limit < Constants.Configurations.MinLimit || parameters.Limit > Constants.Configurations.MaxLimit)
             {
                 return Error(HttpStatusCode.BadRequest, "limit", "Invalid limit parameter");
             }
@@ -265,7 +263,15 @@ namespace Nop.Plugin.Api.Controllers
                 return Error(HttpStatusCode.BadRequest, "page", "Invalid page parameter");
             }
 
-            var customersDto = await _customerApiService.SearchAsync(parameters.Query, parameters.Order, parameters.Page, parameters.Limit);
+            IList<CustomerDto> customersDto;
+            try
+            {
+                customersDto = await _customerApiService.SearchAsync(parameters.Query, parameters.Order, parameters.Page, GetCollectionLimit(parameters.Limit));
+            }
+            catch (ArgumentException validationError) when (validationError.ParamName == "order")
+            {
+                return Error(HttpStatusCode.BadRequest, "order", "Use a customer field followed by an optional asc or desc.");
+            }
 
             var customersRootObject = new CustomersRootObject
             {
@@ -281,6 +287,7 @@ namespace Nop.Plugin.Api.Controllers
         [Route("/api/customers", Name = "CreateCustomer")]
         [ProducesResponseType(typeof(CustomersRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), 422)]
+        [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         public async Task<IActionResult> CreateCustomer(
           [FromBody]
@@ -293,42 +300,42 @@ namespace Nop.Plugin.Api.Controllers
                 return Error();
             }
 
-            //If the validation has passed the customerDelta object won't be null for sure so we don't need to check for this.
+            if (customerDelta.Dto.Id != 0 || customerDelta.Dto.CustomerGuid != Guid.Empty)
+                return Error(HttpStatusCode.BadRequest, "customer", "customer identity is assigned by the store");
 
-            // Inserting the new customer
+            if (customerDelta.Dto.Addresses.Any(address => address.Id != 0))
+                return Error(HttpStatusCode.BadRequest, "addresses", "new addresses must omit id");
+
             var newCustomer = await _factory.InitializeAsync();
+            var customerGuid = newCustomer.CustomerGuid;
             customerDelta.Merge(newCustomer);
+            newCustomer.CustomerGuid = customerGuid;
 
-            foreach (var address in customerDelta.Dto.Addresses)
+            using (var transaction = _dataProvider.CreateTransactionScope())
             {
-                // we need to explicitly set the date as if it is not specified
-                // it will default to 01/01/0001 which is not supported by SQL Server and throws and exception
-                address.CreatedOnUtc ??= DateTime.UtcNow;
+                var (roles, roleError) = await ValidateRolesAsync(customerDelta, newCustomer, [], creating: true);
+                if (roleError is not null)
+                    return roleError;
 
-                await CustomerService.InsertCustomerAddressAsync(newCustomer, address.ToEntity());
-            }
+                var identityError = await ValidateLoginIdentityAsync(customerDelta, newCustomer);
+                if (identityError is not null)
+                    return identityError;
 
-            await CustomerService.InsertCustomerAsync(newCustomer);
+                await CustomerService.InsertCustomerAsync(newCustomer);
+                await SaveAddressesAsync(customerDelta, newCustomer, new Dictionary<int, Address>());
+                await ApplyRolesAsync(newCustomer, [], roles);
 
+                if (!string.IsNullOrWhiteSpace(customerDelta.Dto.Password))
+                    await AddPasswordAsync(customerDelta.Dto.Password, newCustomer);
 
-            //password
-            if (!string.IsNullOrWhiteSpace(customerDelta.Dto.Password))
-            {
-                await AddPasswordAsync(customerDelta.Dto.Password, newCustomer);
-            }
-
-            // We need to insert the entity first so we can have its id in order to map it to anything.
-            // TODO: Localization
-            // TODO: move this before inserting the customer.
-            if (customerDelta.Dto.RoleIds.Count > 0)
-            {
-                await AddValidRolesAsync(customerDelta, newCustomer);
-                await CustomerService.UpdateCustomerAsync(newCustomer);
+                transaction.Complete();
             }
 
             // Preparing the result dto of the new customer
             // We do not prepare the shopping cart items because we have a separate endpoint for them.
             var newCustomerDto = newCustomer.ToDto();
+            newCustomerDto.Addresses = (await CustomerService.GetAddressesByCustomerIdAsync(newCustomer.Id)).Select(address => address.ToDto()).ToList();
+            newCustomerDto.RoleIds = (await CustomerService.GetCustomerRolesAsync(newCustomer, showHidden: true)).Select(role => role.Id).ToList();
 
             // This is needed because the entity framework won't populate the navigation properties automatically
             // and the country will be left null. So we do it by hand here.
@@ -371,54 +378,49 @@ namespace Nop.Plugin.Api.Controllers
                 return Error();
             }
 
-            // Updateting the customer
-            var currentCustomer = await _customerApiService.GetCustomerEntityByIdAsync(customerDelta.Dto.Id);
-
-            if (currentCustomer == null)
+            Customer currentCustomer;
+            using (var transaction = _dataProvider.CreateTransactionScope())
             {
-                return Error(HttpStatusCode.NotFound, "customer", "not found");
+                currentCustomer = await _customerApiService.GetCustomerEntityByIdAsync(customerDelta.Dto.Id);
+                if (currentCustomer is null)
+                    return Error(HttpStatusCode.NotFound, "customer", "not found");
+
+                if (customerDelta.HasProperty(nameof(CustomerDto.CustomerGuid)) && customerDelta.Dto.CustomerGuid != currentCustomer.CustomerGuid)
+                    return Error(HttpStatusCode.BadRequest, "customer_guid", "customer identity cannot change");
+
+                var existingRoles = await CustomerService.GetCustomerRolesAsync(currentCustomer, showHidden: true);
+                customerDelta.Merge(currentCustomer);
+                var (roles, roleError) = await ValidateRolesAsync(customerDelta, currentCustomer, existingRoles);
+                if (roleError is not null)
+                    return roleError;
+
+                var identityError = await ValidateLoginIdentityAsync(customerDelta, currentCustomer);
+                if (identityError is not null)
+                    return identityError;
+
+                var addresses = customerDelta.Dto.Addresses.Count == 0
+                    ? new Dictionary<int, Address>()
+                    : (await CustomerService.GetAddressesByCustomerIdAsync(currentCustomer.Id)).ToDictionary(address => address.Id);
+                if (customerDelta.Dto.Addresses.Any(address => address.Id != 0 && !addresses.ContainsKey(address.Id)))
+                    return Error(HttpStatusCode.BadRequest, "addresses", "address id does not belong to the customer");
+
+                await CustomerService.UpdateCustomerAsync(currentCustomer);
+                await SaveAddressesAsync(customerDelta, currentCustomer, addresses);
+
+                if (customerDelta.HasProperty(nameof(CustomerDto.RoleIds)))
+                    await ApplyRolesAsync(currentCustomer, existingRoles, roles);
+
+                if (!string.IsNullOrWhiteSpace(customerDelta.Dto.Password))
+                    await AddPasswordAsync(customerDelta.Dto.Password, currentCustomer);
+
+                transaction.Complete();
             }
-
-            customerDelta.Merge(currentCustomer);
-
-            if (customerDelta.Dto.RoleIds.Count > 0)
-            {
-                await AddValidRolesAsync(customerDelta, currentCustomer);
-            }
-
-            if (customerDelta.Dto.Addresses.Count > 0)
-            {
-                var currentCustomerAddresses = (await CustomerService.GetAddressesByCustomerIdAsync(currentCustomer.Id)).ToDictionary(address => address.Id, address => address);
-
-                foreach (var passedAddress in customerDelta.Dto.Addresses)
-                {
-                    var addressEntity = passedAddress.ToEntity();
-
-                    if (currentCustomerAddresses.ContainsKey(passedAddress.Id))
-                    {
-                        _mappingHelper.Merge(passedAddress, currentCustomerAddresses[passedAddress.Id]);
-                    }
-                    else
-                    {
-                        await CustomerService.InsertCustomerAddressAsync(currentCustomer, addressEntity);
-                    }
-                }
-            }
-
-            await CustomerService.UpdateCustomerAsync(currentCustomer);
-
-
-            //password
-            if (!string.IsNullOrWhiteSpace(customerDelta.Dto.Password))
-            {
-                await AddPasswordAsync(customerDelta.Dto.Password, currentCustomer);
-            }
-
-            // TODO: Localization
 
             // Preparing the result dto of the new customer
             // We do not prepare the shopping cart items because we have a separate endpoint for them.
             var updatedCustomer = currentCustomer.ToDto();
+            updatedCustomer.Addresses = (await CustomerService.GetAddressesByCustomerIdAsync(currentCustomer.Id)).Select(address => address.ToDto()).ToList();
+            updatedCustomer.RoleIds = (await CustomerService.GetCustomerRolesAsync(currentCustomer, showHidden: true)).Select(role => role.Id).ToList();
 
             // This is needed because the entity framework won't populate the navigation properties automatically
             // and the country name will be left empty because the mapping depends on the navigation property
@@ -452,20 +454,33 @@ namespace Nop.Plugin.Api.Controllers
                 return Error(HttpStatusCode.BadRequest, "id", "invalid id");
             }
 
-            var customer = await _customerApiService.GetCustomerEntityByIdAsync(id);
-
-            if (customer == null)
+            Customer customer;
+            using (var transaction = _dataProvider.CreateTransactionScope())
             {
-                return Error(HttpStatusCode.NotFound, "customer", "not found");
-            }
+                customer = await _customerApiService.GetCustomerEntityByIdAsync(id);
+                if (customer is null)
+                    return Error(HttpStatusCode.NotFound, "customer", "not found");
 
-            await CustomerService.DeleteCustomerAsync(customer);
+                var adminRole = (await CustomerService.GetCustomerRolesAsync(customer, showHidden: true))
+                    .FirstOrDefault(role => role.SystemName == NopCustomerDefaults.AdministratorsRoleName);
+                if (adminRole is not null)
+                {
+                    if (!await IsActingAdministratorAsync())
+                        return Error(HttpStatusCode.Forbidden, "customer", "only an administrator may delete an administrator");
+
+                    if (!await AnotherActiveAdministratorExistsAsync(customer.Id, adminRole.Id))
+                        return Error(HttpStatusCode.BadRequest, "customer", "at least one active administrator must remain");
+                }
+
+                await CustomerService.DeleteCustomerAsync(customer);
+                transaction.Complete();
+            }
 
             //remove newsletter subscription (if exists)
             foreach (var store in await StoreService.GetAllStoresAsync())
             {
-                var subscription = await _newsLetterSubscriptionService.GetNewsLetterSubscriptionByEmailAndStoreIdAsync(customer.Email, store.Id);
-                if (subscription != null)
+                var subscriptions = await _newsLetterSubscriptionService.GetNewsLetterSubscriptionsByEmailAsync(customer.Email, store.Id);
+                foreach (var subscription in subscriptions)
                 {
                     await _newsLetterSubscriptionService.DeleteNewsLetterSubscriptionAsync(subscription);
                 }
@@ -490,7 +505,7 @@ namespace Nop.Plugin.Api.Controllers
             // TODO: add address validation via model binder
             if (!await CheckPermissions(customerId))
             {
-                AccessDenied();
+                return AccessDenied();
             }
             var customer = await CustomerService.GetCustomerByIdAsync(customerId);
             if (customer is null)
@@ -516,7 +531,7 @@ namespace Nop.Plugin.Api.Controllers
             // TODO: add address validation via model binder
             if (!await CheckPermissions(customerId))
             {
-                AccessDenied();
+                return AccessDenied();
             }
             var customer = await CustomerService.GetCustomerByIdAsync(customerId);
             if (customer is null)
@@ -579,29 +594,134 @@ namespace Nop.Plugin.Api.Controllers
 
 
 
-        private async Task AddValidRolesAsync(Delta<CustomerDto> customerDelta, Customer currentCustomer)
+        private async Task<(IList<CustomerRole> Roles, IActionResult Error)> ValidateRolesAsync(
+            Delta<CustomerDto> delta, Customer customer, IList<CustomerRole> existingRoles, bool creating = false)
         {
-            var allCustomerRoles = await CustomerService.GetAllCustomerRolesAsync(true);
-            foreach (var customerRole in allCustomerRoles)
+            var replacesRoles = creating || delta.HasProperty(nameof(CustomerDto.RoleIds));
+            var requestedRoles = existingRoles;
+            if (replacesRoles)
             {
-                if (customerDelta.Dto.RoleIds.Contains(customerRole.Id))
+                var requestedIds = delta.Dto.RoleIds.ToHashSet();
+                var availableRoles = await CustomerService.GetAllCustomerRolesAsync(showHidden: true);
+                requestedRoles = availableRoles.Where(role => requestedIds.Contains(role.Id)).ToList();
+                if (requestedRoles.Count != requestedIds.Count)
+                    return (null, Error((HttpStatusCode)422, "role_ids", "one or more customer roles do not exist"));
+
+                var isGuest = requestedRoles.Any(role => role.Active && role.SystemName == NopCustomerDefaults.GuestsRoleName);
+                var isRegistered = requestedRoles.Any(role => role.Active && role.SystemName == NopCustomerDefaults.RegisteredRoleName);
+                if (isGuest == isRegistered)
+                    return (null, Error((HttpStatusCode)422, "role_ids", "an active Guests or Registered role is required, and the two roles are mutually exclusive"));
+
+                var existingIds = existingRoles.Select(role => role.Id).ToHashSet();
+                var requiresAcl = requestedRoles.Any(role => !existingIds.Contains(role.Id) && role.SystemName != NopCustomerDefaults.RegisteredRoleName)
+                    || existingIds.Except(requestedIds).Any();
+                if (requiresAcl)
                 {
-                    //new role
-                    if (!await CustomerService.IsInCustomerRoleAsync(currentCustomer, customerRole.Name))
-                    {
-                        await CustomerService.AddCustomerRoleMappingAsync(new CustomerCustomerRoleMapping
-                        {
-                            CustomerId = currentCustomer.Id,
-                            CustomerRoleId = customerRole.Id
-                        });
-                    }
+                    var actor = await _authenticationService.GetAuthenticatedCustomerAsync();
+                    if (actor is null || !await _permissionService.AuthorizeAsync(StandardPermission.Configuration.MANAGE_ACL, actor))
+                        return (null, Error(HttpStatusCode.Forbidden, "role_ids", "managing customer roles requires permission to manage access control"));
+                }
+            }
+
+            var existingAdminRole = existingRoles.FirstOrDefault(role => role.SystemName == NopCustomerDefaults.AdministratorsRoleName);
+            var requestedAdminRole = requestedRoles.FirstOrDefault(role => role.SystemName == NopCustomerDefaults.AdministratorsRoleName);
+            if (existingAdminRole is not null || requestedAdminRole is not null)
+            {
+                if (!await IsActingAdministratorAsync())
+                    return (null, Error(HttpStatusCode.Forbidden, "customer", "only an administrator may manage administrators"));
+
+                var retainsAdminAccess = requestedAdminRole is { Active: true } && customer.Active && !customer.Deleted
+                    && HasUsableLoginIdentity(customer)
+                    && requestedRoles.Any(role => role.Active && role.SystemName == NopCustomerDefaults.RegisteredRoleName);
+                if (existingAdminRole is not null && !retainsAdminAccess
+                    && !await AnotherActiveAdministratorExistsAsync(customer.Id, existingAdminRole.Id))
+                    return (null, Error(HttpStatusCode.BadRequest, "customer", "at least one active administrator must remain"));
+
+                if (requestedAdminRole is not null && customer.VendorId > 0)
+                    return (null, Error(HttpStatusCode.BadRequest, "role_ids", "a vendor cannot be an administrator"));
+            }
+
+            return (requestedRoles, null);
+        }
+
+        private async Task<bool> IsActingAdministratorAsync()
+        {
+            var actor = await _authenticationService.GetAuthenticatedCustomerAsync();
+            return actor is not null && await CustomerService.IsAdminAsync(actor);
+        }
+
+        private async Task<bool> AnotherActiveAdministratorExistsAsync(int customerId, int adminRoleId)
+        {
+            var admins = await CustomerService.GetAllCustomersAsync(customerRoleIds: [adminRoleId], isActive: true);
+            foreach (var admin in admins.Where(admin => admin.Id != customerId && HasUsableLoginIdentity(admin)))
+            {
+                if (await CustomerService.IsRegisteredAsync(admin))
+                    return true;
+            }
+
+            return false;
+        }
+
+        private bool HasUsableLoginIdentity(Customer customer) =>
+            CommonHelper.IsValidEmail(customer.Email)
+            && (!CustomerSettings.UsernamesEnabled || !string.IsNullOrWhiteSpace(customer.Username));
+
+        private async Task<IActionResult> ValidateLoginIdentityAsync(Delta<CustomerDto> delta, Customer customer)
+        {
+            if (delta.HasProperty(nameof(CustomerDto.Email)))
+            {
+                var owner = await CustomerService.GetCustomerByEmailAsync(customer.Email);
+                if (owner is not null && owner.Id != customer.Id)
+                    return Error(HttpStatusCode.BadRequest, "email", "email is already registered");
+            }
+
+            if (delta.HasProperty(nameof(CustomerDto.Username)) && CustomerSettings.UsernamesEnabled)
+            {
+                var owner = await CustomerService.GetCustomerByUsernameAsync(customer.Username);
+                if (owner is not null && owner.Id != customer.Id)
+                    return Error(HttpStatusCode.BadRequest, "username", "username is already registered");
+            }
+
+            return null;
+        }
+
+        private async Task ApplyRolesAsync(Customer customer, IList<CustomerRole> existingRoles, IList<CustomerRole> requestedRoles)
+        {
+            var existingIds = existingRoles.Select(role => role.Id).ToHashSet();
+            var requestedIds = requestedRoles.Select(role => role.Id).ToHashSet();
+            foreach (var role in requestedRoles.Where(role => !existingIds.Contains(role.Id)))
+            {
+                await CustomerService.AddCustomerRoleMappingAsync(new CustomerCustomerRoleMapping
+                {
+                    CustomerId = customer.Id,
+                    CustomerRoleId = role.Id
+                });
+            }
+
+            foreach (var role in existingRoles.Where(role => !requestedIds.Contains(role.Id)))
+                await CustomerService.RemoveCustomerRoleMappingAsync(customer, role);
+        }
+
+        private async Task SaveAddressesAsync(Delta<CustomerDto> delta, Customer customer, IDictionary<int, Address> existingAddresses)
+        {
+            foreach (var passedAddress in delta.Dto.Addresses)
+            {
+                if (existingAddresses.TryGetValue(passedAddress.Id, out var existingAddress))
+                {
+                    delta.Merge(passedAddress, existingAddress);
+                    await _addressService.UpdateAddressAsync(existingAddress);
                 }
                 else
                 {
-                    if (await CustomerService.IsInCustomerRoleAsync(currentCustomer, customerRole.Name))
-                    {
-                        await CustomerService.RemoveCustomerRoleMappingAsync(currentCustomer, customerRole);
-                    }
+                    var newAddress = passedAddress.ToEntity();
+                    newAddress.CreatedOnUtc = passedAddress.CreatedOnUtc ?? DateTime.UtcNow;
+                    if (newAddress.CountryId == 0)
+                        newAddress.CountryId = null;
+                    if (newAddress.StateProvinceId == 0)
+                        newAddress.StateProvinceId = null;
+
+                    await _addressService.InsertAddressAsync(newAddress);
+                    await CustomerService.InsertCustomerAddressAsync(customer, newAddress);
                 }
             }
         }
@@ -635,7 +755,6 @@ namespace Nop.Plugin.Api.Controllers
 
         private async Task AddPasswordAsync(string newPassword, Customer customer)
         {
-            // TODO: call this method before inserting the customer.
             var customerPassword = new CustomerPassword
             {
                 CustomerId = customer.Id,
@@ -665,8 +784,6 @@ namespace Nop.Plugin.Api.Controllers
             }
 
             await CustomerService.InsertCustomerPasswordAsync(customerPassword);
-
-            await CustomerService.UpdateCustomerAsync(customer);
         }
 
         #endregion

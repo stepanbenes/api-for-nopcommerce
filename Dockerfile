@@ -1,60 +1,28 @@
-# The base working directory is supposed to be parent directory. In the parent directory, there must be nopCommerce and api-for-nopcommerce subdirectories.
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS nop-build
 
-# create the build instance
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+WORKDIR /src/nopCommerce
+COPY --from=nopcommerce /global.json .
+COPY --from=nopcommerce /src ./src
+RUN dotnet build src/NopCommerce.sln -c Release
+RUN dotnet publish src/Presentation/Nop.Web/Nop.Web.csproj -c Release --no-build -o /app/published
 
-WORKDIR /
-COPY ./nopCommerce/src ./nopCommerce/src
+FROM nop-build AS plugin-build
 
-COPY ./api-for-nopcommerce/Nop.Plugin.Api ./api-for-nopcommerce/Nop.Plugin.Api
+COPY Nop.Plugin.Api /src/api-for-nopcommerce/Nop.Plugin.Api
+RUN dotnet build /src/api-for-nopcommerce/Nop.Plugin.Api/Nop.Plugin.Api.csproj -c Release -p:NopRoot=/src/nopCommerce
 
-# restore solution
-WORKDIR /nopCommerce/src
-RUN dotnet restore NopCommerce.sln
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS nop-runtime
 
-# build nop api plugin, output binaries are stored in plugins directory
-WORKDIR /api-for-nopcommerce/Nop.Plugin.Api
-RUN dotnet restore Nop.Plugin.Api.csproj
-RUN dotnet build Nop.Plugin.Api.csproj -c Release
-
-WORKDIR /nopCommerce/src/Presentation/Nop.Web
-
-# build project
-RUN dotnet build Nop.Web.csproj -c Release
-
-# build api plugin
-WORKDIR /api-for-nopcommerce/Nop.Plugin.Api
-RUN dotnet build Nop.Plugin.Api.csproj -c Release
-
-# publish project
-WORKDIR /nopCommerce/src/Presentation/Nop.Web   
-RUN dotnet publish Nop.Web.csproj -c Release -o /app/published
-
-# create the runtime instance 
-FROM mcr.microsoft.com/dotnet/aspnet:6.0-alpine AS runtime
-
-RUN apk add --no-cache icu-dev fontconfig libc-dev && apk add --no-cache libgdiplus --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing/
-ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
-
-# Debian linux >>>
-# FROM mcr.microsoft.com/dotnet/aspnet:5.0-buster-slim AS runtime
-# RUN apt-get update
-# RUN apt-get install -y libicu-dev fontconfig-config
-# ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
-# RUN apt-get install -y libgdiplus linux-libc-dev
-
-# copy entrypoint script
-COPY ./nopCommerce/entrypoint.sh /entrypoint.sh
-RUN chmod 755 /entrypoint.sh
+RUN apt-get update \
+    && apt-get install --no-install-recommends -y libgdiplus \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
-RUN mkdir bin
-RUN mkdir logs
+COPY --from=nop-build /app/published .
+RUN mkdir -p bin logs
+EXPOSE 8080
+ENTRYPOINT ["dotnet", "Nop.Web.dll"]
 
-COPY --from=build /app/published .
+FROM nop-runtime AS runtime
 
-COPY ./api-for-nopcommerce/plugins-docker.json /app/App_Data/plugins.json
-COPY ./api-for-nopcommerce/appsettings-docker.json /app/App_Data/appsettings.json
-
-# call entrypoint script instead of dotnet
-ENTRYPOINT "/entrypoint.sh"
+COPY --from=plugin-build /src/nopCommerce/src/Presentation/Nop.Web/Plugins/Nop.Plugin.Api ./Plugins/Nop.Plugin.Api

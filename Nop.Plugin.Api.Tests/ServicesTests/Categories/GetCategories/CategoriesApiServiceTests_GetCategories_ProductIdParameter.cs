@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Nop.Core.Data;
+using Nop.Data;
 using Nop.Core.Domain.Catalog;
 using Nop.Plugin.Api.Services;
 using NUnit.Framework;
-using Rhino.Mocks;
+using Moq;
 
 namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategories
 {
@@ -31,8 +31,8 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategories
                 new Category() {Id = 7 }
             };
 
-            var categoryRepo = MockRepository.GenerateStub<IRepository<Category>>();
-            categoryRepo.Stub(x => x.TableNoTracking).Return(_existigCategories.AsQueryable());
+            var categoryRepo = Mock.Of<IRepository<Category>>();
+            Mock.Get(categoryRepo).Setup(x => x.Table).Returns(_existigCategories.AsQueryable());
 
             _existingCategoryMappings= new List<ProductCategory>()
             {
@@ -44,17 +44,20 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategories
                 new ProductCategory() { CategoryId = 5, ProductId = 5 }
             };
 
-            var productCategoryRepo = MockRepository.GenerateStub<IRepository<ProductCategory>>();
-            productCategoryRepo.Stub(x => x.TableNoTracking).Return(_existingCategoryMappings.AsQueryable());
+            var productCategoryRepo = Mock.Of<IRepository<ProductCategory>>();
+            Mock.Get(productCategoryRepo).Setup(x => x.Table).Returns(_existingCategoryMappings.AsQueryable());
 
-            var storeMappingService = MockRepository.GenerateStub<IStoreMappingService>();
-            storeMappingService.Stub(x => x.Authorize(Arg<Category>.Is.Anything)).Return(true);
+            var storeMappingService = Mock.Of<IStoreMappingService>();
+            Mock.Get(storeMappingService).Setup(x => x.ApplyStoreMapping(It.IsAny<IQueryable<Category>>(), 1))
+                .ReturnsAsync((IQueryable<Category> query, int _) => query);
+            var storeContext = Mock.Of<Nop.Core.IStoreContext>();
+            Mock.Get(storeContext).Setup(x => x.GetCurrentStoreAsync()).ReturnsAsync(new Nop.Core.Domain.Stores.Store { Id = 1 });
 
-            _categoryApiService = new CategoryApiService(categoryRepo, productCategoryRepo, storeMappingService);
+            _categoryApiService = new CategoryApiService(categoryRepo, productCategoryRepo, storeMappingService, storeContext, Mock.Of<Nop.Services.Catalog.ICategoryService>());
         }
 
         [Test]
-        public void WhenCalledWithValidProductId_ShouldReturnOnlyTheCategoriesMappedToThisProduct()
+        public async Task WhenCalledWithValidProductId_ShouldReturnOnlyTheCategoriesMappedToThisProduct()
         {
             // Arange
             int productId = 3;
@@ -65,7 +68,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategories
                                       select cat);
 
             // Act
-            var categories = _categoryApiService.GetCategories(productId: productId);
+            var categories = await _categoryApiService.GetCategoriesAsync(productId: productId);
 
             // Assert
             // Not Empty assert is a good practice when you assert something about collection. Because you can get a false positive if the collection is empty.
@@ -76,10 +79,10 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategories
         [Test]
         [TestCase(0)]
         [TestCase(-10)]
-        public void WhenCalledWithNegativeOrZeroProductId_ShouldReturnEmptyCollection(int productId)
+        public async Task WhenCalledWithNegativeOrZeroProductId_ShouldReturnEmptyCollection(int productId)
         {
             // Act
-            var categories = _categoryApiService.GetCategories(productId: productId);
+            var categories = await _categoryApiService.GetCategoriesAsync(productId: productId);
 
             // Assert
             CollectionAssert.IsEmpty(categories);
@@ -90,11 +93,11 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategories
         [TestCase(int.MinValue)]
         [TestCase(-1)]
         [TestCase(5465464)]
-        public void WhenCalledWithProductIdThatDoesNotExistInTheMappings_ShouldReturnEmptyCollection(int productId)
+        public async Task WhenCalledWithProductIdThatDoesNotExistInTheMappings_ShouldReturnEmptyCollection(int productId)
         {
             // Arange
             // Act
-            var categories = _categoryApiService.GetCategories(productId: productId);
+            var categories = await _categoryApiService.GetCategoriesAsync(productId: productId);
 
             // Assert
             CollectionAssert.IsEmpty(categories);

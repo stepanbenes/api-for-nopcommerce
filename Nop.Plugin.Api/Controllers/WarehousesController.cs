@@ -29,14 +29,14 @@ namespace Nop.Plugin.Api.Controllers
     public class WarehousesController : BaseApiController
     {
         private readonly IWarehouseApiService _warehouseApiService;
-        private readonly IShippingService _shippingService;
+        private readonly IWarehouseService _warehouseService;
         private readonly IAddressService _addressService;
         private readonly IDTOHelper _dtoHelper;
         private readonly IFactory<Warehouse> _factory;
 
         public WarehousesController(
             IWarehouseApiService warehouseApiService,
-            IShippingService shippingService,
+            IWarehouseService warehouseService,
             IAddressService addressService,
             IJsonFieldsSerializer jsonFieldsSerializer,
             IAclService aclService,
@@ -53,7 +53,7 @@ namespace Nop.Plugin.Api.Controllers
             localizationService, pictureService)
         {
             _warehouseApiService = warehouseApiService;
-            _shippingService = shippingService;
+            _warehouseService = warehouseService;
             _addressService = addressService;
             _dtoHelper = dtoHelper;
             _factory = factory;
@@ -74,7 +74,7 @@ namespace Nop.Plugin.Api.Controllers
         public async Task<IActionResult> GetWarehouses([FromQuery] WarehousesParametersModel parameters)
         {
 
-            var allWarehouses = _warehouseApiService.GetWarehouses(parameters.Ids, parameters.ProductId);
+            var allWarehouses = await _warehouseApiService.GetWarehousesAsync(parameters.Ids, parameters.ProductId);
 
             IList<WarehouseDto> warehousesAsDtos = await allWarehouses
                 .SelectAwait(async warehouse => await _dtoHelper.PrepareWarehouseDtoAsync(warehouse)).ToListAsync();
@@ -112,7 +112,7 @@ namespace Nop.Plugin.Api.Controllers
                 return Error(HttpStatusCode.BadRequest, "id", "invalid id");
             }
 
-            var warehouse = _warehouseApiService.GetWarehouseById(id);
+            var warehouse = await _warehouseApiService.GetWarehouseByIdAsync(id);
 
             if (warehouse == null)
             {
@@ -164,7 +164,7 @@ namespace Nop.Plugin.Api.Controllers
 
             warehouseDelta.Merge(warehouse);
 
-            await _shippingService.InsertWarehouseAsync(warehouse);
+            await _warehouseService.InsertWarehouseAsync(warehouse);
 
             await CustomerActivityService.InsertActivityAsync("AddNewWarehouse",
                                                    await LocalizationService.GetResourceAsync("ActivityLog.AddNewWarehouse"), warehouse);
@@ -200,7 +200,7 @@ namespace Nop.Plugin.Api.Controllers
                 return Error();
             }
 
-            var warehouse = _warehouseApiService.GetWarehouseById(warehouseDelta.Dto.Id);
+            var warehouse = await _warehouseApiService.GetWarehouseByIdAsync(warehouseDelta.Dto.Id);
 
             if (warehouse == null)
             {
@@ -220,7 +220,7 @@ namespace Nop.Plugin.Api.Controllers
 
             warehouseDelta.Merge(warehouse);
 
-            await _shippingService.UpdateWarehouseAsync(warehouse);
+            await _warehouseService.UpdateWarehouseAsync(warehouse);
 
             await CustomerActivityService.InsertActivityAsync("UpdateWarehouse",
                                                    await LocalizationService.GetResourceAsync("ActivityLog.UpdateWarehouse"), warehouse);
@@ -251,14 +251,14 @@ namespace Nop.Plugin.Api.Controllers
                 return Error(HttpStatusCode.BadRequest, "id", "invalid id");
             }
 
-            var warehouseToDelete = _warehouseApiService.GetWarehouseById(id);
+            var warehouseToDelete = await _warehouseApiService.GetWarehouseByIdAsync(id);
 
             if (warehouseToDelete == null)
             {
                 return Error(HttpStatusCode.NotFound, "warehouse", "warehouse not found");
             }
 
-            await _shippingService.DeleteWarehouseAsync(warehouseToDelete);
+            await _warehouseService.DeleteWarehouseAsync(warehouseToDelete);
 
             //activity log
             await CustomerActivityService.InsertActivityAsync("DeleteWarehouse", await LocalizationService.GetResourceAsync("ActivityLog.DeleteWarehouse"), warehouseToDelete);

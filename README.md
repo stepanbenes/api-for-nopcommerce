@@ -1,17 +1,112 @@
-# API plugin for nopCommerce 4.80
+# API plugin for nopCommerce 5.00
 
-This plugin provides a RESTful API for managing resources in nopCommerce 4.8.
-For the other versions of nopCommerce, please refer to the the other releases and branches.
+This plugin exposes REST endpoints for nopCommerce. This branch is built and tested against nopCommerce `release-5.00.1` and .NET 10. Use the matching release branch of this plugin for older versions of nopCommerce.
 
-## Installation
+See the [feature coverage and upstream issue audit](docs/api-coverage.md), [date and paging filters](docs/query-filters.md), and [checkout discovery endpoints](docs/checkout-discovery.md).
 
-1. clone the [NopCommerce](https://github.com/nopSolutions/nopCommerce) repository (`develop` branch) into folder called `nopCommerce`
-1. clone this repository into the same folder where the `nopCommerce` folder is located
-1. build the nopCommerce solution
-1. build the api-for-nopcommerce solution (the output will be placed inside the nopCommerce directory)
-1. run the Nop.Web project in the nopCommerce solution
-1. install the nopCommerce database, create the admin user (skip this step if already done)
-1. go to the administration page, Api plugin should be listed in local plugins configuration section.
-1. in the customers section assign the  role `Api Users` to the user that will be used to access the api.
-1. set fake appId and app secret in facebook authentication plugin as a workaround for [issue #17](https://github.com/stepanbenes/api-for-nopcommerce/issues/17#issuecomment-840502748).
-1. go to `/api/swagger` page and experiment with the api (use the Authorize button to authenticate requests) or run .NET 5 client application (`ClientApp` project) that contains auto-generated Api client class generated from the swagger json file using C# 9 source generator.
+## Run with Docker
+
+Follow the [Docker quickstart](DOCKER.md) to build the plugin and store together, install the database, and assign the API role.
+
+## Build from source
+
+1. Install the .NET SDK specified by the pinned nopCommerce checkout's `global.json`.
+2. Clone the matching nopCommerce release in a sibling directory.
+
+   ```sh
+   git clone --depth 1 --branch release-5.00.1 https://github.com/nopSolutions/nopCommerce.git ../nopCommerce
+   ```
+
+3. Build the solution from this repository. `NopRoot` defaults to `../nopCommerce` relative to the repository root. Supply an absolute path to use another checkout.
+
+   ```sh
+   dotnet build api-for-nopcommerce.sln -p:NopRoot="$(cd ../nopCommerce && pwd)"
+   ```
+
+4. Configure the plugin's JWT signing key before starting the store. For a local session, set it to a generated value.
+
+   ```sh
+   export ApiConfiguration__SecurityKey="$(openssl rand -hex 32)"
+   dotnet run --project ../nopCommerce/src/Presentation/Nop.Web/Nop.Web.csproj
+   ```
+
+5. Install the nopCommerce database if needed. Confirm **Api plugin** is installed under **Configuration → Local plugins** and assign the **Api Users** role to the API account. The account's nopCommerce permissions govern access to individual endpoints. Use an administrator with the **Api Users** role to run the integration suite.
+
+The plugin build places its files in `src/Presentation/Nop.Web/Plugins/Nop.Plugin.Api` in the nopCommerce checkout. Swagger UI is served at `/api/swagger` and the OpenAPI document is served at `/api/swagger/v1/swagger.json`. Request an access token with `POST /token` and pass it as `Authorization: Bearer <token>` when calling protected endpoints.
+
+## Navigation menus in 5.00
+
+Configure each store's navigation under **Admin → Content management → Menus**. Omit `include_in_top_menu` from category and topic write payloads and omit `include_in_footer_column1`, `include_in_footer_column2`, and `include_in_footer_column3` from topic write payloads. A non-null value, including `false`, returns HTTP 400. The legacy properties are returned as `null` when included in reads.
+
+The API account needs the **Api Users** role and the nopCommerce permission to manage menus. Use `GET /api/menus` to discover menus for the current store and `GET /api/menus/{menuId}/items` to list their links. Add a category or topic link with `POST /api/menus/{menuId}/items`. The body accepts `link_type` of `category` or `topic`, an `entity_id`, and an optional `display_order`, as in `{"link_type":"category","entity_id":42,"display_order":20}`. The add request returns HTTP 201 for a new link and 200 if the link already exists. Delete a link with `DELETE /api/menus/{menuId}/items/{itemId}`.
+
+## Checkout attributes
+
+Use `GET /api/checkout_attributes` to discover the checkout attributes and choices for the current store and cart. Add `?shipping_required=true` when preparing an order for shippable items before they are in the cart. Set `checkout_attributes` in the `order` body of `POST /api/orders` to supply the selections. Send one entry per checkout attribute, with the selected choice IDs as strings in its `values` array. For a dropdown such as Gift wrapping, send one value, for example `[{"id":1,"values":["1"]}]`. Product-level selections belong in each order item's `product_attributes`.
+
+The JSON input accepts one choice for dropdowns, radio buttons, color squares, and image squares, and multiple choices for editable checkboxes. Single-line and multiline text fields accept one text value. Date pickers accept one `yyyy-MM-dd` value. For a file upload, send a multipart request to nopCommerce's `POST /uploadfilecheckoutattribute/{attributeId}` endpoint with the file as the first file field, then use the returned `downloadGuid` as the attribute's single value. Omit read-only checkboxes from the payload so nopCommerce applies the eligible preselected values.
+
+Omit `checkout_attributes` to reuse the customer's saved cart selections. Add `include_conditional=true` to discovery to include dependent controls and their parent `condition`. A dependent control is eligible when the parent's complete selection matches the condition's `values` array.
+
+For safe retries, send a non-empty UUID in the optional `Idempotency-Key` header on `POST /api/orders`. Reuse the same key for the same order attempt. A replay within the same store and customer returns the original order and includes `Idempotency-Replayed: true`. Use a new key for each new order. If payment follow-up fails after the order is saved, the API still returns the committed order and includes `X-Order-Follow-Up`. A retry whose original order has since been deleted returns HTTP 409.
+
+## Tax categories
+
+Use `GET /api/taxcategories/{id}` to read a tax category and `PUT /api/taxcategories/{id}` to update its supplied fields. A create request requires a nonblank name of at most 400 characters. Updates validate the name when it is supplied.
+
+## Shipments
+
+Store operators can list and create shipments, update tracking, and mark shipments as shipped, ready for pickup, or delivered. See the [shipment API routes and request examples](Shipments.md).
+
+## Tests and generated client
+
+Run the unit tests from this repository. The .NET 10 suite covers services, serializers, validators, and query binding. The legacy controller, model-binder, and mapping sources remain outside the build. Live tests exercise the HTTP controller and binding paths against an installed store.
+
+```sh
+dotnet test Nop.Plugin.Api.Tests -p:NopRoot="$(cd ../nopCommerce && pwd)" --filter 'TestCategory!=Integration'
+```
+
+To exercise JWT authentication, endpoint permissions, API validation, and resource lifecycles against an installed local test store, set `NOP_API_TEST_URL`, `NOP_API_TEST_USER`, and `NOP_API_TEST_PASSWORD` in your shell, then run the integration category. The suite creates and deletes test catalog, cart, customer, order, topic, and tax records. The checkout test uses the Check/Money Order and Fixed By Weight By Total plugins with a Ground shipping option, as in the Docker sample store. It discovers and selects the sample Gift wrapping choice through the checkout attributes API.
+
+```sh
+dotnet test Nop.Plugin.Api.Tests -p:NopRoot="$(cd ../nopCommerce && pwd)" --filter 'TestCategory=Integration&TestCategory!=DatabaseIntegration'
+dotnet run --project ClientApp -- "$NOP_API_TEST_URL"
+```
+
+With the [Docker stack](DOCKER.md) running and those API variables set, run the API-to-PostgreSQL cases from the same Compose project. They exercise tax category, product, cart item, and checkout writes against the loopback API and verify the resulting rows using read-only PostgreSQL queries. The checkout case checks that repeated requests with the same idempotency key create one order. The tests run `psql` inside the database container over its local socket. They use the Compose database and user `nopcommerce` and need no published PostgreSQL port or database password.
+
+```sh
+./docker/test-postgres.sh
+```
+
+The script requires Python 3 and succeeds only when all three cases run and pass. The cases clean up through the API. Tax category and cart item rows are removed. nopCommerce retains soft-deleted rows for the product and order.
+
+### Place an order with the generated C# client
+
+The read-only example runs with just a store URL. To place an order in the Docker sample store, sign in as an API-enabled customer with saved billing and shipping addresses. Add a published shippable product that requires no product options to that customer's cart. For example, use `POST /api/shopping_cart_items` with `{"shopping_cart_item":{"customer_id":42,"product_id":8,"shopping_cart_type":"ShoppingCart","quantity":1}}` and replace the IDs with the customer's and product's IDs. You can create the addresses with `POST /api/customers/{customerId}/billingaddress` and `POST /api/customers/{customerId}/shippingaddress`, then use the IDs from their responses. Query `GET /api/checkout_attributes?shipping_required=true` to find the Gift wrapping attribute and its **No** choice. The two IDs below are illustrative.
+
+```sh
+checkout_key="$(uuidgen)"
+dotnet run --project ClientApp -- "$NOP_API_TEST_URL" checkout BILLING_ADDRESS_ID SHIPPING_ADDRESS_ID "$checkout_key" 1=1
+```
+
+The example queries available shipping and payment methods for the cart and addresses, selects **Ground** and **Check/Money Order**, and places the cart's contents. It prints the committed order ID, payment and shipping statuses, and any follow-up guidance. If the response is lost, rerun with `checkout-retry` and the same key and addresses. This resubmits the original options without quoting an already purchased cart. Use a new key for each new order. Check/Money Order payment is recorded separately when received.
+
+For stores with different methods, configure `PaymentMethodSystemName`, `ShippingMethod`, and `ShippingRateComputationMethodSystemName` in the request. A customer cart with items can query `GET /api/checkout/shipping-options?shipping_address_id=ID` and `GET /api/checkout/payment-methods?billing_address_id=ID` to find the methods available for its addresses. Use `GET /api/orders/{id}` to check final status. A store operator with shipment permissions can track [shipments](Shipments.md) separately.
+
+The sample client requests a bearer token and reads catalog and country data. It generates its bindings from [the checked-in OpenAPI snapshot](ClientApp/nopapi.swagger.json). The client-generation checks run on GitHub branch pushes and pull requests and can also be triggered manually.
+
+Run the same checks locally with the .NET 10 SDK and Python 3.12. Both generate from the checked-in snapshot. The C# tests compile the generated client, match its methods to all OpenAPI operation IDs, and check checkout JSON, authentication, and response decoding against a disposable loopback HTTP server. The Python check generates and imports the client, checks operation coverage, and verifies request and response serialization with HTTPX’s mock transport. These checks require only this repository and the public dependency feeds.
+
+```sh
+dotnet test ClientApp.Tests/ClientApp.Tests.csproj --configuration Release
+bash scripts/test-python-client.sh
+```
+
+To refresh the OpenAPI snapshot after changing the API, download it from the installed test store, run the client-generation checks, and review the resulting diff.
+
+```sh
+curl --fail --silent --show-error "$NOP_API_TEST_URL/api/swagger/v1/swagger.json" -o ClientApp/nopapi.swagger.json
+dotnet test ClientApp.Tests/ClientApp.Tests.csproj --configuration Release
+bash scripts/test-python-client.sh
+```

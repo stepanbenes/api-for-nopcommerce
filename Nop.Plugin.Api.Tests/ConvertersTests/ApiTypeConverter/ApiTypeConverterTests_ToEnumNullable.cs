@@ -4,7 +4,6 @@ using Nop.Core.Domain.Payments;
 using Nop.Core.Domain.Shipping;
 using Nop.Plugin.Api.Converters;
 using NUnit.Framework;
-using Rhino.Mocks;
 
 namespace Nop.Plugin.Api.Tests.ConvertersTests.ApiTypeConverter
 {
@@ -49,7 +48,7 @@ namespace Nop.Plugin.Api.Tests.ConvertersTests.ApiTypeConverter
             //Arange
 
             //Act
-            var result = _apiTypeConverter.ToEnumNullable(Arg<string>.Is.Equal(nullOrEmpty), Arg<Type>.Is.Anything);
+            var result = _apiTypeConverter.ToEnumNullable(nullOrEmpty, typeof(OrderStatus?));
 
             //Assert
             Assert.IsNull(result);

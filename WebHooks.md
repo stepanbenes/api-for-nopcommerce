@@ -1,4 +1,6 @@
-## WebHooks Documentation
+## Historical webhook documentation
+
+The 5.00 API plugin has no webhook registration or event-delivery endpoints. The routes below describe an earlier implementation. For available operations, see the [current OpenAPI document](ClientApp/nopapi.swagger.json).
 1. WebHook registration:
     Make a **POST** request to the following route: **/api/webhooks/registrations**
     

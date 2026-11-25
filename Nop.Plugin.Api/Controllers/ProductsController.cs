@@ -84,6 +84,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [GetRequestsErrorInterceptorActionFilter]
+        [UnpagedCollection]
         public async Task<IActionResult> GetProducts([FromQuery] ProductsParametersModel parameters)
         {
             if (parameters.Limit < Constants.Configurations.MinLimit || parameters.Limit > Constants.Configurations.MaxLimit)
@@ -96,12 +97,11 @@ namespace Nop.Plugin.Api.Controllers
                 return Error(HttpStatusCode.BadRequest, "page", "invalid page parameter");
             }
 
-            var allProducts = _productApiService.GetProducts(parameters.Ids, parameters.CreatedAtMin, parameters.CreatedAtMax, parameters.UpdatedAtMin,
-                                                             parameters.UpdatedAtMax, parameters.Limit, parameters.Page, parameters.SinceId, parameters.CategoryId,
-                                                             parameters.VendorName, parameters.PublishedStatus, parameters.ManufacturerPartNumbers, parameters.IsDownload)
-                                                .WhereAwait(async p => await StoreMappingService.AuthorizeAsync(p));
+            var allProducts = await _productApiService.GetProductsAsync(parameters.Ids, parameters.CreatedAtMin, parameters.CreatedAtMax, parameters.UpdatedAtMin,
+                                                             parameters.UpdatedAtMax, GetCollectionLimit(parameters.Limit), parameters.Page, parameters.SinceId, parameters.CategoryId,
+                                                             parameters.VendorName, parameters.PublishedStatus, parameters.ManufacturerPartNumbers, parameters.IsDownload);
 
-            IList<ProductDto> productsAsDtos = await allProducts.SelectAwait(async product => await _dtoHelper.PrepareProductDTOAsync(product)).ToListAsync();
+            IList<ProductDto> productsAsDtos = await allProducts.ToAsyncEnumerable().Select(async (Product product, CancellationToken _) => await _dtoHelper.PrepareProductDTOAsync(product)).ToListAsync();
 
             var productsRootObject = new ProductsRootObjectDto
             {
@@ -162,7 +162,7 @@ namespace Nop.Plugin.Api.Controllers
                 return Error(HttpStatusCode.BadRequest, "id", "invalid id");
             }
 
-            var product = _productApiService.GetProductById(id);
+            var product = await _productApiService.GetProductByIdAsync(id);
 
             if (product == null)
             {
@@ -291,7 +291,7 @@ namespace Nop.Plugin.Api.Controllers
                 return Error();
             }
 
-            var product = _productApiService.GetProductById(productDelta.Dto.Id);
+            var product = await _productApiService.GetProductByIdAsync(productDelta.Dto.Id);
 
             if (product == null)
             {
@@ -359,7 +359,7 @@ namespace Nop.Plugin.Api.Controllers
                 return Error(HttpStatusCode.BadRequest, "id", "invalid id");
             }
 
-            var product = _productApiService.GetProductById(id);
+            var product = await _productApiService.GetProductByIdAsync(id);
 
             if (product == null)
             {

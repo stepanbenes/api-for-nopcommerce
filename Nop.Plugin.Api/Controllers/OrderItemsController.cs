@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Nop.Core;
 using Nop.Core.Domain.Catalog;
 using Nop.Core.Domain.Orders;
 using Nop.Plugin.Api.Attributes;
@@ -14,6 +15,7 @@ using Nop.Plugin.Api.MappingExtensions;
 using Nop.Plugin.Api.ModelBinders;
 using Nop.Plugin.Api.Models.OrderItemsParameters;
 using Nop.Plugin.Api.Services;
+using Nop.Services.Authentication;
 using Nop.Services.Catalog;
 using Nop.Services.Customers;
 using Nop.Services.Discounts;
@@ -28,9 +30,11 @@ using System.Net;
 
 namespace Nop.Plugin.Api.Controllers
 {
-    [AuthorizePermission(StandardPermission.Orders.ORDERS_CREATE_EDIT_DELETE)]
     public class OrderItemsController : BaseApiController
     {
+        private readonly IAuthenticationService _authenticationService;
+        private readonly IPermissionService _permissionService;
+        private readonly IStoreContext _storeContext;
         private readonly IDTOHelper _dtoHelper;
         private readonly IOrderApiService _orderApiService;
         private readonly IOrderItemApiService _orderItemApiService;
@@ -54,7 +58,9 @@ namespace Nop.Plugin.Api.Controllers
             IProductApiService productApiService,
             IPriceCalculationService priceCalculationService,
             ITaxService taxService,
-            IPictureService pictureService, IDTOHelper dtoHelper)
+            IPictureService pictureService, IDTOHelper dtoHelper,
+            IAuthenticationService authenticationService, IPermissionService permissionService,
+            IStoreContext storeContext)
             : base(jsonFieldsSerializer,
                    aclService,
                    customerService,
@@ -72,6 +78,9 @@ namespace Nop.Plugin.Api.Controllers
             _priceCalculationService = priceCalculationService;
             _taxService = taxService;
             _dtoHelper = dtoHelper;
+            _authenticationService = authenticationService;
+            _permissionService = permissionService;
+            _storeContext = storeContext;
         }
 
         [HttpGet]
@@ -81,6 +90,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [GetRequestsErrorInterceptorActionFilter]
+        [UnpagedCollection]
         public async Task<IActionResult> GetOrderItems([FromRoute] int orderId, [FromQuery] OrderItemsParametersModel parameters)
         {
             if (parameters.Limit < Constants.Configurations.MinLimit || parameters.Limit > Constants.Configurations.MaxLimit)
@@ -93,14 +103,17 @@ namespace Nop.Plugin.Api.Controllers
                 return Error(HttpStatusCode.BadRequest, "page", "Invalid request parameters");
             }
 
-            var order = _orderApiService.GetOrderById(orderId);
+            var order = await GetOrderForCurrentStoreAsync(orderId);
 
             if (order == null)
             {
                 return Error(HttpStatusCode.NotFound, "order", "not found");
             }
 
-            var allOrderItemsForOrder = await _orderItemApiService.GetOrderItemsForOrderAsync(order, parameters.Limit, parameters.Page,
+            if (!await CanViewOrderAsync(order))
+                return AccessDenied();
+
+            var allOrderItemsForOrder = await _orderItemApiService.GetOrderItemsForOrderAsync(order, GetCollectionLimit(parameters.Limit), parameters.Page,
                                                            parameters.SinceId);
 
             var orderItemsRootObject = new OrderItemsRootObject
@@ -122,12 +135,15 @@ namespace Nop.Plugin.Api.Controllers
         [GetRequestsErrorInterceptorActionFilter]
         public async Task<IActionResult> GetOrderItemsCount([FromRoute] int orderId)
         {
-            var order = _orderApiService.GetOrderById(orderId);
+            var order = await GetOrderForCurrentStoreAsync(orderId);
 
             if (order == null)
             {
                 return Error(HttpStatusCode.NotFound, "order", "not found");
             }
+
+            if (!await CanViewOrderAsync(order))
+                return AccessDenied();
 
             var orderItemsCountForOrder = await _orderItemApiService.GetOrderItemsCountAsync(order);
 
@@ -148,16 +164,19 @@ namespace Nop.Plugin.Api.Controllers
         [GetRequestsErrorInterceptorActionFilter]
         public async Task<IActionResult> GetOrderItemByIdForOrder([FromRoute] int orderId, [FromRoute] int orderItemId, [FromQuery] string fields = "")
         {
-            var order = _orderApiService.GetOrderById(orderId);
+            var order = await GetOrderForCurrentStoreAsync(orderId);
 
             if (order == null)
             {
                 return Error(HttpStatusCode.NotFound, "order", "not found");
             }
 
+            if (!await CanViewOrderAsync(order))
+                return AccessDenied();
+
             var orderItem = await _orderService.GetOrderItemByIdAsync(orderItemId);
 
-            if (orderItem == null)
+            if (orderItem == null || orderItem.OrderId != order.Id)
             {
                 return Error(HttpStatusCode.NotFound, "order_item", "not found");
             }
@@ -179,6 +198,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpPost]
         [Route("/api/orders/{orderId}/items", Name = "CreateOrderItem")]
+        [AuthorizePermission(StandardPermission.Orders.ORDERS_CREATE_EDIT_DELETE)]
         [ProducesResponseType(typeof(OrderItemsRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), 422)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -197,14 +217,14 @@ namespace Nop.Plugin.Api.Controllers
                 return Error();
             }
 
-            var order = _orderApiService.GetOrderById(orderId);
+            var order = await GetOrderForCurrentStoreAsync(orderId);
 
             if (order == null)
             {
                 return Error(HttpStatusCode.NotFound, "order", "not found");
             }
 
-            var product = GetProduct(orderItemDelta.Dto.ProductId);
+            var product = await GetProductAsync(orderItemDelta.Dto.ProductId);
 
             if (product == null)
             {
@@ -237,6 +257,8 @@ namespace Nop.Plugin.Api.Controllers
 
             var newOrderItem = await PrepareDefaultOrderItemFromProductAsync(order, product);
             orderItemDelta.Merge(newOrderItem);
+            newOrderItem.Id = 0;
+            newOrderItem.OrderId = order.Id;
             await _orderService.InsertOrderItemAsync(newOrderItem);
 
             await _orderService.UpdateOrderAsync(order);
@@ -254,6 +276,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpPut]
         [Route("/api/orders/{orderId}/items/{orderItemId}", Name = "UpdateOrderItem")]
+        [AuthorizePermission(StandardPermission.Orders.ORDERS_CREATE_EDIT_DELETE)]
         [ProducesResponseType(typeof(OrderItemsRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), 422)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -272,12 +295,12 @@ namespace Nop.Plugin.Api.Controllers
 
             var orderItemToUpdate = await _orderService.GetOrderItemByIdAsync(orderItemId);
 
-            if (orderItemToUpdate == null)
+            if (orderItemToUpdate == null || orderItemToUpdate.OrderId != orderId)
             {
                 return Error(HttpStatusCode.NotFound, "order_item", "not found");
             }
 
-            var order = _orderApiService.GetOrderById(orderId);
+            var order = await GetOrderForCurrentStoreAsync(orderId);
 
             if (order == null)
             {
@@ -291,10 +314,13 @@ namespace Nop.Plugin.Api.Controllers
 
             orderItemDelta.Merge(orderItemToUpdate);
 
+            orderItemToUpdate.Id = orderItemId;
+            orderItemToUpdate.OrderId = order.Id;
             orderItemToUpdate.ProductId = (int)productId;
             orderItemToUpdate.RentalStartDateUtc = rentalStartDate;
             orderItemToUpdate.RentalEndDateUtc = rentalEndDate;
 
+            await _orderService.UpdateOrderItemAsync(orderItemToUpdate);
             await _orderService.UpdateOrderAsync(order);
 
             await CustomerActivityService.InsertActivityAsync("UpdateOrderItem", await LocalizationService.GetResourceAsync("ActivityLog.UpdateOrderItem"), orderItemToUpdate);
@@ -310,6 +336,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpDelete]
         [Route("/api/orders/{orderId}/items/{orderItemId}", Name = "DeleteOrderItemById")]
+        [AuthorizePermission(StandardPermission.Orders.ORDERS_CREATE_EDIT_DELETE)]
         [ProducesResponseType(typeof(void), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
@@ -317,7 +344,7 @@ namespace Nop.Plugin.Api.Controllers
         [GetRequestsErrorInterceptorActionFilter]
         public async Task<IActionResult> DeleteOrderItemById([FromRoute] int orderId, [FromRoute] int orderItemId)
         {
-            var order = _orderApiService.GetOrderById(orderId);
+            var order = await GetOrderForCurrentStoreAsync(orderId);
 
             if (order == null)
             {
@@ -325,6 +352,9 @@ namespace Nop.Plugin.Api.Controllers
             }
 
             var orderItem = await _orderService.GetOrderItemByIdAsync(orderItemId);
+            if (orderItem == null || orderItem.OrderId != order.Id)
+                return Error(HttpStatusCode.NotFound, "order_item", "not found");
+
             await _orderService.DeleteOrderItemAsync(orderItem);
 
             return new RawJsonActionResult("{}");
@@ -332,6 +362,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpDelete]
         [Route("/api/orders/{orderId}/items", Name = "DeleteAllOrderItemsForOrder")]
+        [AuthorizePermission(StandardPermission.Orders.ORDERS_CREATE_EDIT_DELETE)]
         [ProducesResponseType(typeof(void), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
@@ -339,7 +370,7 @@ namespace Nop.Plugin.Api.Controllers
         [GetRequestsErrorInterceptorActionFilter]
         public async Task<IActionResult> DeleteAllOrderItemsForOrder([FromRoute] int orderId)
         {
-            var order = _orderApiService.GetOrderById(orderId);
+            var order = await GetOrderForCurrentStoreAsync(orderId);
 
             if (order == null)
             {
@@ -358,7 +389,22 @@ namespace Nop.Plugin.Api.Controllers
 
         #region Private methods
 
-        private Product GetProduct(int? productId)
+        private async Task<Order> GetOrderForCurrentStoreAsync(int orderId)
+        {
+            var store = await _storeContext.GetCurrentStoreAsync();
+            return await _orderApiService.GetOrderByIdAsync(orderId, store.Id);
+        }
+
+        private async Task<bool> CanViewOrderAsync(Order order)
+        {
+            var customer = await _authenticationService.GetAuthenticatedCustomerAsync();
+            return customer != null && await _permissionService.AuthorizeAsync(
+                customer.Id == order.CustomerId
+                    ? StandardPermission.PublicStore.ENABLE_SHOPPING_CART
+                    : StandardPermission.Orders.ORDERS_VIEW, customer);
+        }
+
+        private async Task<Product> GetProductAsync(int? productId)
         {
             Product product = null;
 
@@ -366,7 +412,7 @@ namespace Nop.Plugin.Api.Controllers
             {
                 var id = productId.Value;
 
-                product = _productApiService.GetProductById(id);
+                product = await _productApiService.GetProductByIdAsync(id);
             }
 
             return product;
@@ -385,7 +431,7 @@ namespace Nop.Plugin.Api.Controllers
 
             var orderItem = new OrderItem
             {
-                OrderItemGuid = new Guid(),
+                OrderItemGuid = Guid.NewGuid(),
                 UnitPriceExclTax = priceExclTax,
                 UnitPriceInclTax = priceInclTax,
                 PriceInclTax = priceInclTax,

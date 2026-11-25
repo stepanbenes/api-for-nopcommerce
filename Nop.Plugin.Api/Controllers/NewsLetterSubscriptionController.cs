@@ -61,7 +61,8 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(NewsLetterSubscriptionsRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [GetRequestsErrorInterceptorActionFilter]
-        public IActionResult GetNewsLetterSubscriptions([FromQuery] NewsLetterSubscriptionsParametersModel parameters)
+        [UnpagedCollection]
+        public async Task<IActionResult> GetNewsLetterSubscriptions([FromQuery] NewsLetterSubscriptionsParametersModel parameters)
         {
             if (parameters.Limit < Constants.Configurations.MinLimit || parameters.Limit > Constants.Configurations.MaxLimit)
             {
@@ -73,8 +74,8 @@ namespace Nop.Plugin.Api.Controllers
                 return Error(HttpStatusCode.BadRequest, "page", "Invalid page parameter");
             }
 
-            var newsLetterSubscriptions = _newsLetterSubscriptionApiService.GetNewsLetterSubscriptions(parameters.CreatedAtMin, parameters.CreatedAtMax,
-                                                                                                       parameters.Limit, parameters.Page, parameters.SinceId,
+            var newsLetterSubscriptions = await _newsLetterSubscriptionApiService.GetNewsLetterSubscriptionsAsync(parameters.CreatedAtMin, parameters.CreatedAtMax,
+                                                                                                       GetCollectionLimit(parameters.Limit), parameters.Page, parameters.SinceId,
                                                                                                        parameters.OnlyActive);
 
             var newsLetterSubscriptionsDtos = newsLetterSubscriptions.Select(nls => nls.ToDto()).ToList();
@@ -107,16 +108,19 @@ namespace Nop.Plugin.Api.Controllers
                 return Error(HttpStatusCode.BadRequest, "The email parameter could not be empty.");
             }
 
-            var existingSubscription = await _newsLetterSubscriptionService.GetNewsLetterSubscriptionByEmailAndStoreIdAsync(email, _storeContext.GetCurrentStore().Id);
+            var store = await _storeContext.GetCurrentStoreAsync();
+            var subscriptions = await _newsLetterSubscriptionService.GetNewsLetterSubscriptionsByEmailAsync(email, store.Id);
 
-            if (existingSubscription == null)
+            if (subscriptions.Count == 0)
             {
                 return Error(HttpStatusCode.BadRequest, "There is no news letter subscription with the specified email.");
             }
 
-            existingSubscription.Active = false;
-
-            await _newsLetterSubscriptionService.UpdateNewsLetterSubscriptionAsync(existingSubscription);
+            foreach (var subscription in subscriptions)
+            {
+                subscription.Active = false;
+                await _newsLetterSubscriptionService.UpdateNewsLetterSubscriptionAsync(subscription);
+            }
 
             return Ok();
         }

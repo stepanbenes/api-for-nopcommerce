@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿#nullable enable
+
+using Newtonsoft.Json;
 using Nop.Plugin.Api.DTO;
 
 namespace Nop.Plugin.Api.DTOs.Topics

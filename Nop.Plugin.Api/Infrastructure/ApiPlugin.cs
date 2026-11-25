@@ -1,5 +1,4 @@
-﻿using Nop.Core;
-using Nop.Core.Domain.Customers;
+﻿using Nop.Core.Domain.Customers;
 using Nop.Core.Domain.Logging;
 using Nop.Core.Infrastructure;
 using Nop.Data;
@@ -8,7 +7,7 @@ using Nop.Services.Configuration;
 using Nop.Services.Customers;
 using Nop.Services.Localization;
 using Nop.Services.Plugins;
-using Nop.Web.Framework.Menu;
+using Nop.Services.Helpers;
 
 namespace Nop.Plugin.Api.Infrastructure
 {
@@ -18,17 +17,14 @@ namespace Nop.Plugin.Api.Infrastructure
         private readonly ILocalizationService _localizationService;
         private readonly ISettingService _settingService;
         private readonly IWebHelper _webHelper;
-        private readonly IWorkContext _workContext;
 
         public ApiPlugin(
             ISettingService settingService,
-            IWorkContext workContext,
             ICustomerService customerService,
             ILocalizationService localizationService,
             IWebHelper webHelper)
         {
             _settingService = settingService;
-            _workContext = workContext;
             _customerService = customerService;
             _localizationService = localizationService;
             _webHelper = webHelper;
@@ -151,37 +147,6 @@ namespace Nop.Plugin.Api.Infrastructure
         public override string GetConfigurationPageUrl()
         {
             return $"{_webHelper.GetStoreLocation()}Admin/ApiAdmin/Settings";
-        }
-
-        public async Task ManageSiteMapAsync(SiteMapNode rootNode)
-        {
-            var workingLanguage = await _workContext.GetWorkingLanguageAsync();
-
-            var pluginMenuName = await _localizationService.GetResourceAsync("Plugins.Api.Admin.Menu.Title", workingLanguage.Id, defaultValue: "API");
-
-            var settingsMenuName = await _localizationService.GetResourceAsync("Plugins.Api.Admin.Menu.Settings.Title", workingLanguage.Id, defaultValue: "API");
-
-            const string adminUrlPart = "Admin/";
-
-            var pluginMainMenu = new SiteMapNode
-            {
-                Title = pluginMenuName,
-                Visible = true,
-                SystemName = "Api-Main-Menu",
-                IconClass = "fa-genderless"
-            };
-
-            pluginMainMenu.ChildNodes.Add(new SiteMapNode
-            {
-                Title = settingsMenuName,
-                Url = _webHelper.GetStoreLocation() + adminUrlPart + "ApiAdmin/Settings",
-                Visible = true,
-                SystemName = "Api-Settings-Menu",
-                IconClass = "fa-genderless"
-            });
-
-
-            rootNode.ChildNodes.Add(pluginMainMenu);
         }
     }
 }

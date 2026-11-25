@@ -4,7 +4,7 @@ using NUnit.Framework;
 namespace Nop.Plugin.Api.Tests.ConvertersTests.ApiTypeConverter
 {
     [TestFixture]
-    public class ApiTypeConverterTests_ToStatus
+    public class ApiTypeConverterTests_ToBoolean
     {
         private IApiTypeConverter _apiTypeConverter;
 
@@ -21,12 +21,12 @@ namespace Nop.Plugin.Api.Tests.ConvertersTests.ApiTypeConverter
         [TestCase("322345")]
         [TestCase("%^)@*%&*@_!+=")]
         [TestCase("1")]
-        public void WhenInvalidStatusPassed_ShouldReturnNull(string invalidStatus)
+        public void WhenInvalidValuePassed_ShouldReturnNull(string invalidValue)
         {
             //Arange
 
             //Act
-            bool? result = _apiTypeConverter.ToStatus(invalidStatus);
+            bool? result = _apiTypeConverter.ToBoolean(invalidValue);
 
             //Assert
             Assert.IsNull(result);
@@ -40,37 +40,37 @@ namespace Nop.Plugin.Api.Tests.ConvertersTests.ApiTypeConverter
             //Arange
 
             //Act
-            bool? result = _apiTypeConverter.ToStatus(nullOrEmpty);
+            bool? result = _apiTypeConverter.ToBoolean(nullOrEmpty);
 
             //Assert
             Assert.IsNull(result);
         }
 
         [Test]
-        [TestCase("published")]
-        [TestCase("Published")]
-        [TestCase("PublisheD")]
-        public void WhenValidPublishedStatusPassed_ShouldReturnTrue(string validPublishedStatus)
+        [TestCase("true")]
+        [TestCase("True")]
+        [TestCase("TruE")]
+        public void WhenValidTrueValuePassed_ShouldReturnTrue(string trueValue)
         {
             //Arange
 
             //Act
-            bool? result = _apiTypeConverter.ToStatus(validPublishedStatus);
+            bool? result = _apiTypeConverter.ToBoolean(trueValue);
 
             //Assert
             Assert.IsTrue(result.Value);
         }
 
         [Test]
-        [TestCase("unpublished")]
-        [TestCase("Unpublished")]
-        [TestCase("UnPubLished")]
-        public void WhenValidUnpublishedStatusPassed_ShouldReturnFalse(string validUnpublishedStatus)
+        [TestCase("false")]
+        [TestCase("False")]
+        [TestCase("FalsE")]
+        public void WhenValidFalseValuePassed_ShouldReturnFalse(string falseValue)
         {
             //Arange
 
             //Act
-            bool? result = _apiTypeConverter.ToStatus(validUnpublishedStatus);
+            bool? result = _apiTypeConverter.ToBoolean(falseValue);
 
             //Assert
             Assert.IsFalse(result.Value);

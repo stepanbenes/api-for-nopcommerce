@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿#nullable enable
+
+using Newtonsoft.Json;
 using Nop.Plugin.Api.Attributes;
 using Nop.Plugin.Api.DTO.Base;
 using Nop.Plugin.Api.DTO.Products;
@@ -13,7 +15,7 @@ namespace Nop.Plugin.Api.DTO.OrderItems
         ///     Gets or sets the selected attributes
         /// </summary>
         [JsonProperty("product_attributes")]
-        public ICollection<ProductItemAttributeDto> Attributes { get; set; }
+        public ICollection<ProductItemAttributeDto>? Attributes { get; set; }
 
         /// <summary>
         ///     Gets or sets the quantity
@@ -67,7 +69,7 @@ namespace Nop.Plugin.Api.DTO.OrderItems
         ///     Gets or sets the attribute description
         /// </summary>
         [JsonProperty("attribute_description")]
-        public string AttributeDescription { get; set; }
+        public string? AttributeDescription { get; set; }
 
         /// <summary>
         ///     Gets or sets the download count
@@ -111,7 +113,7 @@ namespace Nop.Plugin.Api.DTO.OrderItems
         /// </summary>
         [JsonProperty("product")]
         [DoNotMap]
-        public ProductDto Product { get; set; }
+        public ProductDto? Product { get; set; }
 
         [JsonProperty("product_id")]
         public int? ProductId { get; set; }

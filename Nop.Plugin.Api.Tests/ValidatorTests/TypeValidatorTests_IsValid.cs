@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
-using Nop.Plugin.Api.DTOs.Products;
+using Nop.Plugin.Api.DTO.Products;
 using NUnit.Framework;
 using Nop.Plugin.Api.Tests.SerializersTests.DummyObjects;
 using Nop.Plugin.Api.Validators;

@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Nop.Core.Data;
+using Nop.Data;
 using Nop.Core.Domain.Orders;
 using Nop.Plugin.Api.Services;
 using NUnit.Framework;
-using Rhino.Mocks;
+using Moq;
 
 namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
 {
@@ -28,18 +28,18 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
                 new Order() {Id = 7}
             };
 
-            var orderRepo = MockRepository.GenerateStub<IRepository<Order>>();
-            orderRepo.Stub(x => x.TableNoTracking).Return(_existigOrders.AsQueryable());
+            var orderRepo = Mock.Of<IRepository<Order>>();
+            Mock.Get(orderRepo).Setup(x => x.Table).Returns(_existigOrders.AsQueryable());
             
             _orderApiService = new OrderApiService(orderRepo);
         }
         
         [Test]
-        public void WhenCalledWithIdsParameter_GivenOrdersWithTheSpecifiedIds_ShouldReturnThemSortedById()
+        public async Task WhenCalledWithIdsParameter_GivenOrdersWithTheSpecifiedIds_ShouldReturnThemSortedById()
         {
             var idsCollection = new List<int>() { 1, 5 };
 
-            var orders = _orderApiService.GetOrders(ids: idsCollection);
+            var orders = await _orderApiService.GetOrdersAsync(ids: idsCollection);
 
             // Assert
             CollectionAssert.IsNotEmpty(orders);
@@ -48,11 +48,11 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
         }
 
         [Test]
-        public void WhenCalledWithIdsParameter_GivenOrdersWithSomeOfTheSpecifiedIds_ShouldReturnThemSortedById()
+        public async Task WhenCalledWithIdsParameter_GivenOrdersWithSomeOfTheSpecifiedIds_ShouldReturnThemSortedById()
         {
             var idsCollection = new List<int>() { 1, 5, 97373, 4 };
 
-            var orders = _orderApiService.GetOrders(ids: idsCollection);
+            var orders = await _orderApiService.GetOrdersAsync(ids: idsCollection);
 
             // Assert
             CollectionAssert.IsNotEmpty(orders);
@@ -62,22 +62,22 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
         }
 
         [Test]
-        public void WhenCalledWithIdsParameter_GivenOrdersThatDoNotMatchTheSpecifiedIds_ShouldReturnEmptyCollection()
+        public async Task WhenCalledWithIdsParameter_GivenOrdersThatDoNotMatchTheSpecifiedIds_ShouldReturnEmptyCollection()
         {
             var idsCollection = new List<int>() { 2123434, 5456456, 97373, -45 };
 
-            var orders = _orderApiService.GetOrders(ids: idsCollection);
+            var orders = await _orderApiService.GetOrdersAsync(ids: idsCollection);
 
             // Assert
             CollectionAssert.IsEmpty(orders);
         }
 
         [Test]
-        public void WhenCalledWithIdsParameter_GivenEmptyIdsCollection_ShouldReturnAllNotDeletedOrders()
+        public async Task WhenCalledWithIdsParameter_GivenEmptyIdsCollection_ShouldReturnAllNotDeletedOrders()
         {
             var idsCollection = new List<int>();
 
-            var orders = _orderApiService.GetOrders(ids: idsCollection);
+            var orders = await _orderApiService.GetOrdersAsync(ids: idsCollection);
 
             // Assert
             CollectionAssert.IsNotEmpty(orders);

@@ -1,5 +1,4 @@
 ﻿using Nop.Core.Domain.Tax;
-using Nop.Plugin.Api.AutoMapper;
 using Nop.Plugin.Api.DTOs.Taxes;
 
 namespace Nop.Plugin.Api.MappingExtensions

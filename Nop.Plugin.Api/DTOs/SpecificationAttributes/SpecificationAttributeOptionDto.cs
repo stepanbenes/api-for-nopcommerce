@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿#nullable enable
+
+using Newtonsoft.Json;
 using Nop.Plugin.Api.DTO.Base;
 
 namespace Nop.Plugin.Api.DTO.SpecificationAttributes
@@ -17,13 +19,13 @@ namespace Nop.Plugin.Api.DTO.SpecificationAttributes
         ///     Gets or sets the name
         /// </summary>
         [JsonProperty("name")]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         /// <summary>
         ///     Gets or sets the color RGB value (used when you want to display "Color squares" instead of text)
         /// </summary>
         [JsonProperty("color_squares_rgb")]
-        public string ColorSquaresRgb { get; set; }
+        public string? ColorSquaresRgb { get; set; }
 
         /// <summary>
         ///     Gets or sets the display order

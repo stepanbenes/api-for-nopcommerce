@@ -1,4 +1,5 @@
-﻿using Nop.Core.Domain.Catalog;
+﻿using Nop.Core;
+using Nop.Core.Domain.Catalog;
 using Nop.Core.Domain.Vendors;
 using Nop.Data;
 using Nop.Plugin.Api.DataStructures;
@@ -11,6 +12,7 @@ namespace Nop.Plugin.Api.Services
     {
         private readonly IRepository<ProductCategory> _productCategoryMappingRepository;
         private readonly IRepository<Product> _productRepository;
+        private readonly IStoreContext _storeContext;
         private readonly IStoreMappingService _storeMappingService;
         private readonly IRepository<Vendor> _vendorRepository;
 
@@ -18,15 +20,17 @@ namespace Nop.Plugin.Api.Services
             IRepository<Product> productRepository,
             IRepository<ProductCategory> productCategoryMappingRepository,
             IRepository<Vendor> vendorRepository,
-            IStoreMappingService storeMappingService)
+            IStoreMappingService storeMappingService,
+            IStoreContext storeContext)
         {
             _productRepository = productRepository;
             _productCategoryMappingRepository = productCategoryMappingRepository;
             _vendorRepository = vendorRepository;
             _storeMappingService = storeMappingService;
+            _storeContext = storeContext;
         }
 
-        public IList<Product> GetProducts(
+        public async Task<IList<Product>> GetProductsAsync(
             IList<int> ids = null,
             DateTime? createdAtMin = null, DateTime? createdAtMax = null, DateTime? updatedAtMin = null, DateTime? updatedAtMax = null,
             int? limit = null, int? page = null,
@@ -40,7 +44,8 @@ namespace Nop.Plugin.Api.Services
                 query = query.Where(c => c.Id > sinceId);
             }
 
-            return new ApiList<Product>(query, (page ?? Constants.Configurations.DefaultPageValue) - 1, (limit ?? Constants.Configurations.DefaultLimit));
+            query = await _storeMappingService.ApplyStoreMapping(query, (await _storeContext.GetCurrentStoreAsync()).Id);
+            return await ApiList<Product>.CreateAsync(query, (page ?? Constants.Configurations.DefaultPageValue) - 1, (limit ?? Constants.Configurations.DefaultLimit));
         }
 
         public async Task<int> GetProductsCountAsync(
@@ -51,27 +56,28 @@ namespace Nop.Plugin.Api.Services
             var query = GetProductsQuery(createdAtMin, createdAtMax, updatedAtMin, updatedAtMax, vendorName,
                                          publishedStatus, ids: null, categoryId, manufacturerPartNumbers, isDownload);
 
-            return await query.WhereAwait(async p => await _storeMappingService.AuthorizeAsync(p)).CountAsync();
+            query = await _storeMappingService.ApplyStoreMapping(query, (await _storeContext.GetCurrentStoreAsync()).Id);
+            return await query.CountAsync();
         }
 
-        public Product GetProductById(int productId)
+        public async Task<Product> GetProductByIdAsync(int productId)
         {
             if (productId == 0)
             {
                 return null;
             }
 
-            return _productRepository.Table.FirstOrDefault(product => product.Id == productId && !product.Deleted);
+            return await _productRepository.Table.FirstOrDefaultAsync(product => product.Id == productId && !product.Deleted);
         }
 
-        public Product GetProductByIdNoTracking(int productId)
+        public async Task<Product> GetProductByIdNoTrackingAsync(int productId)
         {
             if (productId == 0)
             {
                 return null;
             }
 
-            return _productRepository.Table.FirstOrDefault(product => product.Id == productId && !product.Deleted);
+            return await _productRepository.Table.FirstOrDefaultAsync(product => product.Id == productId && !product.Deleted);
         }
 
         private IQueryable<Product> GetProductsQuery(
@@ -128,7 +134,7 @@ namespace Nop.Plugin.Api.Services
             if (!string.IsNullOrEmpty(vendorName))
             {
                 query = from vendor in _vendorRepository.Table
-                        join product in _productRepository.Table on vendor.Id equals product.VendorId
+                        join product in query on vendor.Id equals product.VendorId
                         where vendor.Name == vendorName && !vendor.Deleted && vendor.Active
                         select product;
             }

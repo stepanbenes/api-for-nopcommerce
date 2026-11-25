@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Nop.Core.Data;
+using Nop.Data;
 using Nop.Core.Domain.Orders;
 using Nop.Plugin.Api.Services;
 using NUnit.Framework;
-using Rhino.Mocks;
+using Moq;
 
 namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrdersCount
 {
@@ -28,21 +28,21 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrdersCount
                 new Order() {Id = 7, CustomerId = 1, Deleted = true}
             };
 
-            var orderRepo = MockRepository.GenerateStub<IRepository<Order>>();
-            orderRepo.Stub(x => x.TableNoTracking).Return(_existigOrders.AsQueryable());
+            var orderRepo = Mock.Of<IRepository<Order>>();
+            Mock.Get(orderRepo).Setup(x => x.Table).Returns(_existigOrders.AsQueryable());
 
             _orderApiService = new OrderApiService(orderRepo);
         }
 
         [Test]
-        public void WhenCalledWithValidCustomerId_ShouldReturnTheCountOfTheOrdersForThisCustomer()
+        public async Task WhenCalledWithValidCustomerId_ShouldReturnTheCountOfTheOrdersForThisCustomer()
         {
             // Arange
             int customerId = 1;
             var expectedCollectionCount = _existigOrders.Count(x => x.CustomerId == customerId && !x.Deleted);
 
             // Act
-            var productsCount = _orderApiService.GetOrdersCount(customerId: customerId);
+            var productsCount = await _orderApiService.GetOrdersCountAsync(customerId: customerId);
 
             // Assert
             Assert.AreEqual(expectedCollectionCount, productsCount);
@@ -51,10 +51,10 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrdersCount
         [Test]
         [TestCase(0)]
         [TestCase(-10)]
-        public void WhenCalledWithNegativeOrZeroCustomerId_ShouldReturnZero(int customerId)
+        public async Task WhenCalledWithNegativeOrZeroCustomerId_ShouldReturnZero(int customerId)
         {
             // Act
-            var ordersCount = _orderApiService.GetOrdersCount(customerId: customerId);
+            var ordersCount = await _orderApiService.GetOrdersCountAsync(customerId: customerId);
 
             // Assert
             Assert.AreEqual(0, ordersCount);
@@ -65,10 +65,10 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrdersCount
         [TestCase(int.MinValue)]
         [TestCase(-1)]
         [TestCase(5465464)]
-        public void WhenCalledWithCustomerIdThatDoesNotExistInTheMappings_ShouldReturnZero(int customerId)
+        public async Task WhenCalledWithCustomerIdThatDoesNotExistInTheMappings_ShouldReturnZero(int customerId)
         {
             // Act
-            var ordersCount = _orderApiService.GetOrdersCount(customerId: customerId);
+            var ordersCount = await _orderApiService.GetOrdersCountAsync(customerId: customerId);
 
             // Assert
             Assert.AreEqual(0, ordersCount);

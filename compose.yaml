@@ -1,0 +1,39 @@
+services:
+  web:
+    restart: unless-stopped
+    build:
+      context: .
+      additional_contexts:
+        nopcommerce: ${NOP_ROOT:-../nopCommerce}
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_HTTP_PORTS: ${NOP_PORT:-5081}
+      InstallationConfig__InstallRegionalResources: 'false'
+      ApiConfiguration__SecurityKey: ${NOP_API_SIGNING_KEY:?Set NOP_API_SIGNING_KEY for local JWT signing}
+    ports:
+      # nopCommerce scheduled tasks call the store URL from inside this container.
+      - "127.0.0.1:${NOP_PORT:-5081}:${NOP_PORT:-5081}"
+    volumes:
+      - app-data:/app/App_Data
+      - images:/app/wwwroot/images
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: nopcommerce
+      POSTGRES_USER: nopcommerce
+      POSTGRES_PASSWORD: ${NOP_DB_PASSWORD:?Set NOP_DB_PASSWORD for the local database}
+    healthcheck:
+      test: ["CMD", "pg_isready", "-h", "127.0.0.1", "-U", "nopcommerce", "-d", "nopcommerce"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+    volumes:
+      - database:/var/lib/postgresql/data
+      - ./docker/postgres-init.sql:/docker-entrypoint-initdb.d/nopcommerce.sql:ro
+
+volumes:
+  app-data:
+  database:
+  images:

@@ -11,11 +11,9 @@ using Nop.Plugin.Api.DTO.Customers;
 using Nop.Plugin.Api.Helpers;
 using Nop.Plugin.Api.Infrastructure;
 using Nop.Plugin.Api.MappingExtensions;
-using Nop.Services.Common;
 using Nop.Services.Customers;
 using Nop.Services.Directory;
 using Nop.Services.Localization;
-using Nop.Services.Stores;
 using System.Linq.Dynamic.Core;
 using System.Text.RegularExpressions;
 
@@ -25,7 +23,6 @@ namespace Nop.Plugin.Api.Services
     {
         private readonly IStaticCacheManager _cacheManager;
         private readonly IAddressApiService _addressApiService;
-        private readonly IGenericAttributeService _genericAttributeService;
         private readonly ICurrencyService _currencyService;
         private readonly IRepository<Customer> _customerRepository;
         private readonly IRepository<GenericAttribute> _genericAttributeRepository;
@@ -33,11 +30,15 @@ namespace Nop.Plugin.Api.Services
         private readonly ICustomerService _customerService;
 
         private readonly IStoreContext _storeContext;
-        private readonly IStoreMappingService _storeMappingService;
         private readonly IRepository<NewsLetterSubscription> _subscriptionRepository;
 
         private static readonly string EU_COOKIE_LAW_ACCEPTED =
           NopCustomerDefaults.EuCookieLawAcceptedAttribute.ToLowerInvariant();
+
+        private static readonly Dictionary<string, string> CustomerSortFields = typeof(CustomerDto).GetProperties()
+            .Where(property => (property.PropertyType == typeof(string) || property.PropertyType.IsValueType) &&
+                typeof(Customer).GetProperty(property.Name) != null)
+            .ToDictionary(property => property.Name, property => $"Customer.{property.Name}", StringComparer.OrdinalIgnoreCase);
 
         public CustomerApiService(
           IRepository<Customer> customerRepository,
@@ -45,10 +46,8 @@ namespace Nop.Plugin.Api.Services
           IRepository<NewsLetterSubscription> subscriptionRepository,
           IStoreContext storeContext,
           ILanguageService languageService,
-          IStoreMappingService storeMappingService,
           IStaticCacheManager staticCacheManager,
           IAddressApiService addressApiService,
-          IGenericAttributeService genericAttributeService,
           ICurrencyService currencyService, ICustomerService customerService)
         {
             _customerRepository = customerRepository;
@@ -56,10 +55,8 @@ namespace Nop.Plugin.Api.Services
             _subscriptionRepository = subscriptionRepository;
             _storeContext = storeContext;
             _languageService = languageService;
-            _storeMappingService = storeMappingService;
             _cacheManager = staticCacheManager;
             _addressApiService = addressApiService;
-            _genericAttributeService = genericAttributeService;
             _currencyService = currencyService;
             _customerService = customerService;
         }
@@ -68,28 +65,19 @@ namespace Nop.Plugin.Api.Services
           DateTime? createdAtMin = null, DateTime? createdAtMax = null, int limit = Constants.Configurations.DefaultLimit,
           int page = Constants.Configurations.DefaultPageValue, int sinceId = Constants.Configurations.DefaultSinceId)
         {
-            var query = GetCustomersQuery(createdAtMin, createdAtMax, sinceId);
+            var currentStore = await _storeContext.GetCurrentStoreAsync();
+            var query = GetCustomersQuery(currentStore.Id, createdAtMin, createdAtMax, sinceId);
 
-            var result = await HandleCustomerGenericAttributesAsync(null, query, limit, page);
-
+            var result = await GetCustomerPageAsync(query, limit, page, Constants.Configurations.DefaultOrder);
             await SetNewsletterSubscriptionStatusAsync(result);
-
-            foreach (CustomerDto customerDto in result)
-            {
-                var customer = await query.Where(x => x.Id == customerDto.Id).FirstOrDefaultAsync();
-
-                await SetCustomerAddressesAsync(customer, customerDto);
-            }
 
             return result;
         }
 
-        public Task<int> GetCustomersCountAsync()
+        public async Task<int> GetCustomersCountAsync()
         {
-            return _customerRepository.Table.CountAsync(customer => !customer.Deleted
-                                                                    && (customer.RegisteredInStoreId == 0 ||
-                                                                        customer.RegisteredInStoreId ==
-                                                                        _storeContext.GetCurrentStore().Id));
+            var storeId = (await _storeContext.GetCurrentStoreAsync()).Id;
+            return await GetStoreCustomersQuery(storeId).CountAsync();
         }
 
         // Need to work with dto object so we can map the first and last name from generic attributes table.
@@ -103,7 +91,8 @@ namespace Nop.Plugin.Api.Services
 
             if (searchParams != null)
             {
-                var query = _customerRepository.Table.Where(customer => !customer.Deleted);
+                var storeId = (await _storeContext.GetCurrentStoreAsync()).Id;
+                var query = GetStoreCustomersQuery(storeId);
 
                 foreach (var searchParam in searchParams)
                     // Skip non existing properties.
@@ -113,19 +102,14 @@ namespace Nop.Plugin.Api.Services
                         query = query.Where(string.Format("{0} = @0 || {0}.Contains(@0)", searchParam.Key), searchParam.Value);
                     }
 
-                // The code bellow will search in customer addresses as well.
-                //else if (HasProperty(searchParam.Key, typeof(Address)))
-                //{
-                //    query = query.Where(string.Format("Addresses.Where({0} == @0).Any()", searchParam.Key), searchParam.Value);
-                //}
-                result = await HandleCustomerGenericAttributesAsync(searchParams, query, limit, page, order);
-
-                foreach (CustomerDto customerDto in result)
+                if (searchParams.TryGetValue(EU_COOKIE_LAW_ACCEPTED, out var cookieConsent))
                 {
-                    var customer = await query.Where(x => x.Id == customerDto.Id).FirstOrDefaultAsync();
-
-                    await SetCustomerAddressesAsync(customer, customerDto);
+                    query = query.Where(customer => _genericAttributeRepository.Table.Any(attribute =>
+                        attribute.EntityId == customer.Id && attribute.KeyGroup == nameof(Customer) &&
+                        attribute.Key.ToLower() == EU_COOKIE_LAW_ACCEPTED && attribute.Value == cookieConsent));
                 }
+
+                result = await GetCustomerPageAsync(query, limit, page, order);
             }
 
             return result;
@@ -150,7 +134,7 @@ namespace Nop.Plugin.Api.Services
             var customerAttributeMappings = await (from c in _customerRepository.Table //NoTracking
                                                    join a in _genericAttributeRepository.Table //NoTracking
                                                      on c.Id equals a.EntityId
-                                                   where c.Id == id &&
+                                                   where c.Id == id && (showDeleted || !c.Deleted) &&
                                                          a.KeyGroup == nameof(Customer)
                                                    select new CustomerAttributeMappingDto
                                                    {
@@ -171,11 +155,6 @@ namespace Nop.Plugin.Api.Services
 
                 foreach (var mapping in customerAttributeMappings)
                 {
-                    if (!showDeleted && mapping.Customer.Deleted)
-                    {
-                        continue;
-                    }
-
                     if (mapping.Attribute == null)
                     {
                         continue;
@@ -192,20 +171,14 @@ namespace Nop.Plugin.Api.Services
             else
             {
                 // This is when we do not have first and last name set.
-                customer = _customerRepository.Table.FirstOrDefault(c => c.Id == id);
-
+                customer = await _customerRepository.Table.FirstOrDefaultAsync(c => c.Id == id && (showDeleted || !c.Deleted));
                 if (customer != null)
-                {
-                    if (showDeleted || !customer.Deleted)
-                    {
-                        customerDto = customer.ToDto();
-                    }
-                }
+                    customerDto = customer.ToDto();
             }
 
             await SetNewsletterSubscriptionStatusAsync(customerDto);
 
-            await SetCustomerAddressesAsync(customer, customerDto);
+            await SetCustomerDetailsAsync(customer, customerDto);
 
             return customerDto;
         }
@@ -223,9 +196,9 @@ namespace Nop.Plugin.Api.Services
 
         private Dictionary<string, string> ParseSearchQuery(string query)
         {
-            var parsedQuery = new Dictionary<string, string>();
+            var parsedQuery = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-            var splitPattern = @"(\w+):";
+            var splitPattern = @"([\w.]+):";
 
             var fieldValueList = Regex.Split(query, splitPattern).Where(s => s != string.Empty).ToList();
 
@@ -251,147 +224,98 @@ namespace Nop.Plugin.Api.Services
             return parsedQuery;
         }
 
-        /// <summary>
-        ///     The idea of this method is to get the first and last name from the GenericAttribute table and to set them in the
-        ///     CustomerDto object.
-        /// </summary>
-        /// <param name="searchParams">
-        ///     Search parameters is used to shrinc the range of results from the GenericAttibutes table
-        ///     to be only those with specific search parameter (i.e. currently we focus only on first and last name).
-        /// </param>
-        /// <param name="query">
-        ///     Query parameter represents the current customer records which we will join with GenericAttributes
-        ///     table.
-        /// </param>
-        /// <param name="limit"></param>
-        /// <param name="page"></param>
-        /// <param name="order"></param>
-        /// <returns></returns>
-        private async Task<IList<CustomerDto>> HandleCustomerGenericAttributesAsync(
-          IReadOnlyDictionary<string, string> searchParams, IQueryable<Customer> query,
-          int limit = Constants.Configurations.DefaultLimit, int page = Constants.Configurations.DefaultPageValue,
-          string order = Constants.Configurations.DefaultOrder)
+        private async Task<IList<CustomerDto>> GetCustomerPageAsync(
+            IQueryable<Customer> query, int limit, int page, string order)
         {
-            // Here we join the GenericAttribute records with the customers and making sure that we are working only with the attributes
-            // that are in the customers keyGroup and their keys are either first or last name.
-            // We are returning a collection with customer record and attribute record. 
-            // It will look something like:
-            // customer data for customer 1
-            //      attribute that contains the first name of customer 1
-            //      attribute that contains the last name of customer 1
-            // customer data for customer 2, 
-            //      attribute that contains the first name of customer 2
-            //      attribute that contains the last name of customer 2
-            // etc.
-
-            var allRecords =
-              from customer in query
-              from attribute in _genericAttributeRepository.Table
-                .Where(attr => attr.EntityId == customer.Id &&
-                               attr.KeyGroup == nameof(Customer)).DefaultIfEmpty()
-              select new CustomerAttributeMappingDto
-              {
-                  Attribute = attribute,
-                  Customer = customer
-              };
-
-            if (searchParams != null && searchParams.Count > 0)
+            var orderedFields = GetCustomerOrder(order);
+            var sortedCustomers = query.Select(customer => new
             {
-                if (searchParams.ContainsKey(EU_COOKIE_LAW_ACCEPTED))
-                {
-                    allRecords = GetCustomerAttributesMappingsByKey(allRecords, EU_COOKIE_LAW_ACCEPTED,
-                      searchParams[EU_COOKIE_LAW_ACCEPTED]);
-                }
+                Customer = customer,
+                CookieConsent = _genericAttributeRepository.Table
+                    .Where(attribute => attribute.EntityId == customer.Id && attribute.KeyGroup == nameof(Customer) &&
+                        attribute.Key.ToLower() == EU_COOKIE_LAW_ACCEPTED)
+                    .OrderByDescending(attribute => attribute.Id)
+                    .Select(attribute => attribute.Value == null ? null : attribute.Value.Trim().ToLower())
+                    .FirstOrDefault()
+            }).Select(row => new { row.Customer, row.CookieConsent, HasCookieConsent = row.CookieConsent != null })
+                .OrderBy(orderedFields).Select(row => row.Customer.Id);
+            var ids = await ApiList<int>.CreateAsync(sortedCustomers, page - 1, limit);
+            if (ids.Count == 0)
+                return new List<CustomerDto>();
+
+            var customers = (await query.Where(customer => ids.Contains(customer.Id)).ToListAsync())
+                .ToDictionary(customer => customer.Id);
+            var attributes = await _genericAttributeRepository.Table
+                .Where(attribute => ids.Contains(attribute.EntityId) && attribute.KeyGroup == nameof(Customer) &&
+                    attribute.Key.ToLower() == EU_COOKIE_LAW_ACCEPTED)
+                .OrderBy(attribute => attribute.Id)
+                .ToListAsync();
+            var attributesByCustomer = attributes.ToLookup(attribute => attribute.EntityId);
+
+            var result = new List<CustomerDto>();
+            foreach (var id in ids)
+            {
+                if (!customers.TryGetValue(id, out var customer))
+                    continue;
+
+                var dto = customer.ToDto();
+                foreach (var attribute in attributesByCustomer[customer.Id])
+                    dto.EuCookieLawAccepted = string.IsNullOrWhiteSpace(attribute.Value)
+                        ? (bool?)null
+                        : bool.Parse(attribute.Value);
+
+                await SetCustomerDetailsAsync(customer, dto);
+                result.Add(dto);
             }
-
-            var allRecordsGroupedByCustomerId = allRecords
-              .AsEnumerable<
-                CustomerAttributeMappingDto>() // convert to IEnumerable (materialize the query) as LinqToDb does not support GroupBy
-              .GroupBy(x => x.Customer.Id) // do grouping in memory on materialized sequence
-              .AsQueryable(); // convert back to queryable just to be accepted by a following method
-
-            var result = await GetFullCustomerDtosAsync(allRecordsGroupedByCustomerId, page, limit, order);
 
             return result;
         }
 
-        /// <summary>
-        ///     This method is responsible for getting customer dto records with first and last names set from the attribute
-        ///     mappings.
-        /// </summary>
-        private async Task<IList<CustomerDto>> GetFullCustomerDtosAsync(
-          IQueryable<IGrouping<int, CustomerAttributeMappingDto>> customerAttributesMappings,
-          int page = Constants.Configurations.DefaultPageValue, int limit = Constants.Configurations.DefaultLimit,
-          string order = Constants.Configurations.DefaultOrder)
+        private static string GetCustomerOrder(string order)
         {
-            var customerDtos = new List<CustomerDto>();
-
-            customerAttributesMappings = customerAttributesMappings.OrderBy(x => x.Key);
-
-            IList<IGrouping<int, CustomerAttributeMappingDto>> customerAttributeGroupsList =
-              new ApiList<IGrouping<int, CustomerAttributeMappingDto>>(customerAttributesMappings, page - 1, limit);
-
-            // Get the default language id for the current store.
-            var defaultLanguageId = await GetDefaultStoreLangaugeIdAsync();
-
-            foreach (var group in customerAttributeGroupsList)
+            var fields = new List<string>();
+            foreach (var term in (string.IsNullOrWhiteSpace(order) ? Constants.Configurations.DefaultOrder : order).Split(','))
             {
-                IList<CustomerAttributeMappingDto> mappingsForMerge = group.Select(x => x).ToList();
+                var parts = term.Split((char[])null, StringSplitOptions.RemoveEmptyEntries);
+                var direction = parts.Length == 2 ? parts[1].ToLowerInvariant() : "asc";
+                if (parts.Length is 0 or > 2 || direction is not ("asc" or "ascending" or "desc" or "descending"))
+                    throw new ArgumentException("Use a customer field followed by an optional asc or desc.", nameof(order));
 
-                var customerDto = Merge(mappingsForMerge, defaultLanguageId);
+                var name = parts[0].Replace("_", string.Empty);
+                var descending = direction is "desc" or "descending";
+                if (name.Equals(nameof(CustomerDto.SubscribedToNewsletter), StringComparison.OrdinalIgnoreCase))
+                    continue; // Search has historically returned the default value for this field.
 
-                customerDtos.Add(customerDto);
+                if (name.Equals(nameof(CustomerDto.EuCookieLawAccepted), StringComparison.OrdinalIgnoreCase))
+                {
+                    fields.Add(descending ? "HasCookieConsent desc" : "HasCookieConsent asc");
+                    fields.Add(descending ? "CookieConsent desc" : "CookieConsent asc");
+                }
+                else if (CustomerSortFields.TryGetValue(name, out var field))
+                {
+                    fields.Add(descending ? $"{field} desc" : $"{field} asc");
+                }
+                else
+                {
+                    throw new ArgumentException("Use a customer field followed by an optional asc or desc.", nameof(order));
+                }
             }
 
-            // Needed so we can apply the order parameter
-            return customerDtos.AsQueryable().OrderBy(order).ToList();
+            fields.Add("Customer.Id asc");
+            return string.Join(", ", fields);
         }
 
-        private static CustomerDto Merge(IList<CustomerAttributeMappingDto> mappingsForMerge, int defaultLanguageId)
+        private IQueryable<Customer> GetStoreCustomersQuery(int storeId)
         {
-            // We expect the customer to be always set.
-            var customerDto = mappingsForMerge.First().Customer.ToDto();
-
-            var attributes = mappingsForMerge.Select(x => x.Attribute).ToList();
-
-
-
-            foreach (var attribute in attributes)
-                if (attribute != null)
-                {
-                    if (attribute.Key.Equals(EU_COOKIE_LAW_ACCEPTED, StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        customerDto.EuCookieLawAccepted = string.IsNullOrWhiteSpace(attribute.Value)
-                          ? (bool?)null
-                          : bool.Parse(attribute.Value);
-                    }
-                }
-
-            return customerDto;
+            return _customerRepository.Table.Where(customer => !customer.Deleted &&
+                (customer.RegisteredInStoreId == 0 || customer.RegisteredInStoreId == storeId));
         }
 
-        private IQueryable<CustomerAttributeMappingDto> GetCustomerAttributesMappingsByKey(
-          IQueryable<CustomerAttributeMappingDto> customerAttributes, string key, string value)
-        {
-            // Here we filter the customerAttributesGroups to be only the ones that have the passed key parameter as a key.
-            var filteredCustomerAttributes = from a in customerAttributes
-                                             where a.Attribute.Key.Equals(key) && a.Attribute.Value.Equals(value)
-                                             select a;
-
-            return filteredCustomerAttributes;
-        }
-
-        private IQueryable<Customer> GetCustomersQuery(DateTime? createdAtMin = null, DateTime? createdAtMax = null,
+        private IQueryable<Customer> GetCustomersQuery(int currentStoreId, DateTime? createdAtMin = null, DateTime? createdAtMax = null,
           int sinceId = 0)
         {
-            int currentStoreId = _storeContext.GetCurrentStore().Id;
-
-            var query = _customerRepository.Table.Where(customer =>
-              !customer.Deleted && !customer.IsSystemAccount && customer.Active);
-
-
-            query = query.Where(customer =>
-              (customer.RegisteredInStoreId == 0 || customer.RegisteredInStoreId == currentStoreId));
+            var query = GetStoreCustomersQuery(currentStoreId)
+                .Where(customer => !customer.IsSystemAccount && customer.Active);
 
             if (createdAtMin != null)
             {
@@ -403,43 +327,12 @@ namespace Nop.Plugin.Api.Services
                 query = query.Where(c => c.CreatedOnUtc < createdAtMax.Value);
             }
 
-            query = query.OrderBy(customer => customer.Id);
-
             if (sinceId > 0)
             {
                 query = query.Where(customer => customer.Id > sinceId);
             }
 
             return query;
-        }
-
-        private async Task<int> GetDefaultStoreLangaugeIdAsync()
-        {
-            // Get the default language id for the current store.
-            var defaultLanguageId = _storeContext.GetCurrentStore().DefaultLanguageId;
-
-            if (defaultLanguageId == 0)
-            {
-                var allLanguages = await _languageService.GetAllLanguagesAsync();
-
-                int currentStoreId = _storeContext.GetCurrentStore().Id;
-
-                var storeLanguages = await allLanguages
-                  .WhereAwait(async l => await _storeMappingService.AuthorizeAsync(l, currentStoreId)).ToListAsync();
-
-                // If there is no language mapped to the current store, get all of the languages,
-                // and use the one with the first display order. This is a default nopCommerce workflow.
-                if (storeLanguages.Count == 0)
-                {
-                    storeLanguages = allLanguages.ToList();
-                }
-
-                var defaultLanguage = storeLanguages.OrderBy(l => l.DisplayOrder).First();
-
-                defaultLanguageId = defaultLanguage.Id;
-            }
-
-            return defaultLanguageId;
         }
 
         private async Task SetNewsletterSubscriptionStatusAsync(IList<CustomerDto> customerDtos)
@@ -475,10 +368,10 @@ namespace Nop.Plugin.Api.Services
             }
         }
 
-        private Task<List<string>> GetAllNewsletterCustomersEmailsAsync()
+        private async Task<List<string>> GetAllNewsletterCustomersEmailsAsync()
         {
-            var currentStoreId = _storeContext.GetCurrentStore().Id;
-            return _cacheManager.GetAsync(Constants.Configurations.NEWSLETTER_SUBSCRIBERS_KEY, async () =>
+            var currentStoreId = (await _storeContext.GetCurrentStoreAsync()).Id;
+            return await _cacheManager.GetAsync(Constants.Configurations.NEWSLETTER_SUBSCRIBERS_KEY, async () =>
             {
                 var subscriberEmails = await (from nls in _subscriptionRepository.Table
                                               where nls.StoreId == currentStoreId && nls.Active
@@ -487,8 +380,13 @@ namespace Nop.Plugin.Api.Services
             });
         }
 
-        private async Task SetCustomerAddressesAsync(Customer customer, CustomerDto customerDto)
+        private async Task SetCustomerDetailsAsync(Customer customer, CustomerDto customerDto)
         {
+            if (customer == null || customerDto == null)
+                return;
+
+            customerDto.RoleIds = (await _customerService.GetCustomerRolesAsync(customer, showHidden: true))
+                .Select(role => role.Id).ToList();
             customerDto.Addresses = await _addressApiService.GetAddressesByCustomerIdAsync(customer.Id);
             if (customer.BillingAddressId != null)
             {

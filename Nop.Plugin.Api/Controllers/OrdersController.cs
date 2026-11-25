@@ -1,9 +1,15 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using LinqToDB;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Nop.Core;
+using Nop.Core.Domain.Common;
 using Nop.Core.Domain.Customers;
 using Nop.Core.Domain.Orders;
+using Nop.Core.Domain.Shipping;
 using Nop.Core.Infrastructure;
+using Nop.Data;
 using Nop.Plugin.Api.Attributes;
+using Nop.Plugin.Api.Authorization.Attributes;
 using Nop.Plugin.Api.Delta;
 using Nop.Plugin.Api.DTO.Errors;
 using Nop.Plugin.Api.DTO.OrderItems;
@@ -17,6 +23,7 @@ using Nop.Plugin.Api.ModelBinders;
 using Nop.Plugin.Api.Models.OrdersParameters;
 using Nop.Plugin.Api.Services;
 using Nop.Services.Authentication;
+using Nop.Services.Attributes;
 using Nop.Services.Catalog;
 using Nop.Services.Common;
 using Nop.Services.Customers;
@@ -30,12 +37,20 @@ using Nop.Services.Security;
 using Nop.Services.Shipping;
 using Nop.Services.Stores;
 using System.Net;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Nop.Plugin.Api.Controllers
 {
     public class OrdersController : BaseApiController
     {
+        private readonly IAddressService _addressService;
+        private readonly IDownloadService _downloadService;
+        private readonly INopDataProvider _dataProvider;
+        private readonly IAttributeService<CheckoutAttribute, CheckoutAttributeValue> _checkoutAttributeService;
+        private readonly IAttributeParser<CheckoutAttribute, CheckoutAttributeValue> _checkoutAttributeParser;
         private readonly IDTOHelper _dtoHelper;
+        private readonly ILogger<OrdersController> _logger;
         private readonly IFactory<Order> _factory;
         private readonly IGenericAttributeService _genericAttributeService;
         private readonly IOrderApiService _orderApiService;
@@ -79,10 +94,22 @@ namespace Nop.Plugin.Api.Controllers
           IPaymentService paymentService,
           IPdfService pdfService,
           IPermissionService permissionService,
-          IAuthenticationService authenticationService)
+          IAuthenticationService authenticationService,
+          IAddressService addressService,
+          IDownloadService downloadService,
+          IAttributeService<CheckoutAttribute, CheckoutAttributeValue> checkoutAttributeService,
+          IAttributeParser<CheckoutAttribute, CheckoutAttributeValue> checkoutAttributeParser,
+          INopDataProvider dataProvider,
+          ILogger<OrdersController> logger)
           : base(jsonFieldsSerializer, aclService, customerService, storeMappingService,
                storeService, discountService, customerActivityService, localizationService, pictureService)
         {
+            _addressService = addressService;
+            _downloadService = downloadService;
+            _dataProvider = dataProvider;
+            _logger = logger;
+            _checkoutAttributeService = checkoutAttributeService;
+            _checkoutAttributeParser = checkoutAttributeParser;
             _orderApiService = orderApiService;
             _factory = factory;
             _orderProcessingService = orderProcessingService;
@@ -114,6 +141,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [GetRequestsErrorInterceptorActionFilter]
+        [UnpagedCollection]
         public async Task<IActionResult> GetOrders([FromQuery] OrdersParametersModel parameters)
         {
             if (parameters.Page < Constants.Configurations.DefaultPageValue)
@@ -131,11 +159,11 @@ namespace Nop.Plugin.Api.Controllers
                 return AccessDenied();
             }
 
-            var storeId = _storeContext.GetCurrentStore().Id;
+            var storeId = (await _storeContext.GetCurrentStoreAsync()).Id;
 
-            var orders = _orderApiService.GetOrders(parameters.Ids, parameters.CreatedAtMin,
+            var orders = await _orderApiService.GetOrdersAsync(parameters.Ids, parameters.CreatedAtMin,
                                 parameters.CreatedAtMax,
-                                parameters.Limit, parameters.Page, parameters.SinceId,
+                                GetCollectionLimit(parameters.Limit), parameters.Page, parameters.SinceId,
                                 parameters.Status.HasValue ? (Core.Domain.Orders.OrderStatus)parameters.Status : null,
                                 parameters.PaymentStatus.HasValue ? (Core.Domain.Payments.PaymentStatus)parameters.PaymentStatus : null,
                                 parameters.ShippingStatus.HasValue ? (Core.Domain.Shipping.ShippingStatus)parameters.ShippingStatus : null,
@@ -173,9 +201,9 @@ namespace Nop.Plugin.Api.Controllers
 
             // TODO: make async
 
-            var storeId = _storeContext.GetCurrentStore().Id;
+            var storeId = (await _storeContext.GetCurrentStoreAsync()).Id;
 
-            var ordersCount = _orderApiService.GetOrdersCount(parameters.CreatedAtMin, parameters.CreatedAtMax,
+            var ordersCount = await _orderApiService.GetOrdersCountAsync(parameters.CreatedAtMin, parameters.CreatedAtMax,
                                       parameters.Status.HasValue ? (Core.Domain.Orders.OrderStatus)parameters.Status : null,
                                       parameters.PaymentStatus.HasValue ? (Core.Domain.Payments.PaymentStatus)parameters.PaymentStatus : null,
                                       parameters.ShippingStatus.HasValue ? (Core.Domain.Shipping.ShippingStatus)parameters.ShippingStatus : null,
@@ -212,7 +240,7 @@ namespace Nop.Plugin.Api.Controllers
                 return Error(HttpStatusCode.BadRequest, "id", "invalid id");
             }
 
-            var order = _orderApiService.GetOrderById(id);
+            var order = await GetOrderForCurrentStoreAsync(id);
 
             if (order == null)
             {
@@ -252,7 +280,8 @@ namespace Nop.Plugin.Api.Controllers
                 return AccessDenied();
             }
 
-            IList<OrderDto> ordersForCustomer = await _orderApiService.GetOrdersByCustomerId(customerId).SelectAwait(async x => await _dtoHelper.PrepareOrderDTOAsync(x)).ToListAsync();
+            var storeId = (await _storeContext.GetCurrentStoreAsync()).Id;
+            IList<OrderDto> ordersForCustomer = await (await _orderApiService.GetOrdersByCustomerIdAsync(customerId, storeId)).SelectAwait(async x => await _dtoHelper.PrepareOrderDTOAsync(x)).ToListAsync();
 
             var ordersRootObject = new OrdersRootObject
             {
@@ -262,18 +291,81 @@ namespace Nop.Plugin.Api.Controllers
             return Ok(ordersRootObject);
         }
 
+        [HttpGet]
+        [Route("/api/checkout_attributes", Name = "GetCheckoutAttributes")]
+        [ProducesResponseType(typeof(CheckoutAttributesRootObject), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(void), (int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType(typeof(void), (int)HttpStatusCode.Forbidden)]
+        public async Task<IActionResult> GetCheckoutAttributes(
+            [FromQuery(Name = "shipping_required")] bool? shippingRequired = null,
+            [FromQuery(Name = "include_conditional")] bool includeConditional = false)
+        {
+            var customer = await _authenticationService.GetAuthenticatedCustomerAsync();
+            if (customer == null ||
+                !await _permissionService.AuthorizeAsync(StandardPermission.PublicStore.ENABLE_SHOPPING_CART, customer))
+                return AccessDenied();
+
+            var storeId = (await _storeContext.GetCurrentStoreAsync()).Id;
+            if (!shippingRequired.HasValue)
+            {
+                var cart = await _shoppingCartService.GetShoppingCartAsync(customer, ShoppingCartType.ShoppingCart, storeId);
+                shippingRequired = await _shoppingCartService.ShoppingCartRequiresShippingAsync(cart);
+            }
+
+            var selectedAttributes = await _genericAttributeService.GetAttributeAsync<string>(customer, NopCustomerDefaults.CheckoutAttributes, storeId);
+            var result = new CheckoutAttributesRootObject();
+            foreach (var attribute in await _checkoutAttributeService.GetAllAttributesAsync())
+            {
+                if ((attribute.ShippableProductRequired && !shippingRequired.Value) ||
+                    !await StoreMappingService.AuthorizeAsync(attribute, storeId) ||
+                    (!includeConditional && await _checkoutAttributeParser.IsConditionMetAsync(attribute.ConditionAttributeXml, selectedAttributes) == false))
+                    continue;
+
+                var dto = new CheckoutAttributeDto
+                {
+                    Id = attribute.Id,
+                    Name = await LocalizationService.GetLocalizedAsync(attribute, item => item.Name),
+                    Required = attribute.IsRequired,
+                    ControlType = attribute.AttributeControlType.ToString(),
+                    Condition = CheckoutAttributeSelections.DescribeCondition(attribute, _checkoutAttributeParser)
+                };
+
+                if (attribute.ShouldHaveValues)
+                {
+                    foreach (var choice in await _checkoutAttributeService.GetAttributeValuesAsync(attribute.Id))
+                    {
+                        dto.Choices.Add(new CheckoutAttributeChoiceDto
+                        {
+                            Id = choice.Id,
+                            Name = await LocalizationService.GetLocalizedAsync(choice, item => item.Name),
+                            Preselected = choice.IsPreSelected
+                        });
+                    }
+                }
+
+                result.CheckoutAttributes.Add(dto);
+            }
+
+            return Ok(result);
+        }
+
         [HttpPost]
         [Route("/api/orders", Name = "CreateOrder")]
         [ProducesResponseType(typeof(OrdersRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.Conflict)]
         [ProducesResponseType(typeof(ErrorsRootObject), 422)]
         public async Task<IActionResult> CreateOrder(
           [FromBody]
       [ModelBinder(typeof(JsonModelBinder<OrderDto>))]
-      Delta<OrderDto> orderDelta)
+      Delta<OrderDto> orderDelta,
+          [FromHeader(Name = "Idempotency-Key")] string idempotencyKey = null)
         {
+            if (!ModelState.IsValid)
+                return Error();
+
             if (orderDelta.Dto.CustomerId == null)
             {
                 return Error(HttpStatusCode.BadRequest, "customerId", "invalid customer id");
@@ -292,7 +384,7 @@ namespace Nop.Plugin.Api.Controllers
                 return Error(HttpStatusCode.BadRequest, "shippingAddress", "non-existing shipping address");
             }
 
-            if (!await CheckPermissions(orderDelta.Dto.CustomerId))
+            if (!await CheckPermissions(orderDelta.Dto.CustomerId, isCheckout: true))
             {
                 // TODO: check _orderSettings.AnonymousCheckoutAllowed if IsGuest
                 return AccessDenied();
@@ -306,55 +398,161 @@ namespace Nop.Plugin.Api.Controllers
                 return Error(HttpStatusCode.NotFound, "customer", "not found");
             }
 
-            var shippingRequired = false;
+            var storeId = (await _storeContext.GetCurrentStoreAsync()).Id;
+            if (orderDelta.Dto.StoreId.HasValue && orderDelta.Dto.StoreId != storeId)
+                return Error(HttpStatusCode.BadRequest, "store_id", "Order store must match the current store.");
 
-            if (orderDelta.Dto.OrderItems != null)
+            Guid? orderGuid = null;
+            if (idempotencyKey != null || Request.Headers.ContainsKey("Idempotency-Key"))
             {
-                var shouldReturnError = await AddOrderItemsToCartAsync(orderDelta.Dto.OrderItems, customer, orderDelta.Dto.StoreId ?? _storeContext.GetCurrentStore().Id);
-                if (shouldReturnError)
-                {
-                    return Error(HttpStatusCode.BadRequest);
-                }
+                if (Request.Headers["Idempotency-Key"].Count > 1 || !Guid.TryParse(idempotencyKey, out var key) || key == Guid.Empty)
+                    return Error(HttpStatusCode.BadRequest, "Idempotency-Key", "Supply a non-empty UUID.");
 
-                shippingRequired = await IsShippingAddressRequiredAsync(orderDelta.Dto.OrderItems);
+                orderGuid = GetRequestOrderGuid(key, customer.Id, storeId);
+                var replay = await ReplayOrderAsync(orderGuid.Value, customer.Id, storeId);
+                if (replay != null)
+                    return replay;
+            }
+
+            Order placedOrder;
+            IActionResult failure;
+            try
+            {
+                (placedOrder, failure) = await PlaceNewOrderAsync(orderDelta, customer, storeId, orderGuid);
+            }
+            catch (Exception) when (orderGuid.HasValue)
+            {
+                // A competing transaction may have committed while this transaction was rolled back.
+                var replay = await ReplayOrderAsync(orderGuid.Value, customer.Id, storeId);
+                if (replay != null)
+                    return replay;
+
+                throw;
+            }
+
+            if (failure != null)
+                return orderGuid.HasValue
+                    ? await ReplayOrderAsync(orderGuid.Value, customer.Id, storeId) ?? failure
+                    : failure;
+
+            var followUp = false;
+            try
+            {
+                await _paymentService.PostProcessPaymentAsync(new PostProcessPaymentRequest { Order = placedOrder });
+            }
+            catch (Exception exception)
+            {
+                followUp = true;
+                _logger.LogWarning("Payment follow-up for placed order {OrderId} failed with {ExceptionType}.",
+                    placedOrder.Id, exception.GetType().Name);
+            }
+
+            try
+            {
+                await CustomerActivityService.InsertActivityAsync("AddNewOrder",
+                    await LocalizationService.GetResourceAsync("ActivityLog.AddNewOrder"), placedOrder);
+            }
+            catch (Exception exception)
+            {
+                followUp = true;
+                _logger.LogWarning("Activity logging for placed order {OrderId} failed with {ExceptionType}.",
+                    placedOrder.Id, exception.GetType().Name);
+            }
+
+            return await PlacedOrderResponseAsync(placedOrder, followUp);
+        }
+
+        private async Task<(Order Order, IActionResult Error)> PlaceNewOrderAsync(
+            Delta<OrderDto> orderDelta, Customer customer, int storeId, Guid? orderGuid)
+        {
+            using var transaction = _dataProvider.CreateTransactionScope();
+            if (orderGuid.HasValue)
+            {
+                // Serialize checkout before the payment provider is called, across app instances.
+                var activeCustomer = _dataProvider.GetTable<Customer>().Where(row => row.Id == customer.Id && !row.Deleted);
+                await activeCustomer.Set(row => row.LastActivityDateUtc, row => row.LastActivityDateUtc).UpdateAsync();
+                customer = await activeCustomer.SingleOrDefaultAsync();
+                if (customer is null)
+                    return (null, Error(HttpStatusCode.NotFound, "customer", "not found"));
+
+                var existing = await _orderService.GetOrderByGuidAsync(orderGuid.Value);
+                if (existing != null)
+                    return (null, Error(HttpStatusCode.Conflict, "Idempotency-Key", "This key already belongs to an order."));
+            }
+
+            var billingAddress = await CustomerService.GetCustomerAddressAsync(customer.Id, orderDelta.Dto.BillingAddress.Id);
+            if (billingAddress == null)
+                return (null, Error(HttpStatusCode.BadRequest, "billingAddress", "non-existing billing address"));
+            var shippingAddressId = orderDelta.Dto.ShippingAddress?.Id;
+            var shippingAddress = shippingAddressId.HasValue
+                ? await CustomerService.GetCustomerAddressAsync(customer.Id, shippingAddressId.Value)
+                : null;
+
+            if (shippingAddressId.HasValue && shippingAddress == null)
+                return (null, Error(HttpStatusCode.BadRequest, "shippingAddress", "non-existing shipping address"));
+
+            if (orderDelta.Dto.OrderItems != null && await AddOrderItemsToCartAsync(orderDelta.Dto.OrderItems, customer, storeId))
+                return (null, Error(HttpStatusCode.BadRequest));
+
+            var cart = await _shoppingCartService.GetShoppingCartAsync(customer, ShoppingCartType.ShoppingCart, storeId);
+            if (cart.Count == 0)
+                return (null, Error(HttpStatusCode.BadRequest, "order", "Cart is empty."));
+
+            var shippingRequired = await _shoppingCartService.ShoppingCartRequiresShippingAsync(cart);
+            var selections = orderDelta.Dto.CheckoutAttributes;
+            var existingCheckoutAttributes = selections == null
+                ? await _genericAttributeService.GetAttributeAsync<string>(customer, NopCustomerDefaults.CheckoutAttributes, storeId)
+                : null;
+            var checkoutAttributesXml = await CheckoutAttributeSelections.BuildAsync(
+                selections ?? [], storeId, shippingRequired, _checkoutAttributeService, _checkoutAttributeParser,
+                StoreMappingService, _downloadService, ModelState, existingCheckoutAttributes);
+            if (!ModelState.IsValid)
+                return (null, Error(HttpStatusCode.BadRequest));
+
+            var warnings = await _shoppingCartService.GetShoppingCartWarningsAsync(cart, checkoutAttributesXml, validateCheckoutAttributes: true);
+            if (warnings.Count > 0)
+            {
+                foreach (var warning in warnings)
+                    ModelState.AddModelError("order", warning);
+                return (null, Error(HttpStatusCode.BadRequest));
             }
 
             if (shippingRequired)
             {
-                var isValid = true;
+                if (shippingAddress == null)
+                    return (null, Error(HttpStatusCode.BadRequest, "shippingAddress", "missing shipping address"));
 
-                isValid &= await SetShippingOptionAsync(orderDelta.Dto.ShippingRateComputationMethodSystemName,
-                               orderDelta.Dto.ShippingMethod,
-                               orderDelta.Dto.StoreId ?? _storeContext.GetCurrentStore().Id,
-                               customer,
-                               BuildShoppingCartItemsFromOrderItemDtos(orderDelta.Dto.OrderItems.ToList(),
-                                                   customer.Id,
-                                                   orderDelta.Dto.StoreId ?? _storeContext.GetCurrentStore().Id));
+                var shippingOption = await GetShippingOptionAsync(orderDelta.Dto.ShippingRateComputationMethodSystemName,
+                    orderDelta.Dto.ShippingMethod, storeId, customer, shippingAddress, cart);
+                if (shippingOption == null)
+                    return (null, Error(HttpStatusCode.BadRequest));
 
-                if (!isValid)
-                {
-                    return Error(HttpStatusCode.BadRequest);
-                }
+                await _genericAttributeService.SaveAttributeAsync(customer,
+                    NopCustomerDefaults.SelectedShippingOptionAttribute, shippingOption, storeId);
             }
 
             var newOrder = await _factory.InitializeAsync();
             orderDelta.Merge(newOrder);
+            newOrder.CustomerId = customer.Id;
+            newOrder.StoreId = storeId;
+            newOrder.OrderGuid = orderGuid ?? Guid.NewGuid();
 
             customer.BillingAddressId = newOrder.BillingAddressId = orderDelta.Dto.BillingAddress.Id;
-            customer.ShippingAddressId = newOrder.ShippingAddressId = orderDelta.Dto.ShippingAddress?.Id;
+            customer.ShippingAddressId = newOrder.ShippingAddressId = shippingAddressId;
+            await CustomerService.UpdateCustomerAsync(customer);
 
-            await CustomerService.UpdateCustomerAsync(customer); // update billing and shipping addresses
+            if (selections != null || checkoutAttributesXml != existingCheckoutAttributes)
+                await _genericAttributeService.SaveAttributeAsync(customer, NopCustomerDefaults.CheckoutAttributes, checkoutAttributesXml, storeId);
 
-            // If the customer has something in the cart it will be added too. Should we clear the cart first? 
-            newOrder.CustomerId = customer.Id;
-
-            // The default value will be the currentStore.id, but if it isn't passed in the json we need to set it by hand.
-            if (!orderDelta.Dto.StoreId.HasValue)
+            PlaceOrderResult placeOrderResult;
+            try
             {
-                newOrder.StoreId = _storeContext.GetCurrentStore().Id;
+                placeOrderResult = await PlaceOrderAsync(newOrder, customer);
             }
-
-            var placeOrderResult = await PlaceOrderAsync(newOrder, customer);
+            catch (NopException exception)
+            {
+                return (null, Error(HttpStatusCode.BadRequest, "order placement", exception.Message));
+            }
 
             if (!placeOrderResult.Success)
             {
@@ -363,24 +561,64 @@ namespace Nop.Plugin.Api.Controllers
                     ModelState.AddModelError("order placement", error);
                 }
 
-                return Error(HttpStatusCode.BadRequest);
+                return (null, Error(HttpStatusCode.BadRequest));
             }
 
-            await CustomerActivityService.InsertActivityAsync("AddNewOrder", await LocalizationService.GetResourceAsync("ActivityLog.AddNewOrder"), newOrder);
+            transaction.Complete();
+            return (placeOrderResult.PlacedOrder, null);
+        }
 
-            var ordersRootObject = new OrdersRootObject();
+        private static Guid GetRequestOrderGuid(Guid key, int customerId, int storeId)
+        {
+            var scope = FormattableString.Invariant($"Nop.Plugin.Api/order/{storeId}/{customerId}/{key:N}");
+            return new Guid(SHA256.HashData(Encoding.UTF8.GetBytes(scope)).AsSpan(0, 16));
+        }
 
-            var placedOrderDto = await _dtoHelper.PrepareOrderDTOAsync(placeOrderResult.PlacedOrder);
+        private async Task<IActionResult> ReplayOrderAsync(Guid orderGuid, int customerId, int storeId)
+        {
+            var order = await _orderService.GetOrderByGuidAsync(orderGuid);
+            if (order is null)
+                return null;
 
-            ordersRootObject.Orders.Add(placedOrderDto);
+            if (order.Deleted || order.CustomerId != customerId || order.StoreId != storeId)
+                return Error(HttpStatusCode.Conflict, "Idempotency-Key", "This key already belongs to an order that is unavailable.");
 
-            var json = JsonFieldsSerializer.Serialize(ordersRootObject, string.Empty);
+            Response.Headers["Idempotency-Replayed"] = "true";
+            return await PlacedOrderResponseAsync(order);
+        }
 
-            return new RawJsonActionResult(json);
+        private async Task<IActionResult> PlacedOrderResponseAsync(Order order, bool followUp = false)
+        {
+            try
+            {
+                var detail = await _dtoHelper.PrepareOrderDTOAsync(order);
+                var result = new OrdersRootObject { Orders = [detail] };
+                var json = JsonFieldsSerializer.Serialize(result, string.Empty);
+                if (followUp)
+                    SetOrderFollowUpHeader(order.Id);
+
+                return new RawJsonActionResult(json);
+            }
+            catch (Exception exception)
+            {
+                _logger.LogWarning("Response details for placed order {OrderId} failed with {ExceptionType}.",
+                    order.Id, exception.GetType().Name);
+                SetOrderFollowUpHeader(order.Id);
+                return new RawJsonActionResult(System.Text.Json.JsonSerializer.Serialize(new
+                {
+                    orders = new[] { new { id = order.Id, customer_id = order.CustomerId, store_id = order.StoreId } }
+                }));
+            }
+        }
+
+        private void SetOrderFollowUpHeader(int orderId)
+        {
+            Response.Headers["X-Order-Follow-Up"] = $"Order was placed. Check GET /api/orders/{orderId} and confirm payment status before acting.";
         }
 
         [HttpPut]
         [Route("/api/orders/{id}", Name = "UpdateOrder")]
+        [AuthorizePermission(StandardPermission.Orders.ORDERS_CREATE_EDIT_DELETE)]
         [ProducesResponseType(typeof(OrdersRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -397,62 +635,82 @@ namespace Nop.Plugin.Api.Controllers
                 return Error();
             }
 
-            var currentOrder = _orderApiService.GetOrderById(orderDelta.Dto.Id);
+            var currentOrder = await GetOrderForCurrentStoreAsync(orderDelta.Dto.Id);
 
             if (currentOrder == null)
             {
                 return Error(HttpStatusCode.NotFound, "order", "not found");
             }
 
-            if (!await CheckPermissions(currentOrder.CustomerId))
-            {
-                return AccessDenied();
-            }
-
             var customer = await CustomerService.GetCustomerByIdAsync(currentOrder.CustomerId);
 
-            var shippingRequired = await (await _orderService.GetOrderItemsAsync(currentOrder.Id)).AnyAwaitAsync(async item => !(await _productService.GetProductByIdAsync(item.Id)).IsFreeShipping);
+            if ((orderDelta.Dto.StoreId.HasValue && orderDelta.Dto.StoreId != currentOrder.StoreId) ||
+                (orderDelta.Dto.CustomerId.HasValue && orderDelta.Dto.CustomerId != currentOrder.CustomerId))
+                return Error(HttpStatusCode.BadRequest, "order", "The order store and customer cannot be changed.");
 
-            if (shippingRequired)
+            var submittedBillingAddress = orderDelta.Dto.BillingAddress;
+            var billingAddress = submittedBillingAddress != null
+                ? await CustomerService.GetCustomerAddressAsync(currentOrder.CustomerId, submittedBillingAddress.Id)
+                : null;
+            if (submittedBillingAddress != null && billingAddress == null)
+                return Error(HttpStatusCode.BadRequest, "billingAddress", "non-existing billing address");
+
+            var submittedShippingAddress = orderDelta.Dto.ShippingAddress;
+            var shippingAddress = submittedShippingAddress != null
+                ? await CustomerService.GetCustomerAddressAsync(customer.Id, submittedShippingAddress.Id)
+                : null;
+            if (submittedShippingAddress != null && shippingAddress == null)
+                return Error(HttpStatusCode.BadRequest, "shippingAddress", "non-existing shipping address");
+
+            if (orderDelta.HasProperty(nameof(OrderDto.ShippingRateComputationMethodSystemName)) ||
+                orderDelta.HasProperty(nameof(OrderDto.ShippingMethod)))
             {
-                var isValid = true;
-
-                if (!string.IsNullOrEmpty(orderDelta.Dto.ShippingRateComputationMethodSystemName) ||
-                  !string.IsNullOrEmpty(orderDelta.Dto.ShippingMethod))
+                var orderItems = await _orderService.GetOrderItemsAsync(currentOrder.Id);
+                var storeId = orderDelta.Dto.StoreId ?? currentOrder.StoreId;
+                var cart = BuildShoppingCartItemsFromOrderItems(orderItems, customer.Id, storeId);
+                if (await _shoppingCartService.ShoppingCartRequiresShippingAsync(cart))
                 {
-                    var storeId = orderDelta.Dto.StoreId ?? _storeContext.GetCurrentStore().Id;
+                    if (shippingAddress == null && currentOrder.ShippingAddressId.HasValue)
+                        shippingAddress = await _addressService.GetAddressByIdAsync(currentOrder.ShippingAddressId.Value);
 
-                    isValid &= await SetShippingOptionAsync(orderDelta.Dto.ShippingRateComputationMethodSystemName ?? currentOrder.ShippingRateComputationMethodSystemName,
-                                   orderDelta.Dto.ShippingMethod,
-                                   storeId,
-                                   customer, BuildShoppingCartItemsFromOrderItems(await _orderService.GetOrderItemsAsync(currentOrder.Id), customer.Id, storeId));
-                }
+                    if (shippingAddress == null)
+                        return Error(HttpStatusCode.BadRequest, "shippingAddress", "missing shipping address");
 
-                if (isValid)
-                {
-                    currentOrder.ShippingMethod = orderDelta.Dto.ShippingMethod;
-                }
-                else
-                {
-                    return Error(HttpStatusCode.BadRequest);
+                    if (await GetShippingOptionAsync(
+                        orderDelta.Dto.ShippingRateComputationMethodSystemName ?? currentOrder.ShippingRateComputationMethodSystemName,
+                        orderDelta.Dto.ShippingMethod ?? currentOrder.ShippingMethod,
+                        storeId, customer, shippingAddress, cart) == null)
+                        return Error(HttpStatusCode.BadRequest);
                 }
             }
 
-            orderDelta.Merge(currentOrder);
+            using (var transaction = _dataProvider.CreateTransactionScope())
+            {
+                orderDelta.Merge(currentOrder);
 
-            customer.BillingAddressId = currentOrder.BillingAddressId = orderDelta.Dto.BillingAddress.Id;
-            customer.ShippingAddressId = currentOrder.ShippingAddressId = orderDelta.Dto.ShippingAddress.Id;
+                if (billingAddress != null)
+                {
+                    var snapshot = _addressService.CloneAddress(billingAddress);
+                    await _addressService.InsertAddressAsync(snapshot);
+                    currentOrder.BillingAddressId = snapshot.Id;
+                }
 
-            await CustomerService.UpdateCustomerAsync(customer); // update billing and shipping addresses
+                if (submittedShippingAddress != null)
+                {
+                    var snapshot = _addressService.CloneAddress(shippingAddress);
+                    await _addressService.InsertAddressAsync(snapshot);
+                    currentOrder.ShippingAddressId = snapshot.Id;
+                }
 
-            await _orderService.UpdateOrderAsync(currentOrder);
+                await _orderService.UpdateOrderAsync(currentOrder);
+                transaction.Complete();
+            }
 
             await CustomerActivityService.InsertActivityAsync("UpdateOrder", await LocalizationService.GetResourceAsync("ActivityLog.UpdateOrder"), currentOrder);
 
             var ordersRootObject = new OrdersRootObject();
 
             var placedOrderDto = await _dtoHelper.PrepareOrderDTOAsync(currentOrder);
-            placedOrderDto.ShippingMethod = orderDelta.Dto.ShippingMethod;
 
             ordersRootObject.Orders.Add(placedOrderDto);
 
@@ -463,6 +721,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpDelete]
         [Route("/api/orders/{id}", Name = "DeleteOrder")]
+        [AuthorizePermission(StandardPermission.Orders.ORDERS_CREATE_EDIT_DELETE)]
         [ProducesResponseType(typeof(void), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -476,16 +735,11 @@ namespace Nop.Plugin.Api.Controllers
                 return Error(HttpStatusCode.BadRequest, "id", "invalid id");
             }
 
-            var orderToDelete = _orderApiService.GetOrderById(id);
+            var orderToDelete = await GetOrderForCurrentStoreAsync(id);
 
             if (orderToDelete == null)
             {
                 return Error(HttpStatusCode.NotFound, "order", "not found");
-            }
-
-            if (!await CheckPermissions(orderToDelete.CustomerId))
-            {
-                return AccessDenied();
             }
 
             await _orderProcessingService.DeleteOrderAsync(orderToDelete);
@@ -503,7 +757,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetPdfInvoice([FromRoute] int orderId)
         {
-            var order = await _orderService.GetOrderByIdAsync(orderId);
+            var order = await GetOrderForCurrentStoreAsync(orderId);
             if (order == null || order.Deleted)
             {
                 return NotFound();
@@ -535,7 +789,13 @@ namespace Nop.Plugin.Api.Controllers
 
         #region Private methods
 
-        private async Task<bool> CheckPermissions(int? customerId)
+        private async Task<Order> GetOrderForCurrentStoreAsync(int orderId)
+        {
+            var store = await _storeContext.GetCurrentStoreAsync();
+            return await _orderApiService.GetOrderByIdAsync(orderId, store.Id);
+        }
+
+        private async Task<bool> CheckPermissions(int? customerId, bool isCheckout = false)
         {
             var currentCustomer = await _authenticationService.GetAuthenticatedCustomerAsync();
             if (currentCustomer is null) // authenticated, but does not exist in db
@@ -545,56 +805,42 @@ namespace Nop.Plugin.Api.Controllers
                 // if I want to handle my own orders, check only public store permission
                 return await _permissionService.AuthorizeAsync(StandardPermission.PublicStore.ENABLE_SHOPPING_CART, currentCustomer);
             }
-            // if I want to handle other customer's orders, check admin permission
-            return await _permissionService.AuthorizeAsync(StandardPermission.Orders.ORDERS_CREATE_EDIT_DELETE, currentCustomer);
+            return await _permissionService.AuthorizeAsync(isCheckout
+                ? StandardPermission.Orders.ORDERS_CREATE_EDIT_DELETE
+                : StandardPermission.Orders.ORDERS_VIEW, currentCustomer);
         }
 
-        private async Task<bool> SetShippingOptionAsync(
-          string shippingRateComputationMethodSystemName, string shippingOptionName, int storeId, Customer customer, List<ShoppingCartItem> shoppingCartItems)
+        private async Task<ShippingOption> GetShippingOptionAsync(
+            string shippingProvider, string shippingOptionName, int storeId, Customer customer,
+            Address shippingAddress, IList<ShoppingCartItem> cart)
         {
-            var isValid = true;
-
-            if (string.IsNullOrEmpty(shippingRateComputationMethodSystemName))
+            if (string.IsNullOrEmpty(shippingProvider))
             {
-                isValid = false;
-
                 ModelState.AddModelError("shipping_rate_computation_method_system_name",
-                             "Please provide shipping_rate_computation_method_system_name");
+                    "Please provide shipping_rate_computation_method_system_name");
+                return null;
             }
-            else if (string.IsNullOrEmpty(shippingOptionName))
-            {
-                isValid = false;
 
+            if (string.IsNullOrEmpty(shippingOptionName))
+            {
                 ModelState.AddModelError("shipping_option_name", "Please provide shipping_option_name");
+                return null;
             }
-            else
+
+            var response = await _shippingService.GetShippingOptionsAsync(cart, shippingAddress, customer, shippingProvider, storeId);
+            if (!response.Success)
             {
-                var shippingOptionResponse = await _shippingService.GetShippingOptionsAsync(shoppingCartItems, await CustomerService.GetCustomerShippingAddressAsync(customer), customer,
-                                                 shippingRateComputationMethodSystemName, storeId);
-
-                if (shippingOptionResponse.Success)
-                {
-                    var shippingOptions = shippingOptionResponse.ShippingOptions.ToList();
-
-                    var shippingOption = shippingOptions
-                      .Find(so => !string.IsNullOrEmpty(so.Name) && so.Name.Equals(shippingOptionName, StringComparison.InvariantCultureIgnoreCase));
-
-                    await _genericAttributeService.SaveAttributeAsync(customer,
-                                         NopCustomerDefaults.SelectedShippingOptionAttribute,
-                                         shippingOption, storeId);
-                }
-                else
-                {
-                    isValid = false;
-
-                    foreach (var errorMessage in shippingOptionResponse.Errors)
-                    {
-                        ModelState.AddModelError("shipping_option", errorMessage);
-                    }
-                }
+                foreach (var error in response.Errors)
+                    ModelState.AddModelError("shipping_option", error);
+                return null;
             }
 
-            return isValid;
+            var option = response.ShippingOptions.FirstOrDefault(option =>
+                string.Equals(option.Name, shippingOptionName, StringComparison.OrdinalIgnoreCase));
+            if (option == null)
+                ModelState.AddModelError("shipping_option", "The requested shipping option is unavailable.");
+
+            return option;
         }
 
         private List<ShoppingCartItem> BuildShoppingCartItemsFromOrderItems(IList<OrderItem> orderItems, int customerId, int storeId)
@@ -608,35 +854,12 @@ namespace Nop.Plugin.Api.Controllers
                     ProductId = orderItem.ProductId,
                     CustomerId = customerId,
                     Quantity = orderItem.Quantity,
+                    AttributesXml = orderItem.AttributesXml,
                     RentalStartDateUtc = orderItem.RentalStartDateUtc,
                     RentalEndDateUtc = orderItem.RentalEndDateUtc,
                     StoreId = storeId,
                     ShoppingCartType = ShoppingCartType.ShoppingCart
                 });
-            }
-
-            return shoppingCartItems;
-        }
-
-        private List<ShoppingCartItem> BuildShoppingCartItemsFromOrderItemDtos(List<OrderItemDto> orderItemDtos, int customerId, int storeId)
-        {
-            var shoppingCartItems = new List<ShoppingCartItem>();
-
-            foreach (var orderItem in orderItemDtos)
-            {
-                if (orderItem.ProductId != null)
-                {
-                    shoppingCartItems.Add(new ShoppingCartItem
-                    {
-                        ProductId = orderItem.ProductId.Value, // required field
-                        CustomerId = customerId,
-                        Quantity = orderItem.Quantity ?? 1,
-                        RentalStartDateUtc = orderItem.RentalStartDateUtc,
-                        RentalEndDateUtc = orderItem.RentalEndDateUtc,
-                        StoreId = storeId,
-                        ShoppingCartType = ShoppingCartType.ShoppingCart
-                    });
-                }
             }
 
             return shoppingCartItems;
@@ -650,42 +873,13 @@ namespace Nop.Plugin.Api.Controllers
                 CustomerId = customer.Id,
                 PaymentMethodSystemName = newOrder.PaymentMethodSystemName,
                 // TODO: fill credit card info,
-                OrderGuid = Guid.NewGuid(),
+                OrderGuid = newOrder.OrderGuid,
                 OrderGuidGeneratedOnUtc = DateTime.UtcNow,
             };
 
             //_paymentService.GenerateOrderGuid(processPaymentRequest);
 
-            var placeOrderResult = await _orderProcessingService.PlaceOrderAsync(processPaymentRequest);
-
-            if (placeOrderResult.Success)
-            {
-                var postProcessPaymentRequest = new PostProcessPaymentRequest
-                {
-                    Order = placeOrderResult.PlacedOrder
-                };
-
-                await _paymentService.PostProcessPaymentAsync(postProcessPaymentRequest);
-            }
-
-            return placeOrderResult;
-        }
-
-        private async Task<bool> IsShippingAddressRequiredAsync(ICollection<OrderItemDto> orderItems)
-        {
-            var shippingAddressRequired = false;
-
-            foreach (var orderItem in orderItems)
-            {
-                if (orderItem.ProductId != null)
-                {
-                    var product = await _productService.GetProductByIdAsync(orderItem.ProductId.Value);
-
-                    shippingAddressRequired |= product.IsShipEnabled;
-                }
-            }
-
-            return shippingAddressRequired;
+            return await _orderProcessingService.PlaceOrderAsync(processPaymentRequest);
         }
 
         private async Task<bool> AddOrderItemsToCartAsync(ICollection<OrderItemDto> orderItems, Customer customer, int storeId)
@@ -698,13 +892,20 @@ namespace Nop.Plugin.Api.Controllers
                 {
                     var product = await _productService.GetProductByIdAsync(orderItem.ProductId.Value);
 
+                    if (product == null)
+                    {
+                        ModelState.AddModelError("order", $"Product {orderItem.ProductId} was not found.");
+                        shouldReturnError = true;
+                        continue;
+                    }
+
                     if (!product.IsRental)
                     {
                         orderItem.RentalStartDateUtc = null;
                         orderItem.RentalEndDateUtc = null;
                     }
 
-                    var attributesXml = await _productAttributeConverter.ConvertToXmlAsync(orderItem.Attributes.ToList(), product.Id);
+                    var attributesXml = await _productAttributeConverter.ConvertToXmlAsync(orderItem.Attributes?.ToList(), product.Id);
 
                     var errors = await _shoppingCartService.AddToCartAsync(customer, product,
                                           ShoppingCartType.ShoppingCart, storeId, attributesXml,

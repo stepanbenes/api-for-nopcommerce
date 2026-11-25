@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿#nullable enable
+
+using Newtonsoft.Json;
 using Nop.Plugin.Api.DTO.Base;
 
 namespace Nop.Plugin.Api.DTO
@@ -7,6 +9,6 @@ namespace Nop.Plugin.Api.DTO
     public class ProductItemAttributeDto : BaseDto
     {
         [JsonProperty("value")]
-        public string Value { get; set; }
+        public string? Value { get; set; }
     }
 }

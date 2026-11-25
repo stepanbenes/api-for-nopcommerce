@@ -21,5 +21,7 @@ namespace Nop.Plugin.Api.Tests.SerializersTests.DummyObjects
 
             return false;
         }
+
+        public override int GetHashCode() => HashCode.Combine(FirstProperty, SecondProperty);
     }
 }

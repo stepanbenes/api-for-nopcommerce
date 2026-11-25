@@ -18,7 +18,7 @@ namespace Nop.Plugin.Api.Services
             _specificationAttributesRepository = specificationAttributesRepository;
         }
 
-        public IList<ProductSpecificationAttribute> GetProductSpecificationAttributes(
+        public async Task<IList<ProductSpecificationAttribute>> GetProductSpecificationAttributesAsync(
             int? productId = null, int? specificationAttributeOptionId = null, bool? allowFiltering = null, bool? showOnProductPage = null,
             int limit = Constants.Configurations.DefaultLimit, int page = Constants.Configurations.DefaultPageValue,
             int sinceId = Constants.Configurations.DefaultSinceId)
@@ -52,10 +52,10 @@ namespace Nop.Plugin.Api.Services
 
             query = query.OrderBy(x => x.Id);
 
-            return new ApiList<ProductSpecificationAttribute>(query, page - 1, limit);
+            return await ApiList<ProductSpecificationAttribute>.CreateAsync(query, page - 1, limit);
         }
 
-        public IList<SpecificationAttribute> GetSpecificationAttributes(
+        public async Task<IList<SpecificationAttribute>> GetSpecificationAttributesAsync(
             int limit = Constants.Configurations.DefaultLimit, int page = Constants.Configurations.DefaultPageValue,
             int sinceId = Constants.Configurations.DefaultSinceId)
         {
@@ -68,7 +68,7 @@ namespace Nop.Plugin.Api.Services
 
             query = query.OrderBy(x => x.Id);
 
-            return new ApiList<SpecificationAttribute>(query, page - 1, limit);
+            return await ApiList<SpecificationAttribute>.CreateAsync(query, page - 1, limit);
         }
     }
 }

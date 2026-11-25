@@ -4,7 +4,6 @@ using Nop.Core;
 using Nop.Core.Domain.Customers;
 using Nop.Core.Domain.Stores;
 using Nop.Core.Infrastructure;
-using Nop.Data;
 using Nop.Services.Authentication;
 using Nop.Services.Common;
 using Nop.Services.Stores;
@@ -15,7 +14,6 @@ namespace Nop.Plugin.Api.Services
     {
         private readonly IGenericAttributeService _genericAttributeService;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly IRepository<Store> _storeRepository;
         private readonly IStoreService _storeService;
 
         private Store _cachedStore;
@@ -26,16 +24,13 @@ namespace Nop.Plugin.Api.Services
         /// </summary>
         /// <param name="genericAttributeService">Generic attribute service</param>
         /// <param name="httpContextAccessor">HTTP context accessor</param>
-        /// <param name="storeRepository">Store repository</param>
         /// <param name="storeService">Store service</param>
         public WebApiStoreContext(IGenericAttributeService genericAttributeService,
           IHttpContextAccessor httpContextAccessor,
-          IRepository<Store> storeRepository,
           IStoreService storeService)
         {
             _genericAttributeService = genericAttributeService;
             _httpContextAccessor = httpContextAccessor;
-            _storeRepository = storeRepository;
             _storeService = storeService;
         }
 
@@ -52,35 +47,6 @@ namespace Nop.Plugin.Api.Services
             string host = GetHostFromRequest();
 
             var allStores = await _storeService.GetAllStoresAsync();
-            var store = allStores.FirstOrDefault(s => _storeService.ContainsHostValue(s, host));
-
-            if (store == null)
-            {
-                store = allStores.FirstOrDefault(); // load the first found store
-            }
-
-            _cachedStore = store ?? throw new Exception("No store could be loaded");
-
-            return _cachedStore;
-        }
-
-        /// <summary>
-        /// Gets the current store
-        /// </summary>
-        public virtual Store GetCurrentStore()
-        {
-            if (_cachedStore != null)
-                return _cachedStore;
-
-            // try to determine the current store from request headers
-            string host = GetHostFromRequest();
-
-            // we cannot call async methods here. otherwise, an application can hang. so it's a workaround to avoid that
-            var allStores = _storeRepository.GetAll(query =>
-            {
-                return from s in query orderby s.DisplayOrder, s.Id select s;
-            }, cache => default);
-
             var store = allStores.FirstOrDefault(s => _storeService.ContainsHostValue(s, host));
 
             if (store == null)

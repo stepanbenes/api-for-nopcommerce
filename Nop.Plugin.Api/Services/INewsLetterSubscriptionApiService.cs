@@ -5,7 +5,7 @@ namespace Nop.Plugin.Api.Services
 {
     public interface INewsLetterSubscriptionApiService
     {
-        List<NewsLetterSubscription> GetNewsLetterSubscriptions(
+        Task<List<NewsLetterSubscription>> GetNewsLetterSubscriptionsAsync(
             DateTime? createdAtMin = null, DateTime? createdAtMax = null,
             int limit = Constants.Configurations.DefaultLimit, int page = Constants.Configurations.DefaultPageValue,
             int sinceId = Constants.Configurations.DefaultSinceId,

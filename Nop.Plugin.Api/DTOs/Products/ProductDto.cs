@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿#nullable enable
+
+using Newtonsoft.Json;
 using Nop.Core.Domain.Catalog;
 using Nop.Plugin.Api.Attributes;
 using Nop.Plugin.Api.DTO.Base;
@@ -25,19 +27,19 @@ namespace Nop.Plugin.Api.DTO.Products
         ///     Gets or sets the name
         /// </summary>
         [JsonProperty("name")]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         /// <summary>
         ///     Gets or sets the short description
         /// </summary>
         [JsonProperty("short_description")]
-        public string ShortDescription { get; set; }
+        public string? ShortDescription { get; set; }
 
         /// <summary>
         ///     Gets or sets the full description
         /// </summary>
         [JsonProperty("full_description")]
-        public string FullDescription { get; set; }
+        public string? FullDescription { get; set; }
 
         /// <summary>
         ///     Gets or sets a value indicating whether to show the product on home page
@@ -49,19 +51,19 @@ namespace Nop.Plugin.Api.DTO.Products
         ///     Gets or sets the meta keywords
         /// </summary>
         [JsonProperty("meta_keywords")]
-        public string MetaKeywords { get; set; }
+        public string? MetaKeywords { get; set; }
 
         /// <summary>
         ///     Gets or sets the meta description
         /// </summary>
         [JsonProperty("meta_description")]
-        public string MetaDescription { get; set; }
+        public string? MetaDescription { get; set; }
 
         /// <summary>
         ///     Gets or sets the meta title
         /// </summary>
         [JsonProperty("meta_title")]
-        public string MetaTitle { get; set; }
+        public string? MetaTitle { get; set; }
 
         /// <summary>
         ///     Gets or sets a value indicating whether the product allows customer reviews
@@ -97,20 +99,20 @@ namespace Nop.Plugin.Api.DTO.Products
         ///     Gets or sets the SKU
         /// </summary>
         [JsonProperty("sku")]
-        public string Sku { get; set; }
+        public string? Sku { get; set; }
 
         /// <summary>
         ///     Gets or sets the manufacturer part number
         /// </summary>
         [JsonProperty("manufacturer_part_number")]
-        public string ManufacturerPartNumber { get; set; }
+        public string? ManufacturerPartNumber { get; set; }
 
         /// <summary>
         ///     Gets or sets the Global Trade Item Number (GTIN). These identifiers include UPC (in North America), EAN (in
         ///     Europe), JAN (in Japan), and ISBN (for books).
         /// </summary>
         [JsonProperty("gtin")]
-        public string Gtin { get; set; }
+        public string? Gtin { get; set; }
 
         /// <summary>
         ///     Gets or sets a value indicating whether the product is gift card
@@ -135,7 +137,7 @@ namespace Nop.Plugin.Api.DTO.Products
         ///     Gets or sets a list of ids of products that are required to be added to the cart by this product
         /// </summary>
         [JsonProperty("required_product_ids", Required = Required.DisallowNull)]
-        public IList<int> RequiredProductIds { get; set; }
+        public IList<int>? RequiredProductIds { get; set; }
 
         /// <summary>
         ///     Gets or sets a value indicating whether the product is download
@@ -321,7 +323,7 @@ namespace Nop.Plugin.Api.DTO.Products
         ///     Gets or sets the comma seperated list of allowed quantities. null or empty if any quantity is allowed
         /// </summary>
         [JsonProperty("allowed_quantities")]
-        public string AllowedQuantities { get; set; }
+        public string? AllowedQuantities { get; set; }
 
         /// <summary>
         ///     Gets or sets a value indicating whether we allow adding to the cart/wishlist only attribute combinations that exist
@@ -546,7 +548,7 @@ namespace Nop.Plugin.Api.DTO.Products
         /// </summary>
         [ProductTypeValidation]
         [JsonProperty("product_type")]
-        public string ProductType
+        public string? ProductType
         {
             get
             {
@@ -576,42 +578,42 @@ namespace Nop.Plugin.Api.DTO.Products
         public int? ParentGroupedProductId { get; set; }
 
         [JsonProperty("role_ids")]
-        public List<int> RoleIds { get; set; }
+        public List<int>? RoleIds { get; set; }
 
         [JsonProperty("discount_ids")]
-        public List<int> DiscountIds { get; set; }
+        public List<int>? DiscountIds { get; set; }
 
         [JsonProperty("store_ids")]
-        public List<int> StoreIds { get; set; }
+        public List<int>? StoreIds { get; set; }
 
         [JsonProperty("manufacturer_ids")]
-        public List<int> ManufacturerIds { get; set; }
+        public List<int>? ManufacturerIds { get; set; }
 
         [ImageCollectionValidation]
         [JsonProperty("images")]
-        public List<ImageMappingDto> Images { get; set; }
+        public List<ImageMappingDto>? Images { get; set; }
 
         [JsonProperty("attributes")]
-        public List<ProductAttributeMappingDto> ProductAttributeMappings { get; set; }
+        public List<ProductAttributeMappingDto>? ProductAttributeMappings { get; set; }
 
         [JsonProperty("product_attribute_combinations")]
-        public List<ProductAttributeCombinationDto> ProductAttributeCombinations { get; set; }
+        public List<ProductAttributeCombinationDto>? ProductAttributeCombinations { get; set; }
 
 
         [JsonProperty("product_specification_attributes")]
-        public List<ProductSpecificationAttributeDto> ProductSpecificationAttributes { get; set; }
+        public List<ProductSpecificationAttributeDto>? ProductSpecificationAttributes { get; set; }
 
         [JsonProperty("associated_product_ids")]
-        public List<int> AssociatedProductIds { get; set; }
+        public List<int>? AssociatedProductIds { get; set; }
 
         [JsonProperty("tags")]
-        public List<string> Tags { get; set; }
+        public List<string>? Tags { get; set; }
 
         [ValidateVendor]
         [JsonProperty("vendor_id")]
         public int? VendorId { get; set; }
 
         [JsonProperty("se_name")]
-        public string SeName { get; set; }
+        public string? SeName { get; set; }
     }
 }

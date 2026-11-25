@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Nop.Core.Data;
+using Nop.Data;
 using Nop.Core.Domain.Catalog;
 using Nop.Core.Domain.Vendors;
 using Nop.Plugin.Api.Services;
 using NUnit.Framework;
-using Rhino.Mocks;
+using Moq;
 
 namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProducts
 {
@@ -33,25 +33,29 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProducts
             _existigProducts[5].Deleted = true;
             _existigProducts[51].Published = false;
 
-            var productRepo = MockRepository.GenerateStub<IRepository<Product>>();
-            productRepo.Stub(x => x.TableNoTracking).Return(_existigProducts.AsQueryable());
+            var productRepo = Mock.Of<IRepository<Product>>();
+            Mock.Get(productRepo).Setup(x => x.Table).Returns(_existigProducts.AsQueryable());
 
-            var productCategoryRepo = MockRepository.GenerateStub<IRepository<ProductCategory>>();
-            var vendorRepo = MockRepository.GenerateStub<IRepository<Vendor>>();
+            var productCategoryRepo = Mock.Of<IRepository<ProductCategory>>();
+            var vendorRepo = Mock.Of<IRepository<Vendor>>();
 
-            var storeMappingService = MockRepository.GenerateStub<IStoreMappingService>();
+            var storeMappingService = Mock.Of<IStoreMappingService>();
+            Mock.Get(storeMappingService).Setup(x => x.ApplyStoreMapping(It.IsAny<IQueryable<Product>>(), 1))
+                .ReturnsAsync((IQueryable<Product> query, int _) => query);
+            var storeContext = Mock.Of<Nop.Core.IStoreContext>();
+            Mock.Get(storeContext).Setup(x => x.GetCurrentStoreAsync()).ReturnsAsync(new Nop.Core.Domain.Stores.Store { Id = 1 });
 
-            _productApiService = new ProductApiService(productRepo, productCategoryRepo, vendorRepo, storeMappingService);
+            _productApiService = new ProductApiService(productRepo, productCategoryRepo, vendorRepo, storeMappingService, storeContext);
         }
 
         [Test]
-        public void WhenCalledWithLimitParameter_GivenProductsAboveTheLimit_ShouldReturnCollectionWithCountEqualToTheLimit()
+        public async Task WhenCalledWithLimitParameter_GivenProductsAboveTheLimit_ShouldReturnCollectionWithCountEqualToTheLimit()
         {
             //Arange
             var expectedLimit = 5;
 
             //Act
-            var products = _productApiService.GetProducts(limit: expectedLimit);
+            var products = await _productApiService.GetProductsAsync(limit: expectedLimit);
 
             // Assert
             CollectionAssert.IsNotEmpty(products);
@@ -59,13 +63,13 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProducts
         }
 
         [Test]
-        public void WhenCalledWithLimitParameter_GivenProductsBellowTheLimit_ShouldReturnCollectionWithCountEqualToTheAvailableProducts()
+        public async Task WhenCalledWithLimitParameter_GivenProductsBellowTheLimit_ShouldReturnCollectionWithCountEqualToTheAvailableProducts()
         {
             //Arange
             var expectedLimit = _existigProducts.Count(x => !x.Deleted);
 
             //Act
-            var products = _productApiService.GetProducts(limit: expectedLimit + 10);
+            var products = await _productApiService.GetProductsAsync(limit: expectedLimit + 10);
 
             // Assert
             CollectionAssert.IsNotEmpty(products);
@@ -73,26 +77,26 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProducts
         }
 
         [Test]
-        public void WhenCalledWithZeroLimitParameter_GivenSomeProducts_ShouldReturnEmptyCollection()
+        public async Task WhenCalledWithZeroLimitParameter_GivenSomeProducts_ShouldReturnEmptyCollection()
         {
             //Arange
             var expectedLimit = 0;
 
             //Act
-            var products = _productApiService.GetProducts(limit: expectedLimit);
+            var products = await _productApiService.GetProductsAsync(limit: expectedLimit);
 
             // Assert
             CollectionAssert.IsEmpty(products);
         }
 
         [Test]
-        public void WhenCalledWithNegativeLimitParameter_GivenSomeProducts_ShouldReturnEmptyCollection()
+        public async Task WhenCalledWithNegativeLimitParameter_GivenSomeProducts_ShouldReturnEmptyCollection()
         {
             //Arange
             var expectedLimit = -10;
 
             //Act
-            var products = _productApiService.GetProducts(limit: expectedLimit);
+            var products = await _productApiService.GetProductsAsync(limit: expectedLimit);
 
             // Assert
             CollectionAssert.IsEmpty(products);

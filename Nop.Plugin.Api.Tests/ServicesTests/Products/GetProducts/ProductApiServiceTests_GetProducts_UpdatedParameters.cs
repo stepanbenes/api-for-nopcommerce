@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Nop.Core.Data;
+using Nop.Data;
 using Nop.Core.Domain.Catalog;
 using Nop.Core.Domain.Vendors;
 using Nop.Plugin.Api.Services;
 using NUnit.Framework;
-using Rhino.Mocks;
+using Moq;
 
 namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProducts
 {
@@ -35,19 +35,23 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProducts
                 new Product() {Id = 7, Published = false, UpdatedOnUtc = _baseDate.AddMonths(4) }
             };
 
-            var productRepo = MockRepository.GenerateStub<IRepository<Product>>();
-            productRepo.Stub(x => x.TableNoTracking).Return(_existigProducts.AsQueryable());
+            var productRepo = Mock.Of<IRepository<Product>>();
+            Mock.Get(productRepo).Setup(x => x.Table).Returns(_existigProducts.AsQueryable());
 
-            var productCategoryRepo = MockRepository.GenerateStub<IRepository<ProductCategory>>();
-            var vendorRepo = MockRepository.GenerateStub<IRepository<Vendor>>();
+            var productCategoryRepo = Mock.Of<IRepository<ProductCategory>>();
+            var vendorRepo = Mock.Of<IRepository<Vendor>>();
 
-            var storeMappingService = MockRepository.GenerateStub<IStoreMappingService>();
+            var storeMappingService = Mock.Of<IStoreMappingService>();
+            Mock.Get(storeMappingService).Setup(x => x.ApplyStoreMapping(It.IsAny<IQueryable<Product>>(), 1))
+                .ReturnsAsync((IQueryable<Product> query, int _) => query);
+            var storeContext = Mock.Of<Nop.Core.IStoreContext>();
+            Mock.Get(storeContext).Setup(x => x.GetCurrentStoreAsync()).ReturnsAsync(new Nop.Core.Domain.Stores.Store { Id = 1 });
 
-            _productApiService = new ProductApiService(productRepo, productCategoryRepo, vendorRepo, storeMappingService);
+            _productApiService = new ProductApiService(productRepo, productCategoryRepo, vendorRepo, storeMappingService, storeContext);
         }
 
         [Test]
-        public void WhenCalledWithUpdatedAtMinParameter_GivenSomeProductsUpdatedAfterThatDate_ShouldReturnThemSortedById()
+        public async Task WhenCalledWithUpdatedAtMinParameter_GivenSomeProductsUpdatedAfterThatDate_ShouldReturnThemSortedById()
         {
             // Arange
             DateTime updatedAtMinDate = _baseDate.AddMonths(5);
@@ -55,7 +59,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProducts
             var expectedProductsCount = expectedCollection.Count();
 
             // Act
-            var products = _productApiService.GetProducts(updatedAtMin: updatedAtMinDate);
+            var products = await _productApiService.GetProductsAsync(updatedAtMin: updatedAtMinDate);
 
             // Assert
             CollectionAssert.IsNotEmpty(products);
@@ -64,20 +68,20 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProducts
         }
 
         [Test]
-        public void WhenCalledWithUpdatedAtMinParameter_GivenAllProductsUpdatedBeforeThatDate_ShouldReturnEmptyCollection()
+        public async Task WhenCalledWithUpdatedAtMinParameter_GivenAllProductsUpdatedBeforeThatDate_ShouldReturnEmptyCollection()
         {
             // Arange
             DateTime updatedAtMinDate = _baseDate.AddMonths(7);
 
             // Act
-            var products = _productApiService.GetProducts(updatedAtMin: updatedAtMinDate);
+            var products = await _productApiService.GetProductsAsync(updatedAtMin: updatedAtMinDate);
 
             // Assert
             CollectionAssert.IsEmpty(products);
         }
 
         [Test]
-        public void WhenCalledWithUpdatedAtMaxParameter_GivenSomeProductsUpdatedBeforeThatDate_ShouldReturnThemSortedById()
+        public async Task WhenCalledWithUpdatedAtMaxParameter_GivenSomeProductsUpdatedBeforeThatDate_ShouldReturnThemSortedById()
         {
             // Arange
             DateTime updatedAtMaxDate = _baseDate.AddMonths(5);
@@ -87,7 +91,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProducts
             var expectedProductsCount = expectedCollection.Count();
 
             // Act
-            var products = _productApiService.GetProducts(updatedAtMax: updatedAtMaxDate);
+            var products = await _productApiService.GetProductsAsync(updatedAtMax: updatedAtMaxDate);
 
             // Assert
             CollectionAssert.IsNotEmpty(products);
@@ -96,13 +100,13 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProducts
         }
 
         [Test]
-        public void WhenCalledWithUpdatedAtMaxParameter_GivenAllProductsUpdatedAfterThatDate_ShouldReturnEmptyCollection()
+        public async Task WhenCalledWithUpdatedAtMaxParameter_GivenAllProductsUpdatedAfterThatDate_ShouldReturnEmptyCollection()
         {
             // Arange
             DateTime updatedAtMaxDate = _baseDate.Subtract(new TimeSpan(365)); // subtract one year
 
             // Act
-            var products = _productApiService.GetProducts(updatedAtMax: updatedAtMaxDate);
+            var products = await _productApiService.GetProductsAsync(updatedAtMax: updatedAtMaxDate);
 
             // Assert
             CollectionAssert.IsEmpty(products);

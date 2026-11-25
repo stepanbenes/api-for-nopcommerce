@@ -1,5 +1,4 @@
 ﻿using Nop.Core.Domain.Localization;
-using Nop.Plugin.Api.AutoMapper;
 using Nop.Plugin.Api.DTO.Languages;
 
 namespace Nop.Plugin.Api.MappingExtensions

@@ -16,11 +16,9 @@ using Nop.Services.Orders;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Security.Claims;
-using System.Text;
 
 namespace Nop.Plugin.Api.Controllers
 {
-    [AllowAnonymous]
     public class TokenController : Controller
     {
         private readonly ApiSettings _apiSettings;
@@ -50,12 +48,21 @@ namespace Nop.Plugin.Api.Controllers
         }
 
         [HttpPost]
+        [AllowAnonymous]
         [Route("/token", Name = "RequestToken")]
         [ProducesResponseType(typeof(TokenResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Forbidden)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.ServiceUnavailable)]
         public async Task<IActionResult> Create([FromBody] TokenRequest model)
         {
+            var signingKey = Singleton<AppSettings>.Instance.Get<ApiConfiguration>().GetSigningKey();
+            if (signingKey == null)
+                return StatusCode((int)HttpStatusCode.ServiceUnavailable, "API signing key is not configured.");
+
+            if (model == null)
+                return BadRequest("Missing token request.");
+
             Customer oldCustomer = await _authenticationService.GetAuthenticatedCustomerAsync();
             Customer newCustomer;
 
@@ -98,7 +105,7 @@ namespace Nop.Plugin.Api.Controllers
                 await _shoppingCartService.MigrateShoppingCartAsync(oldCustomer, newCustomer, true); // migrate shopping cart items to newly logged in customer
             }
 
-            var tokenResponse = GenerateToken(newCustomer);
+            var tokenResponse = GenerateToken(newCustomer, signingKey);
 
             await _authenticationService.SignInAsync(newCustomer, model.RememberMe); // update cookie-based authentication - not needed for api, avoids automatic generation of guest customer with each request to api
 
@@ -146,7 +153,7 @@ namespace Nop.Plugin.Api.Controllers
                    : _apiSettings.TokenExpiryInDays;
         }
 
-        private TokenResponse GenerateToken(Customer customer)
+        private TokenResponse GenerateToken(Customer customer, byte[] signingKey)
         {
             var currentTime = DateTimeOffset.Now;
             var expirationTime = currentTime.AddDays(GetTokenExpiryInDays());
@@ -178,8 +185,7 @@ namespace Nop.Plugin.Api.Controllers
                     claims.Add(new Claim(ClaimTypes.Name, customer.Email));
                 }
             }
-            var apiConfiguration = Singleton<AppSettings>.Instance.Get<ApiConfiguration>();
-            var signingCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(apiConfiguration.SecurityKey)), SecurityAlgorithms.HmacSha256);
+            var signingCredentials = new SigningCredentials(new SymmetricSecurityKey(signingKey), SecurityAlgorithms.HmacSha256);
             var token = new JwtSecurityToken(new JwtHeader(signingCredentials), new JwtPayload(claims));
             var accessToken = new JwtSecurityTokenHandler().WriteToken(token);
 

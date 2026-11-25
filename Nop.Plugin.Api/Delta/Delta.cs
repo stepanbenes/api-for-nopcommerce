@@ -31,6 +31,8 @@ namespace Nop.Plugin.Api.Delta
 
         public TDto Dto => _dto ?? (_dto = new TDto());
 
+        public bool HasProperty(string name) => PropertyValuePairs.ContainsKey(name);
+
         public void Merge<TEntity>(TEntity entity, bool mergeComplexTypeCollections = true)
         {
             _mappingHelper.SetValues(PropertyValuePairs, entity, entity.GetType(), null, mergeComplexTypeCollections);
