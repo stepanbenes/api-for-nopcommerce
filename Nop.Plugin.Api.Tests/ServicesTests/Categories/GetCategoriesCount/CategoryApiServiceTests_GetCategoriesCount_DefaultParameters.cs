@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Nop.Core.Data;
+using Nop.Data;
 using Nop.Core.Domain.Catalog;
 using Nop.Plugin.Api.Services;
 using NUnit.Framework;
-using Rhino.Mocks;
+using Moq;
 
 namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategoriesCount
 {
@@ -14,50 +14,50 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategoriesCount
     public class CategoryApiServiceTests_GetCategoriesCount_DefaultParameters
     {
         [Test]
-        public void WhenCalledWithDefaultParameters_GivenNoCategoriesExist_ShouldReturnZero()
+        public async Task WhenCalledWithDefaultParameters_GivenNoCategoriesExist_ShouldReturnZero()
         {
             // Arange
-            var categoryRepo = MockRepository.GenerateStub<IRepository<Category>>();
-            categoryRepo.Stub(x => x.TableNoTracking).Return(new List<Category>().AsQueryable());
+            var categoryRepo = Mock.Of<IRepository<Category>>();
+            Mock.Get(categoryRepo).Setup(x => x.Table).Returns(new List<Category>().AsQueryable());
 
-            var productCategoryRepo = MockRepository.GenerateStub<IRepository<ProductCategory>>();
+            var productCategoryRepo = Mock.Of<IRepository<ProductCategory>>();
 
-            var storeMappingService = MockRepository.GenerateStub<IStoreMappingService>();
-            storeMappingService.Stub(x => x.Authorize(Arg<Category>.Is.Anything)).Return(true);
+            var storeMappingService = Mock.Of<IStoreMappingService>();
+            Mock.Get(storeMappingService).Setup(x => x.AuthorizeAsync(It.IsAny<Category>())).ReturnsAsync(true);
 
             // Act
-            var cut = new CategoryApiService(categoryRepo, productCategoryRepo, storeMappingService);
-            var categoriesCount = cut.GetCategoriesCount();
+            var cut = new CategoryApiService(categoryRepo, productCategoryRepo, storeMappingService, Mock.Of<Nop.Services.Catalog.ICategoryService>());
+            var categoriesCount = await cut.GetCategoriesCountAsync();
 
             // Assert
             Assert.AreEqual(0, categoriesCount);
         }
         
         [Test]
-        public void WhenCalledWithDefaultParameters_GivenOnlyDeletedCategoriesExist_ShouldReturnZero()
+        public async Task WhenCalledWithDefaultParameters_GivenOnlyDeletedCategoriesExist_ShouldReturnZero()
         {
             var existingCategories = new List<Category>();
             existingCategories.Add(new Category() { Id = 1, Deleted = true });
             existingCategories.Add(new Category() { Id = 2, Deleted = true });
 
             // Arange
-            var categoryRepo = MockRepository.GenerateStub<IRepository<Category>>();
-            categoryRepo.Stub(x => x.TableNoTracking).Return(existingCategories.AsQueryable());
+            var categoryRepo = Mock.Of<IRepository<Category>>();
+            Mock.Get(categoryRepo).Setup(x => x.Table).Returns(existingCategories.AsQueryable());
 
-            var productCategoryRepo = MockRepository.GenerateStub<IRepository<ProductCategory>>();
+            var productCategoryRepo = Mock.Of<IRepository<ProductCategory>>();
 
-            var storeMappingService = MockRepository.GenerateStub<IStoreMappingService>();
+            var storeMappingService = Mock.Of<IStoreMappingService>();
 
             // Act
-            var cut = new CategoryApiService(categoryRepo, productCategoryRepo, storeMappingService);
-            var countResult = cut.GetCategoriesCount();
+            var cut = new CategoryApiService(categoryRepo, productCategoryRepo, storeMappingService, Mock.Of<Nop.Services.Catalog.ICategoryService>());
+            var countResult = await cut.GetCategoriesCountAsync();
 
             // Assert
             Assert.AreEqual(0, countResult);
         }
 
         [Test]
-        public void WhenCalledWithDefaultParameters_GivenSomeNotDeletedCategoriesExist_ShouldReturnTheirCount()
+        public async Task WhenCalledWithDefaultParameters_GivenSomeNotDeletedCategoriesExist_ShouldReturnTheirCount()
         {
             var existingCategories = new List<Category>();
             existingCategories.Add(new Category() { Id = 1 });
@@ -65,24 +65,24 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategoriesCount
             existingCategories.Add(new Category() { Id = 3 });
 
             // Arange
-            var categoryRepo = MockRepository.GenerateStub<IRepository<Category>>();
-            categoryRepo.Stub(x => x.TableNoTracking).Return(existingCategories.AsQueryable());
+            var categoryRepo = Mock.Of<IRepository<Category>>();
+            Mock.Get(categoryRepo).Setup(x => x.Table).Returns(existingCategories.AsQueryable());
 
-            var productCategoryRepo = MockRepository.GenerateStub<IRepository<ProductCategory>>();
+            var productCategoryRepo = Mock.Of<IRepository<ProductCategory>>();
 
-            var storeMappingService = MockRepository.GenerateStub<IStoreMappingService>();
-            storeMappingService.Stub(x => x.Authorize(Arg<Category>.Is.Anything)).Return(true);
+            var storeMappingService = Mock.Of<IStoreMappingService>();
+            Mock.Get(storeMappingService).Setup(x => x.AuthorizeAsync(It.IsAny<Category>())).ReturnsAsync(true);
 
             // Act
-            var cut = new CategoryApiService(categoryRepo, productCategoryRepo, storeMappingService);
-            var countResult = cut.GetCategoriesCount();
+            var cut = new CategoryApiService(categoryRepo, productCategoryRepo, storeMappingService, Mock.Of<Nop.Services.Catalog.ICategoryService>());
+            var countResult = await cut.GetCategoriesCountAsync();
 
             // Assert
             Assert.AreEqual(2, countResult);
         }
 
         [Test]
-        public void WhenCalledWithDefaultParameters_GivenSomeCategoriesExist_ShouldReturnTheirCount()
+        public async Task WhenCalledWithDefaultParameters_GivenSomeCategoriesExist_ShouldReturnTheirCount()
         {
             var existingCategories = new List<Category>();
             existingCategories.Add(new Category() { Id = 2, Published = false });
@@ -90,17 +90,17 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategoriesCount
             existingCategories.Add(new Category() { Id = 1 });
             
             // Arange
-            var categoryRepo = MockRepository.GenerateStub<IRepository<Category>>();
-            categoryRepo.Stub(x => x.TableNoTracking).Return(existingCategories.AsQueryable());
+            var categoryRepo = Mock.Of<IRepository<Category>>();
+            Mock.Get(categoryRepo).Setup(x => x.Table).Returns(existingCategories.AsQueryable());
 
-            var productCategoryRepo = MockRepository.GenerateStub<IRepository<ProductCategory>>();
+            var productCategoryRepo = Mock.Of<IRepository<ProductCategory>>();
 
-            var storeMappingService = MockRepository.GenerateStub<IStoreMappingService>();
-            storeMappingService.Stub(x => x.Authorize(Arg<Category>.Is.Anything)).Return(true);
+            var storeMappingService = Mock.Of<IStoreMappingService>();
+            Mock.Get(storeMappingService).Setup(x => x.AuthorizeAsync(It.IsAny<Category>())).ReturnsAsync(true);
 
             // Act
-            var cut = new CategoryApiService(categoryRepo, productCategoryRepo, storeMappingService);
-            var countResult = cut.GetCategoriesCount();
+            var cut = new CategoryApiService(categoryRepo, productCategoryRepo, storeMappingService, Mock.Of<Nop.Services.Catalog.ICategoryService>());
+            var countResult = await cut.GetCategoriesCountAsync();
 
             // Assert
             Assert.AreEqual(existingCategories.Count, countResult);

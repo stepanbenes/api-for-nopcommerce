@@ -1,7 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
+    <NopRoot Condition="'$(NopRoot)' == ''">$(MSBuildProjectDirectory)/../../nopCommerce</NopRoot>
+    <OutputPath>$(NopRoot)/src/Presentation/Nop.Web/Plugins/Nop.Plugin.Api</OutputPath>
+    <OutDir>$(OutputPath)</OutDir>
     <Version Condition=" '$(BUILD_BUILDNUMBER)' == '' ">0.0.1-local</Version>
     <Version Condition=" '$(BUILD_BUILDNUMBER)' != '' ">$(BUILD_BUILDNUMBER)</Version>
     <Description>This plugin allows you to access/create Nop resources outside of the system</Description>
@@ -18,36 +21,12 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <OutputPath>..\..\nopCommerce\src\Presentation\Nop.Web\Plugins\Nop.Plugin.Api</OutputPath>
-    <OutDir>$(OutputPath)</OutDir>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <OutputPath>..\..\nopCommerce\src\Presentation\Nop.Web\Plugins\Nop.Plugin.Api</OutputPath>
-    <OutDir>$(OutputPath)</OutDir>
-  </PropertyGroup>
-
-<!--  <ItemGroup>-->
-<!--   -->
-<!--    <PackageReference Include="JetBrains.Annotations" Version="2024.2.0" />-->
-<!--    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.20" />-->
-<!--    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="7.1.2" />-->
-<!--   -->
-<!--    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />-->
-<!--    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.7.0" />-->
-<!--    <PackageReference Include="Swashbuckle.AspNetCore.Newtonsoft" Version="6.7.0" />-->
-
-<!--  </ItemGroup>-->
-
-
   <ItemGroup>
-    <PackageReference Include="AutoMapper" Version="13.0.1" />
     <PackageReference Include="JetBrains.Annotations" Version="2019.1.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="3.1.22" />
-    <PackageReference Include="Microsoft.AspNetCore.Rewrite" Version="2.2.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.1.1" />
+    <!-- 10.0.10+ requires IdentityModel 8.19.2, which cannot replace the host’s 8.16.0 in the plugin load context. -->
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.9" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.7.0" />
     <PackageReference Include="Swashbuckle.AspNetCore.Newtonsoft" Version="6.7.0" />
     <PackageReference Include="MimeTypes" Version="2.5.2">
       <PrivateAssets>all</PrivateAssets>
@@ -56,9 +35,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\nopCommerce\src\Libraries\Nop.Core\Nop.Core.csproj" />
-    <ProjectReference Include="..\..\nopCommerce\src\Presentation\Nop.Web.Framework\Nop.Web.Framework.csproj" />
-    <ClearPluginAssemblies Include="$(MSBuildProjectDirectory)\..\..\nopCommerce\src\Build\ClearPluginAssemblies.proj" />
+    <ProjectReference Include="$(NopRoot)/src/Libraries/Nop.Core/Nop.Core.csproj" />
+    <ProjectReference Include="$(NopRoot)/src/Presentation/Nop.Web.Framework/Nop.Web.Framework.csproj" />
+    <ClearPluginAssemblies Include="$(NopRoot)/src/Build/ClearPluginAssemblies.proj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -76,16 +55,14 @@
     </None>
   </ItemGroup>
 
-  <Target Name="FilterCopyLocalItems" AfterTargets="ResolveLockFileCopyLocalProjectDeps">
-    <ItemGroup>
-      <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" Condition="'%(Filename)' != 'Microsoft.AspNetCore.Rewrite' AND '%(Filename)' != 'System.IdentityModel.Tokens.Jwt'" />
-    </ItemGroup>
-  </Target>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Nop.Plugin.Api.Tests" />
+  </ItemGroup>
 
   <!-- This target execute after "Build" target -->
   <Target Name="NopTarget" AfterTargets="Build">
     <!-- Delete unnecessary libraries from plugins path -->
-    <MSBuild Projects="@(ClearPluginAssemblies)" Properties="PluginPath=$(MSBuildProjectDirectory)\$(OutDir)" Targets="NopClear" />
+    <MSBuild Projects="@(ClearPluginAssemblies)" Properties="PluginPath=$(OutDir)" Targets="NopClear" />
   </Target>
 
 </Project>

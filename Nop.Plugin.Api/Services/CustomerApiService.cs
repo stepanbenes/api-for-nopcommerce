@@ -68,7 +68,8 @@ namespace Nop.Plugin.Api.Services
           DateTime? createdAtMin = null, DateTime? createdAtMax = null, int limit = Constants.Configurations.DefaultLimit,
           int page = Constants.Configurations.DefaultPageValue, int sinceId = Constants.Configurations.DefaultSinceId)
         {
-            var query = GetCustomersQuery(createdAtMin, createdAtMax, sinceId);
+            var currentStore = await _storeContext.GetCurrentStoreAsync();
+            var query = GetCustomersQuery(currentStore.Id, createdAtMin, createdAtMax, sinceId);
 
             var result = await HandleCustomerGenericAttributesAsync(null, query, limit, page);
 
@@ -78,18 +79,17 @@ namespace Nop.Plugin.Api.Services
             {
                 var customer = await query.Where(x => x.Id == customerDto.Id).FirstOrDefaultAsync();
 
-                await SetCustomerAddressesAsync(customer, customerDto);
+                await SetCustomerDetailsAsync(customer, customerDto);
             }
 
             return result;
         }
 
-        public Task<int> GetCustomersCountAsync()
+        public async Task<int> GetCustomersCountAsync()
         {
-            return _customerRepository.Table.CountAsync(customer => !customer.Deleted
-                                                                    && (customer.RegisteredInStoreId == 0 ||
-                                                                        customer.RegisteredInStoreId ==
-                                                                        _storeContext.GetCurrentStore().Id));
+            var storeId = (await _storeContext.GetCurrentStoreAsync()).Id;
+            return await _customerRepository.Table.CountAsync(customer => !customer.Deleted
+                && (customer.RegisteredInStoreId == 0 || customer.RegisteredInStoreId == storeId));
         }
 
         // Need to work with dto object so we can map the first and last name from generic attributes table.
@@ -124,7 +124,7 @@ namespace Nop.Plugin.Api.Services
                 {
                     var customer = await query.Where(x => x.Id == customerDto.Id).FirstOrDefaultAsync();
 
-                    await SetCustomerAddressesAsync(customer, customerDto);
+                    await SetCustomerDetailsAsync(customer, customerDto);
                 }
             }
 
@@ -205,7 +205,7 @@ namespace Nop.Plugin.Api.Services
 
             await SetNewsletterSubscriptionStatusAsync(customerDto);
 
-            await SetCustomerAddressesAsync(customer, customerDto);
+            await SetCustomerDetailsAsync(customer, customerDto);
 
             return customerDto;
         }
@@ -381,11 +381,9 @@ namespace Nop.Plugin.Api.Services
             return filteredCustomerAttributes;
         }
 
-        private IQueryable<Customer> GetCustomersQuery(DateTime? createdAtMin = null, DateTime? createdAtMax = null,
+        private IQueryable<Customer> GetCustomersQuery(int currentStoreId, DateTime? createdAtMin = null, DateTime? createdAtMax = null,
           int sinceId = 0)
         {
-            int currentStoreId = _storeContext.GetCurrentStore().Id;
-
             var query = _customerRepository.Table.Where(customer =>
               !customer.Deleted && !customer.IsSystemAccount && customer.Active);
 
@@ -416,13 +414,14 @@ namespace Nop.Plugin.Api.Services
         private async Task<int> GetDefaultStoreLangaugeIdAsync()
         {
             // Get the default language id for the current store.
-            var defaultLanguageId = _storeContext.GetCurrentStore().DefaultLanguageId;
+            var store = await _storeContext.GetCurrentStoreAsync();
+            var defaultLanguageId = store.DefaultLanguageId;
 
             if (defaultLanguageId == 0)
             {
                 var allLanguages = await _languageService.GetAllLanguagesAsync();
 
-                int currentStoreId = _storeContext.GetCurrentStore().Id;
+                int currentStoreId = store.Id;
 
                 var storeLanguages = await allLanguages
                   .WhereAwait(async l => await _storeMappingService.AuthorizeAsync(l, currentStoreId)).ToListAsync();
@@ -475,10 +474,10 @@ namespace Nop.Plugin.Api.Services
             }
         }
 
-        private Task<List<string>> GetAllNewsletterCustomersEmailsAsync()
+        private async Task<List<string>> GetAllNewsletterCustomersEmailsAsync()
         {
-            var currentStoreId = _storeContext.GetCurrentStore().Id;
-            return _cacheManager.GetAsync(Constants.Configurations.NEWSLETTER_SUBSCRIBERS_KEY, async () =>
+            var currentStoreId = (await _storeContext.GetCurrentStoreAsync()).Id;
+            return await _cacheManager.GetAsync(Constants.Configurations.NEWSLETTER_SUBSCRIBERS_KEY, async () =>
             {
                 var subscriberEmails = await (from nls in _subscriptionRepository.Table
                                               where nls.StoreId == currentStoreId && nls.Active
@@ -487,8 +486,13 @@ namespace Nop.Plugin.Api.Services
             });
         }
 
-        private async Task SetCustomerAddressesAsync(Customer customer, CustomerDto customerDto)
+        private async Task SetCustomerDetailsAsync(Customer customer, CustomerDto customerDto)
         {
+            if (customer == null || customerDto == null)
+                return;
+
+            customerDto.RoleIds = (await _customerService.GetCustomerRolesAsync(customer, showHidden: true))
+                .Select(role => role.Id).ToList();
             customerDto.Addresses = await _addressApiService.GetAddressesByCustomerIdAsync(customer.Id);
             if (customer.BillingAddressId != null)
             {

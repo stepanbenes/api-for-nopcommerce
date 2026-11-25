@@ -17,13 +17,14 @@ namespace Nop.Plugin.Api.Services
             _storeContext = storeContext;
         }
 
-        public List<NewsLetterSubscription> GetNewsLetterSubscriptions(
+        public async Task<List<NewsLetterSubscription>> GetNewsLetterSubscriptionsAsync(
             DateTime? createdAtMin = null, DateTime? createdAtMax = null,
             int limit = Constants.Configurations.DefaultLimit, int page = Constants.Configurations.DefaultPageValue,
             int sinceId = Constants.Configurations.DefaultSinceId,
             bool? onlyActive = true)
         {
-            var query = GetNewsLetterSubscriptionsQuery(createdAtMin, createdAtMax, onlyActive);
+            var store = await _storeContext.GetCurrentStoreAsync();
+            var query = GetNewsLetterSubscriptionsQuery(store.Id, createdAtMin, createdAtMax, onlyActive);
 
             if (sinceId > 0)
             {
@@ -34,10 +35,9 @@ namespace Nop.Plugin.Api.Services
         }
 
         private IQueryable<NewsLetterSubscription> GetNewsLetterSubscriptionsQuery(
-            DateTime? createdAtMin = null, DateTime? createdAtMax = null, bool? onlyActive = true)
+            int currentStoreId, DateTime? createdAtMin = null, DateTime? createdAtMax = null, bool? onlyActive = true)
         {
-            var currentStore = _storeContext.GetCurrentStore();
-            var query = _newsLetterSubscriptionRepository.Table.Where(nls => nls.StoreId == currentStore.Id);
+            var query = _newsLetterSubscriptionRepository.Table.Where(nls => nls.StoreId == currentStoreId);
 
             if (onlyActive != null && onlyActive == true)
             {

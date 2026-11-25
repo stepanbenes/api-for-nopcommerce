@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Nop.Core.Data;
+using Nop.Data;
 using Nop.Core.Domain.Orders;
 using Nop.Plugin.Api.Services;
 using NUnit.Framework;
-using Rhino.Mocks;
+using Moq;
 
 namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
 {
@@ -15,8 +15,8 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
         public void WhenCalledWithDefaultParameters_GivenNoOrdersExist_ShouldReturnEmptyCollection()
         {
             // Arange
-            var ordersRepo = MockRepository.GenerateStub<IRepository<Order>>();
-            ordersRepo.Stub(x => x.TableNoTracking).Return(new List<Order>().AsQueryable());
+            var ordersRepo = Mock.Of<IRepository<Order>>();
+            Mock.Get(ordersRepo).Setup(x => x.Table).Returns(new List<Order>().AsQueryable());
             
             // Act
             var cut = new OrderApiService(ordersRepo);
@@ -34,8 +34,8 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
             existingOrders.Add(new Order() { Id = 2, Deleted = true });
 
             // Arange
-            var orderRepo = MockRepository.GenerateStub<IRepository<Order>>();
-            orderRepo.Stub(x => x.TableNoTracking).Return(existingOrders.AsQueryable());
+            var orderRepo = Mock.Of<IRepository<Order>>();
+            Mock.Get(orderRepo).Setup(x => x.Table).Returns(existingOrders.AsQueryable());
             
             // Act
             var cut = new OrderApiService(orderRepo);
@@ -56,8 +56,8 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
             var expectedCollection = existingOrders.Where(x => !x.Deleted).OrderBy(x => x.Id);
 
             // Arange
-            var orderRepo = MockRepository.GenerateStub<IRepository<Order>>();
-            orderRepo.Stub(x => x.TableNoTracking).Return(existingOrders.AsQueryable());
+            var orderRepo = Mock.Of<IRepository<Order>>();
+            Mock.Get(orderRepo).Setup(x => x.Table).Returns(existingOrders.AsQueryable());
             
             // Act
             var cut = new OrderApiService(orderRepo);
@@ -80,8 +80,8 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
             var expectedCollection = existingOrders.Where(x => !x.Deleted).OrderBy(x => x.Id);
 
             // Arange
-            var orderRepo = MockRepository.GenerateStub<IRepository<Order>>();
-            orderRepo.Stub(x => x.TableNoTracking).Return(existingOrders.AsQueryable());
+            var orderRepo = Mock.Of<IRepository<Order>>();
+            Mock.Get(orderRepo).Setup(x => x.Table).Returns(existingOrders.AsQueryable());
             
             // Act
             var cut = new OrderApiService(orderRepo);

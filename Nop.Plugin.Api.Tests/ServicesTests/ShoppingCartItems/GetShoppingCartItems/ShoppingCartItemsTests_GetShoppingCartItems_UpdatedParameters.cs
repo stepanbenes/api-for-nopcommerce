@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Nop.Core.Data;
+using Nop.Data;
 using Nop.Core.Domain.Orders;
-using Nop.Plugin.Api.Constants;
+using Nop.Plugin.Api.Infrastructure;
 using Nop.Plugin.Api.Services;
 using NUnit.Framework;
-using Rhino.Mocks;
+using Moq;
 
 namespace Nop.Plugin.Api.Tests.ServicesTests.ShoppingCartItems.GetShoppingCartItems
 {
@@ -37,20 +37,20 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ShoppingCartItems.GetShoppingCartIt
                 });
             }
 
-            var shoppingCartItemsRepo = MockRepository.GenerateStub<IRepository<ShoppingCartItem>>();
-            shoppingCartItemsRepo.Stub(x => x.TableNoTracking).Return(_existigShoppingCartItems.AsQueryable());
+            var shoppingCartItemsRepo = Mock.Of<IRepository<ShoppingCartItem>>();
+            Mock.Get(shoppingCartItemsRepo).Setup(x => x.Table).Returns(_existigShoppingCartItems.AsQueryable());
 
-            var storeContext = MockRepository.GenerateStub<IStoreContext>();
-            storeContext.Stub(x => x.CurrentStore).Return(new Store()
+            var storeContext = Mock.Of<IStoreContext>();
+            Mock.Get(storeContext).Setup(x => x.GetCurrentStoreAsync()).ReturnsAsync(new Store()
             {
                 Id = 0
             });
 
-            _shoppingCartItemsApiService = new ShoppingCartItemApiService(shoppingCartItemsRepo, storeContext);
+            _shoppingCartItemsApiService = new ShoppingCartItemApiService(shoppingCartItemsRepo, storeContext, new ShoppingCartSettings());
         }
 
         [Test]
-        public void WhenCalledWithUpdatedAtMinParameter_GivenSomeShoppingCartItemsUpdatedAfterThatDate_ShouldReturnThemSortedById()
+        public async Task WhenCalledWithUpdatedAtMinParameter_GivenSomeShoppingCartItemsUpdatedAfterThatDate_ShouldReturnThemSortedById()
         {
             // Arange
             DateTime updatedAtMinDate = _baseDate.AddMonths(5);
@@ -62,11 +62,11 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ShoppingCartItems.GetShoppingCartIt
                 UpdatedOnUtc = updatedAtMinDate
             });
 
-            var expectedCollection = _existigShoppingCartItems.Where(x => x.UpdatedOnUtc > updatedAtMinDate).OrderBy(x => x.Id).Take(Configurations.DefaultLimit);
+            var expectedCollection = _existigShoppingCartItems.Where(x => x.UpdatedOnUtc > updatedAtMinDate).OrderBy(x => x.Id).Take(Constants.Configurations.DefaultLimit);
             var expectedShoppingCartItemsCount = expectedCollection.Count();
 
             // Act
-            var result = _shoppingCartItemsApiService.GetShoppingCartItems(updatedAtMin: updatedAtMinDate);
+            var result = await _shoppingCartItemsApiService.GetShoppingCartItemsAsync(updatedAtMin: updatedAtMinDate);
 
             // Assert
             Assert.AreEqual(expectedShoppingCartItemsCount, result.Count);
@@ -74,7 +74,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ShoppingCartItems.GetShoppingCartIt
         }
 
         [Test]
-        public void WhenCalledWithUpdatedAtMinParameter_GivenAllShoppingCartItemsUpdatedBeforeThatDate_ShouldReturnEmptyCollection()
+        public async Task WhenCalledWithUpdatedAtMinParameter_GivenAllShoppingCartItemsUpdatedBeforeThatDate_ShouldReturnEmptyCollection()
         {
             // Arange
             DateTime updatedAtMinDate = _baseDate.AddMonths(11);
@@ -87,14 +87,14 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ShoppingCartItems.GetShoppingCartIt
             });
 
             // Act
-            var result = _shoppingCartItemsApiService.GetShoppingCartItems(updatedAtMin: updatedAtMinDate);
+            var result = await _shoppingCartItemsApiService.GetShoppingCartItemsAsync(updatedAtMin: updatedAtMinDate);
 
             // Assert
             CollectionAssert.IsEmpty(result);
         }
 
         [Test]
-        public void WhenCalledWithUpdatedAtMaxParameter_GivenSomeShoppingCartItemsUpdatedBeforeThatDate_ShouldReturnThemSortedById()
+        public async Task WhenCalledWithUpdatedAtMaxParameter_GivenSomeShoppingCartItemsUpdatedBeforeThatDate_ShouldReturnThemSortedById()
         {
             // Arange
             DateTime updatedAtMaxDate = _baseDate.AddMonths(5);
@@ -107,12 +107,12 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ShoppingCartItems.GetShoppingCartIt
             });
 
             var expectedCollection =
-                _existigShoppingCartItems.Where(x => x.UpdatedOnUtc < updatedAtMaxDate).OrderBy(x => x.Id).Take(Configurations.DefaultLimit);
+                _existigShoppingCartItems.Where(x => x.UpdatedOnUtc < updatedAtMaxDate).OrderBy(x => x.Id).Take(Constants.Configurations.DefaultLimit);
 
             var expectedShoppingCartItemsCount = expectedCollection.Count();
 
             // Act
-            var shoppingCartItems = _shoppingCartItemsApiService.GetShoppingCartItems(updatedAtMax: updatedAtMaxDate);
+            var shoppingCartItems = await _shoppingCartItemsApiService.GetShoppingCartItemsAsync(updatedAtMax: updatedAtMaxDate);
 
             // Assert
             Assert.AreEqual(expectedShoppingCartItemsCount, shoppingCartItems.Count);
@@ -120,13 +120,13 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ShoppingCartItems.GetShoppingCartIt
         }
 
         [Test]
-        public void WhenCalledWithUpdatedAtMaxParameter_GivenAllProductsUpdatedAfterThatDate_ShouldReturnEmptyCollection()
+        public async Task WhenCalledWithUpdatedAtMaxParameter_GivenAllProductsUpdatedAfterThatDate_ShouldReturnEmptyCollection()
         {
             // Arange
             DateTime updatedAtMaxDate = _baseDate.Subtract(new TimeSpan(365)); // subtract one year
             
             // Act
-            var result = _shoppingCartItemsApiService.GetShoppingCartItems(updatedAtMax: updatedAtMaxDate);
+            var result = await _shoppingCartItemsApiService.GetShoppingCartItemsAsync(updatedAtMax: updatedAtMaxDate);
 
             // Assert
             CollectionAssert.IsEmpty(result);

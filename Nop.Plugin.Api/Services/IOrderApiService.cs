@@ -7,7 +7,7 @@ namespace Nop.Plugin.Api.Services
 {
     public interface IOrderApiService
     {
-        IList<Order> GetOrdersByCustomerId(int customerId);
+        IList<Order> GetOrdersByCustomerId(int customerId, int? storeId = null);
 
         IList<Order> GetOrders(
             IList<int> ids = null, DateTime? createdAtMin = null, DateTime? createdAtMax = null,
@@ -15,7 +15,7 @@ namespace Nop.Plugin.Api.Services
             int sinceId = Constants.Configurations.DefaultSinceId, OrderStatus? status = null, PaymentStatus? paymentStatus = null,
             ShippingStatus? shippingStatus = null, int? customerId = null, int? storeId = null);
 
-        Order GetOrderById(int orderId);
+        Order GetOrderById(int orderId, int? storeId = null);
 
         int GetOrdersCount(
             DateTime? createdAtMin = null, DateTime? createdAtMax = null, OrderStatus? status = null,

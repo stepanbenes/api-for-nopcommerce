@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Nop.Core.Data;
+using Nop.Data;
 using Nop.Core.Domain.Catalog;
 using Nop.Plugin.Api.Services;
 using NUnit.Framework;
-using Rhino.Mocks;
+using Moq;
 
 namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategoryById
 {
@@ -19,16 +19,15 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategoryById
             int categoryId = 3;
             
             // Arange
-            var categoryRepo = MockRepository.GenerateStub<IRepository<Category>>();
-            categoryRepo.Stub(x => x.Table).Return((new List<Category>()).AsQueryable());
-            categoryRepo.Stub(x => x.GetById(categoryId)).Return(null);
+            var categoryRepo = Mock.Of<IRepository<Category>>();
+            Mock.Get(categoryRepo).Setup(x => x.Table).Returns((new List<Category>()).AsQueryable());
 
-            var productCategoryRepo = MockRepository.GenerateStub<IRepository<ProductCategory>>();
+            var productCategoryRepo = Mock.Of<IRepository<ProductCategory>>();
 
-            var storeMappingService = MockRepository.GenerateStub<IStoreMappingService>();
+            var storeMappingService = Mock.Of<IStoreMappingService>();
 
             // Act
-            var cut = new CategoryApiService(categoryRepo, productCategoryRepo, storeMappingService);
+            var cut = new CategoryApiService(categoryRepo, productCategoryRepo, storeMappingService, Mock.Of<Nop.Services.Catalog.ICategoryService>());
             var result = cut.GetCategoryById(categoryId);
 
             // Assert
@@ -41,13 +40,13 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategoryById
         public void WhenNegativeOrZeroCategoryIdPassed_ShouldReturnNull(int negativeOrZeroCategoryId)
         {
             // Aranges
-            var categoryRepoStub = MockRepository.GenerateStub<IRepository<Category>>();
-            var productCategoryRepo = MockRepository.GenerateStub<IRepository<ProductCategory>>();
+            var categoryRepoStub = Mock.Of<IRepository<Category>>();
+            var productCategoryRepo = Mock.Of<IRepository<ProductCategory>>();
 
-            var storeMappingService = MockRepository.GenerateStub<IStoreMappingService>();
+            var storeMappingService = Mock.Of<IStoreMappingService>();
 
             // Act
-            var cut = new CategoryApiService(categoryRepoStub, productCategoryRepo, storeMappingService);
+            var cut = new CategoryApiService(categoryRepoStub, productCategoryRepo, storeMappingService, Mock.Of<Nop.Services.Catalog.ICategoryService>());
             var result = cut.GetCategoryById(negativeOrZeroCategoryId);
 
             // Assert
@@ -61,21 +60,20 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategoryById
             Category category = new Category() { Id = 3, Name = "some name" };
 
             // Arange
-            var categoryRepo = MockRepository.GenerateStub<IRepository<Category>>();
+            var categoryRepo = Mock.Of<IRepository<Category>>();
 
             var list = new List<Category>();
             list.Add(category);
 
-            categoryRepo.Stub(x => x.Table).Return(list.AsQueryable());
+            Mock.Get(categoryRepo).Setup(x => x.Table).Returns(list.AsQueryable());
 
-            categoryRepo.Stub(x => x.GetById(categoryId)).Return(category);
 
-            var productCategoryRepo = MockRepository.GenerateStub<IRepository<ProductCategory>>();
+            var productCategoryRepo = Mock.Of<IRepository<ProductCategory>>();
 
-            var storeMappingService = MockRepository.GenerateStub<IStoreMappingService>();
+            var storeMappingService = Mock.Of<IStoreMappingService>();
 
             // Act
-            var cut = new CategoryApiService(categoryRepo, productCategoryRepo, storeMappingService);
+            var cut = new CategoryApiService(categoryRepo, productCategoryRepo, storeMappingService, Mock.Of<Nop.Services.Catalog.ICategoryService>());
             var result = cut.GetCategoryById(categoryId);
 
             // Assert

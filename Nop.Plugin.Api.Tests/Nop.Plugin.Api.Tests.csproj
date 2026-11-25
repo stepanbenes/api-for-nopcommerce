@@ -1,31 +1,27 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-	<PropertyGroup>
-			<TargetFramework>net461</TargetFramework>
-			<Version>4.0.0.0</Version>
-			<Authors>Nop-Templates, Ltd</Authors>
-			<Company>Nop-Templates, Ltd</Company>
-			<Description>The project contains a set of classes for testing of Nop.Plugin.Api</Description>
-			<Copyright>Copyright © Nop-Templates, Ltd</Copyright>
-			<RepositoryType>Git</RepositoryType>
-			<Product>Nop.Plugin.Api.Tests</Product>
-	</PropertyGroup>
-	<ItemGroup>
-	  <PackageReference Include="AutoMock">
-	    <Version>1.0.3.2</Version>
-	  </PackageReference>
-	  <PackageReference Include="NUnit">
-	    <Version>3.9.0</Version>
-	  </PackageReference>
-	  <PackageReference Include="RhinoMocks">
-	    <Version>3.6.1</Version>
-	  </PackageReference>
-	</ItemGroup>
-	<ItemGroup>
-	  <ProjectReference Include="..\..\Libraries\Nop.Core\Nop.Core.csproj" />
-	  <ProjectReference Include="..\..\Libraries\Nop.Services\Nop.Services.csproj" />
-	  <ProjectReference Include="..\Nop.Plugin.Api\Nop.Plugin.Api.csproj" />
-	</ItemGroup>
-	<ItemGroup>
-	  <Folder Include="Properties\" />
-	</ItemGroup>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.3.0" />
+    <PackageReference Include="Moq" Version="4.20.70" />
+    <PackageReference Include="NUnit" Version="4.1.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" PrivateAssets="all" />
+    <ProjectReference Include="../Nop.Plugin.Api/Nop.Plugin.Api.csproj" />
+    <ProjectReference Include="../ClientApp/ClientApp.csproj" />
+  </ItemGroup>
+
+  <!-- Keep historical MVC and inactive fixtures outside the .NET 10 test build. -->
+  <ItemGroup>
+    <Compile Remove="ControllersTests/**/*.cs" />
+    <Compile Remove="ModelBinderTests/**/*.cs" />
+    <Compile Remove="MappingTests/**/*.cs" />
+    <Compile Remove="Helpers/ActionResultExecutor.cs" />
+    <Compile Remove="ServicesTests/CountryApiServiceTests.cs" />
+    <Compile Remove="ServicesTests/StateProvinceApiServiceTests.cs" />
+    <Compile Remove="ServicesTests/Customers/CustomerApiServiceTests.cs" />
+  </ItemGroup>
 </Project>

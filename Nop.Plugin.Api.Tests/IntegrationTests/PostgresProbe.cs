@@ -1,0 +1,63 @@
+using System.Diagnostics;
+using System.Globalization;
+using System.Text.Json;
+using NUnit.Framework;
+using TestAssert = NUnit.Framework.Assert;
+
+namespace Nop.Plugin.Api.Tests.IntegrationTests;
+
+internal sealed class PostgresProbe(string container)
+{
+    public static PostgresProbe ForConfiguredContainer(Uri apiBaseAddress)
+    {
+        var container = Environment.GetEnvironmentVariable("NOP_API_TEST_POSTGRES_CONTAINER");
+        if (string.IsNullOrWhiteSpace(container))
+            TestAssert.Ignore("Set NOP_API_TEST_POSTGRES_CONTAINER to the PostgreSQL container for the isolated test store.");
+
+        TestAssert.That(apiBaseAddress.IsLoopback, Is.True, "Database integration tests require a loopback API URL.");
+        return new PostgresProbe(container);
+    }
+
+    public async Task<JsonElement> ReadAsync(string select, int id)
+    {
+        var startInfo = new ProcessStartInfo("docker")
+        {
+            UseShellExecute = false,
+            RedirectStandardInput = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true
+        };
+        foreach (var argument in new[]
+        {
+            "exec", "-i", "--env", "PGOPTIONS=-c default_transaction_read_only=on",
+            container, "psql", "-XqAtw", "--username=nopcommerce", "--dbname=nopcommerce",
+            "--set=ON_ERROR_STOP=1", $"--set=id={id.ToString(CultureInfo.InvariantCulture)}"
+        })
+        {
+            startInfo.ArgumentList.Add(argument);
+        }
+
+        using var process = Process.Start(startInfo)
+            ?? throw new InvalidOperationException("Could not start docker exec for the PostgreSQL read.");
+        var output = process.StandardOutput.ReadToEndAsync();
+        var errors = process.StandardError.ReadToEndAsync();
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+        try
+        {
+            await process.StandardInput.WriteLineAsync(
+                $"SELECT COALESCE(({select}), 'null'::jsonb);".AsMemory(), timeout.Token);
+            process.StandardInput.Close();
+            await process.WaitForExitAsync(timeout.Token);
+        }
+        catch (OperationCanceledException) when (timeout.IsCancellationRequested)
+        {
+            if (!process.HasExited)
+                process.Kill();
+            throw new TimeoutException("The local PostgreSQL read did not finish in 15 seconds.");
+        }
+
+        TestAssert.That(process.ExitCode, Is.Zero, await errors);
+        using var document = JsonDocument.Parse(await output);
+        return document.RootElement.Clone();
+    }
+}

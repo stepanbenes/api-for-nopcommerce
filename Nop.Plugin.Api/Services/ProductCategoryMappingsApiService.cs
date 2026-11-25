@@ -33,7 +33,7 @@ namespace Nop.Plugin.Api.Services
         {
             if (id <= 0)
             {
-                return null;
+                return Task.FromResult<ProductCategory>(null);
             }
 
             return _productCategoryMappingsRepository.GetByIdAsync(id);

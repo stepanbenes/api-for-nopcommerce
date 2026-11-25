@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Nop.Core.Data;
+using Nop.Data;
 using Nop.Core.Domain.Catalog;
 using Nop.Plugin.Api.Services;
 using NUnit.Framework;
-using Rhino.Mocks;
+using Moq;
 
 namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategories
 {
@@ -31,8 +31,8 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategories
                 new Category() {Id = 7 }
             };
 
-            var categoryRepo = MockRepository.GenerateStub<IRepository<Category>>();
-            categoryRepo.Stub(x => x.TableNoTracking).Return(_existigCategories.AsQueryable());
+            var categoryRepo = Mock.Of<IRepository<Category>>();
+            Mock.Get(categoryRepo).Setup(x => x.Table).Returns(_existigCategories.AsQueryable());
 
             _existingCategoryMappings= new List<ProductCategory>()
             {
@@ -44,13 +44,13 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategories
                 new ProductCategory() { CategoryId = 5, ProductId = 5 }
             };
 
-            var productCategoryRepo = MockRepository.GenerateStub<IRepository<ProductCategory>>();
-            productCategoryRepo.Stub(x => x.TableNoTracking).Return(_existingCategoryMappings.AsQueryable());
+            var productCategoryRepo = Mock.Of<IRepository<ProductCategory>>();
+            Mock.Get(productCategoryRepo).Setup(x => x.Table).Returns(_existingCategoryMappings.AsQueryable());
 
-            var storeMappingService = MockRepository.GenerateStub<IStoreMappingService>();
-            storeMappingService.Stub(x => x.Authorize(Arg<Category>.Is.Anything)).Return(true);
+            var storeMappingService = Mock.Of<IStoreMappingService>();
+            Mock.Get(storeMappingService).Setup(x => x.AuthorizeAsync(It.IsAny<Category>())).ReturnsAsync(true);
 
-            _categoryApiService = new CategoryApiService(categoryRepo, productCategoryRepo, storeMappingService);
+            _categoryApiService = new CategoryApiService(categoryRepo, productCategoryRepo, storeMappingService, Mock.Of<Nop.Services.Catalog.ICategoryService>());
         }
 
         [Test]

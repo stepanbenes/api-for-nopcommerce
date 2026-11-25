@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Nop.Core.Data;
+using Nop.Data;
 using Nop.Core.Domain.Catalog;
 using Nop.Plugin.Api.Services;
 using NUnit.Framework;
-using Rhino.Mocks;
+using Moq;
 
 namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategoriesCount
 {
@@ -34,19 +34,19 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategoriesCount
                 new Category() {Id = 7, Published = false, CreatedOnUtc = _baseDate.AddMonths(4) }
             };
 
-            var categoryRepo = MockRepository.GenerateStub<IRepository<Category>>();
-            categoryRepo.Stub(x => x.TableNoTracking).Return(_existigCategories.AsQueryable());
+            var categoryRepo = Mock.Of<IRepository<Category>>();
+            Mock.Get(categoryRepo).Setup(x => x.Table).Returns(_existigCategories.AsQueryable());
 
-            var productCategoryRepo = MockRepository.GenerateStub<IRepository<ProductCategory>>();
+            var productCategoryRepo = Mock.Of<IRepository<ProductCategory>>();
 
-            var storeMappingService = MockRepository.GenerateStub<IStoreMappingService>();
-            storeMappingService.Stub(x => x.Authorize(Arg<Category>.Is.Anything)).Return(true);
+            var storeMappingService = Mock.Of<IStoreMappingService>();
+            Mock.Get(storeMappingService).Setup(x => x.AuthorizeAsync(It.IsAny<Category>())).ReturnsAsync(true);
 
-            _categoryApiService = new CategoryApiService(categoryRepo, productCategoryRepo, storeMappingService);
+            _categoryApiService = new CategoryApiService(categoryRepo, productCategoryRepo, storeMappingService, Mock.Of<Nop.Services.Catalog.ICategoryService>());
         }
 
         [Test]
-        public void WhenCalledWithCreatedAtMinParameter_GivenSomeCategoriesCreatedAfterThatDate_ShouldReturnTheirCount()
+        public async Task WhenCalledWithCreatedAtMinParameter_GivenSomeCategoriesCreatedAfterThatDate_ShouldReturnTheirCount()
         {
             // Arange
             DateTime createdAtMinDate = _baseDate.AddMonths(5);
@@ -55,27 +55,27 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategoriesCount
             var expectedCategoriesCount = expectedCollection.Count();
 
             // Act
-            var categoriesCount = _categoryApiService.GetCategoriesCount(createdAtMin: createdAtMinDate);
+            var categoriesCount = await _categoryApiService.GetCategoriesCountAsync(createdAtMin: createdAtMinDate);
 
             // Assert
             Assert.AreEqual(expectedCategoriesCount, categoriesCount);
         }
 
         [Test]
-        public void WhenCalledWithCreatedAtMinParameter_GivenAllCategoriesCreatedBeforeThatDate_ShouldReturnZero()
+        public async Task WhenCalledWithCreatedAtMinParameter_GivenAllCategoriesCreatedBeforeThatDate_ShouldReturnZero()
         {
             // Arange
             DateTime createdAtMinDate = _baseDate.AddMonths(11);
 
             // Act
-            var categoriesCount = _categoryApiService.GetCategoriesCount(createdAtMin: createdAtMinDate);
+            var categoriesCount = await _categoryApiService.GetCategoriesCountAsync(createdAtMin: createdAtMinDate);
 
             // Assert
             Assert.AreEqual(0, categoriesCount);
         }
 
         [Test]
-        public void WhenCalledWithCreatedAtMaxParameter_GivenSomeCategoriesCreatedBeforeThatDate_ShouldReturnTheirCount()
+        public async Task WhenCalledWithCreatedAtMaxParameter_GivenSomeCategoriesCreatedBeforeThatDate_ShouldReturnTheirCount()
         {
             // Arange
             DateTime createdAtMaxDate = _baseDate.AddMonths(5);
@@ -83,20 +83,20 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategoriesCount
             var expectedCategoriesCount = expectedCollection.Count();
 
             // Act
-            var categoriesCount = _categoryApiService.GetCategoriesCount(createdAtMax: createdAtMaxDate);
+            var categoriesCount = await _categoryApiService.GetCategoriesCountAsync(createdAtMax: createdAtMaxDate);
 
             // Assert
             Assert.AreEqual(expectedCategoriesCount, categoriesCount);
         }
 
         [Test]
-        public void WhenCalledWithCreatedAtMaxParameter_GivenAllCategoriesCreatedAfterThatDate_ShouldReturnZero()
+        public async Task WhenCalledWithCreatedAtMaxParameter_GivenAllCategoriesCreatedAfterThatDate_ShouldReturnZero()
         {
             // Arange
             DateTime createdAtMaxDate = _baseDate.Subtract(new TimeSpan(365)); // subtract one year
 
             // Act
-            var categoriesCount = _categoryApiService.GetCategoriesCount(createdAtMax: createdAtMaxDate);
+            var categoriesCount = await _categoryApiService.GetCategoriesCountAsync(createdAtMax: createdAtMaxDate);
 
             // Assert
             Assert.AreEqual(0, categoriesCount);

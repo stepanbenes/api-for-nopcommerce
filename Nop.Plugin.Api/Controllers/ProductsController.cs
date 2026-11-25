@@ -101,7 +101,7 @@ namespace Nop.Plugin.Api.Controllers
                                                              parameters.VendorName, parameters.PublishedStatus, parameters.ManufacturerPartNumbers, parameters.IsDownload)
                                                 .WhereAwait(async p => await StoreMappingService.AuthorizeAsync(p));
 
-            IList<ProductDto> productsAsDtos = await allProducts.SelectAwait(async product => await _dtoHelper.PrepareProductDTOAsync(product)).ToListAsync();
+            IList<ProductDto> productsAsDtos = await allProducts.Select(async (Product product, CancellationToken _) => await _dtoHelper.PrepareProductDTOAsync(product)).ToListAsync();
 
             var productsRootObject = new ProductsRootObjectDto
             {

@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Nop.Core.Data;
+using Nop.Data;
 using Nop.Core.Domain.Orders;
 using Nop.Plugin.Api.Services;
 using NUnit.Framework;
-using Rhino.Mocks;
+using Moq;
 
 namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrderById
 {
@@ -17,9 +17,8 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrderById
             int orderId = 3;
             
             // Arange
-            var orderRepo = MockRepository.GenerateStub<IRepository<Order>>();
-            orderRepo.Stub(x => x.Table).Return((new List<Order>()).AsQueryable());
-            orderRepo.Stub(x => x.GetById(orderId)).Return(null);
+            var orderRepo = Mock.Of<IRepository<Order>>();
+            Mock.Get(orderRepo).Setup(x => x.Table).Returns((new List<Order>()).AsQueryable());
 
             // Act  
             var cut = new OrderApiService(orderRepo);
@@ -35,7 +34,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrderById
         public void WhenNegativeOrZeroOrderIdPassed_ShouldReturnNull(int negativeOrZeroOrderId)
         {
             // Aranges
-            var orderRepoStub = MockRepository.GenerateStub<IRepository<Order>>();
+            var orderRepoStub = Mock.Of<IRepository<Order>>();
 
             // Act
             var cut = new OrderApiService(orderRepoStub);
@@ -52,13 +51,12 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrderById
             var order = new Order() { Id = 3 };
 
             // Arange
-            var orderRepo = MockRepository.GenerateStub<IRepository<Order>>();
+            var orderRepo = Mock.Of<IRepository<Order>>();
 
             var list = new List<Order>();
             list.Add(order);
 
-            orderRepo.Stub(x => x.Table).Return(list.AsQueryable());
-            orderRepo.Stub(x => x.GetById(orderId)).Return(order);
+            Mock.Get(orderRepo).Setup(x => x.Table).Returns(list.AsQueryable());
             
             // Act
             var cut = new OrderApiService(orderRepo);

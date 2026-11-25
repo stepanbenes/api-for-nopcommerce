@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Nop.Plugin.Api.Attributes;
 using Nop.Plugin.Api.Delta;
 using Nop.Plugin.Api.Helpers;
@@ -59,6 +60,8 @@ namespace Nop.Plugin.Api.ModelBinders
 
                 if (bindingContext.ModelState.IsValid)
                 {
+                    // A Delta carries a partial DTO and has already been validated above.
+                    bindingContext.ValidationState.Add(delta, new ValidationStateEntry { SuppressValidation = true });
                     bindingContext.Model = delta;
                     bindingContext.Result = ModelBindingResult.Success(bindingContext.Model);
                 }

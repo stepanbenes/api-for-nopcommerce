@@ -141,6 +141,12 @@ namespace Nop.Plugin.Api.DTO.Orders
         public string CheckoutAttributeDescription { get; set; }
 
         /// <summary>
+        /// Selections for order creation. For choice attributes, use the configured choice IDs as strings.
+        /// </summary>
+        [JsonProperty("checkout_attributes", NullValueHandling = NullValueHandling.Ignore)]
+        public List<CheckoutAttributeSelectionDto> CheckoutAttributes { get; set; }
+
+        /// <summary>
         ///     Gets or sets the customer language identifier
         /// </summary>
         [JsonProperty("customer_language_id")]

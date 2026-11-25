@@ -1,5 +1,4 @@
 ﻿using Nop.Plugin.Api.Areas.Admin.Models;
-using Nop.Plugin.Api.AutoMapper;
 using Nop.Plugin.Api.Domain;
 
 namespace Nop.Plugin.Api.MappingExtensions

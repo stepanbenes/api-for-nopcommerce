@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
-using Nop.Plugin.Api.DTOs;
+using Nop.Plugin.Api.DTO;
 
 namespace Nop.Plugin.Api.Tests.SerializersTests.DummyObjects
 {

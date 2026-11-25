@@ -91,7 +91,7 @@ namespace Nop.Plugin.Api.Controllers
                                                                   parameters.ProductId, parameters.PublishedStatus, parameters.ParentCategoryId)
                                                    .WhereAwait(async c => await StoreMappingService.AuthorizeAsync(c));
 
-            IList<CategoryDto> categoriesAsDtos = await allCategories.SelectAwait(async category => await _dtoHelper.PrepareCategoryDTOAsync(category)).ToListAsync();
+            IList<CategoryDto> categoriesAsDtos = await allCategories.Select(async (Category category, CancellationToken _) => await _dtoHelper.PrepareCategoryDTOAsync(category)).ToListAsync();
 
             var categoriesRootObject = new CategoriesRootObject
             {
@@ -188,6 +188,14 @@ namespace Nop.Plugin.Api.Controllers
                 return Error();
             }
 
+            if (string.IsNullOrWhiteSpace(categoryDelta.Dto.Name))
+                return Error((HttpStatusCode)422, "name", "invalid name");
+
+            if (categoryDelta.Dto.IncludeInTopMenu.HasValue)
+            {
+                return Error(HttpStatusCode.BadRequest, "include_in_top_menu", "Manage navigation in nopCommerce under Content management > Menus.");
+            }
+
             //If the validation has passed the categoryDelta object won't be null for sure so we don't need to check for this.
 
             Picture insertedPicture = null;
@@ -255,6 +263,14 @@ namespace Nop.Plugin.Api.Controllers
             if (!ModelState.IsValid)
             {
                 return Error();
+            }
+
+            if (categoryDelta.HasProperty(nameof(CategoryDto.Name)) && string.IsNullOrWhiteSpace(categoryDelta.Dto.Name))
+                return Error((HttpStatusCode)422, "name", "invalid name");
+
+            if (categoryDelta.Dto.IncludeInTopMenu.HasValue)
+            {
+                return Error(HttpStatusCode.BadRequest, "include_in_top_menu", "Manage navigation in nopCommerce under Content management > Menus.");
             }
 
             var category = _categoryApiService.GetCategoryById(categoryDelta.Dto.Id);

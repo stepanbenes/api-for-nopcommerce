@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Nop.Core.Data;
+using Nop.Data;
 using Nop.Core.Domain.Catalog;
 using Nop.Core.Domain.Vendors;
 using Nop.Plugin.Api.Services;
 using NUnit.Framework;
-using Rhino.Mocks;
+using Moq;
 
 namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProductsCount
 {
@@ -34,10 +34,10 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProductsCount
                 new Product() {Id = 9, VendorId = 4 }
             };
 
-            var productRepo = MockRepository.GenerateStub<IRepository<Product>>();
-            productRepo.Stub(x => x.TableNoTracking).Return(_existigProducts.AsQueryable());
+            var productRepo = Mock.Of<IRepository<Product>>();
+            Mock.Get(productRepo).Setup(x => x.Table).Returns(_existigProducts.AsQueryable());
 
-            var productCategoryRepo = MockRepository.GenerateStub<IRepository<ProductCategory>>();
+            var productCategoryRepo = Mock.Of<IRepository<ProductCategory>>();
 
             _existingVendors = new List<Vendor>()
             {
@@ -48,11 +48,11 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProductsCount
                 new Vendor() {Id = 5, Name = "vendor 5", Active = true}
             };
 
-            var vendorRepo = MockRepository.GenerateStub<IRepository<Vendor>>();
-            vendorRepo.Stub(x => x.TableNoTracking).Return(_existingVendors.AsQueryable());
+            var vendorRepo = Mock.Of<IRepository<Vendor>>();
+            Mock.Get(vendorRepo).Setup(x => x.Table).Returns(_existingVendors.AsQueryable());
 
-            var storeMappingService = MockRepository.GenerateStub<IStoreMappingService>();
-            storeMappingService.Stub(x => x.Authorize(Arg<Product>.Is.Anything)).Return(true);
+            var storeMappingService = Mock.Of<IStoreMappingService>();
+            Mock.Get(storeMappingService).Setup(x => x.AuthorizeAsync(It.IsAny<Product>())).ReturnsAsync(true);
 
             _productApiService = new ProductApiService(productRepo, productCategoryRepo, vendorRepo, storeMappingService);
         }
@@ -60,7 +60,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProductsCount
         [Test]
         [TestCase("vendor 1")]
         [TestCase("vendor 2")]
-        public void WhenCalledWithValidVendorName_ShouldReturnOnlyTheCountOfTheProductsMappedToThisVendor(string vendorName)
+        public async Task WhenCalledWithValidVendorName_ShouldReturnOnlyTheCountOfTheProductsMappedToThisVendor(string vendorName)
         {
             // Arange
             var expectedCollectionCount = (from product in _existigProducts
@@ -69,14 +69,14 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProductsCount
                                           select product).Count();
 
             // Act
-            var productsCount = _productApiService.GetProductsCount(vendorName: vendorName);
+            var productsCount = await _productApiService.GetProductsCountAsync(vendorName: vendorName);
 
             // Assert
             Assert.AreEqual(expectedCollectionCount, productsCount);
         }
 
         [Test]
-        public void WhenCalledWithValidVendorName_GivenVendorCollectionWhereThisVendorIsDeleted_ShouldReturnZero()
+        public async Task WhenCalledWithValidVendorName_GivenVendorCollectionWhereThisVendorIsDeleted_ShouldReturnZero()
         {
             // Arange
             string vendorName = "vendor 3";
@@ -86,14 +86,14 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProductsCount
                                            select product).Count();
 
             // Act
-            var productsCount = _productApiService.GetProductsCount(vendorName: vendorName);
+            var productsCount = await _productApiService.GetProductsCountAsync(vendorName: vendorName);
 
             // Assert
             Assert.AreEqual(expectedCollectionCount, productsCount);
         }
 
         [Test]
-        public void WhenCalledWithValidVendorName_GivenVendorCollectionWhereThisVendorIsUnactive_ShouldReturnZero()
+        public async Task WhenCalledWithValidVendorName_GivenVendorCollectionWhereThisVendorIsUnactive_ShouldReturnZero()
         {
             // Arange
             string vendorName = "vendor 4";
@@ -103,14 +103,14 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProductsCount
                                            select product).Count();
 
             // Act
-            var productsCount = _productApiService.GetProductsCount(vendorName: vendorName);
+            var productsCount = await _productApiService.GetProductsCountAsync(vendorName: vendorName);
 
             // Assert
             Assert.AreEqual(expectedCollectionCount, productsCount);
         }
 
         [Test]
-        public void WhenCalledWithValidVendorName_GivenProductsCollectionWhereThereAreNoProductsMappedToThisVendor_ShouldReturnZero()
+        public async Task WhenCalledWithValidVendorName_GivenProductsCollectionWhereThereAreNoProductsMappedToThisVendor_ShouldReturnZero()
         {
             // Arange
             string vendorName = "vendor 5";
@@ -120,7 +120,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProductsCount
                                            select product).Count();
 
             // Act
-            var productsCount = _productApiService.GetProductsCount(vendorName: vendorName);
+            var productsCount = await _productApiService.GetProductsCountAsync(vendorName: vendorName);
 
             // Assert
             Assert.AreEqual(expectedCollectionCount, productsCount);
@@ -129,13 +129,13 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProductsCount
         [Test]
         [TestCase(null)]
         [TestCase("")]
-        public void WhenCalledWithNullOrEmptyVendorName_ShouldReturnTheEntireCollectionCount(string vendorName)
+        public async Task WhenCalledWithNullOrEmptyVendorName_ShouldReturnTheEntireCollectionCount(string vendorName)
         {
             // Arange
             var expectedCollectionCount = _existigProducts.Count(p => !p.Deleted);
 
             // Act
-            var productsCount = _productApiService.GetProductsCount(vendorName: vendorName);
+            var productsCount = await _productApiService.GetProductsCountAsync(vendorName: vendorName);
 
             // Assert
             Assert.AreEqual(expectedCollectionCount, productsCount);
@@ -145,10 +145,10 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProductsCount
         [TestCase("invalid vendor name")]
         [TestCase("$&@#*@(!(&%)@_@_!*%^&/sd")]
         [TestCase("345")]
-        public void WhenCalledWithInvalidVendorName_ShouldReturnZero(string vendorName)
+        public async Task WhenCalledWithInvalidVendorName_ShouldReturnZero(string vendorName)
         {
             // Act
-            var productsCount = _productApiService.GetProductsCount(vendorName: vendorName);
+            var productsCount = await _productApiService.GetProductsCountAsync(vendorName: vendorName);
 
             // Assert
             Assert.AreEqual(0, productsCount);

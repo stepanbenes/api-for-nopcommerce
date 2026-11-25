@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Nop.Core.Data;
+using Nop.Data;
 using Nop.Core.Domain.Catalog;
 using Nop.Core.Domain.Orders;
 using Nop.Core.Domain.Vendors;
-using Nop.Plugin.Api.Constants;
+using Nop.Plugin.Api.Infrastructure;
 using Nop.Plugin.Api.Services;
 using NUnit.Framework;
-using Rhino.Mocks;
+using Moq;
 
 namespace Nop.Plugin.Api.Tests.ServicesTests.ShoppingCartItems.GetShoppingCartItems
 {
@@ -39,20 +39,20 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ShoppingCartItems.GetShoppingCartIt
                 });
             }
             
-            var shoppingCartItemsRepo = MockRepository.GenerateStub<IRepository<ShoppingCartItem>>();
-            shoppingCartItemsRepo.Stub(x => x.TableNoTracking).Return(_existigShoppingCartItems.AsQueryable());
+            var shoppingCartItemsRepo = Mock.Of<IRepository<ShoppingCartItem>>();
+            Mock.Get(shoppingCartItemsRepo).Setup(x => x.Table).Returns(_existigShoppingCartItems.AsQueryable());
 
-            var storeContext = MockRepository.GenerateStub<IStoreContext>();
-            storeContext.Stub(x => x.CurrentStore).Return(new Store()
+            var storeContext = Mock.Of<IStoreContext>();
+            Mock.Get(storeContext).Setup(x => x.GetCurrentStoreAsync()).ReturnsAsync(new Store()
             {
                 Id = 0
             });
 
-            _shoppingCartItemsApiService = new ShoppingCartItemApiService(shoppingCartItemsRepo, storeContext);
+            _shoppingCartItemsApiService = new ShoppingCartItemApiService(shoppingCartItemsRepo, storeContext, new ShoppingCartSettings());
         }
 
         [Test]
-        public void WhenCalledWithCreatedAtMinParameter_GivenSomeShoppingCartItemsCreatedAfterThatDate_ShouldReturnThemSortedById()
+        public async Task WhenCalledWithCreatedAtMinParameter_GivenSomeShoppingCartItemsCreatedAfterThatDate_ShouldReturnThemSortedById()
         {
             // Arange
             DateTime createdAtMinDate = _baseDate.AddMonths(5);
@@ -65,12 +65,12 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ShoppingCartItems.GetShoppingCartIt
             });
 
             var expectedCollection =
-                _existigShoppingCartItems.Where(x => x.CreatedOnUtc > createdAtMinDate).OrderBy(x => x.Id).Take(Configurations.DefaultLimit);
+                _existigShoppingCartItems.Where(x => x.CreatedOnUtc > createdAtMinDate).OrderBy(x => x.Id).Take(Constants.Configurations.DefaultLimit);
 
             var expectedProductsCount = expectedCollection.Count();
 
             // Act
-            var shoppingCartItems = _shoppingCartItemsApiService.GetShoppingCartItems(createdAtMin: createdAtMinDate);
+            var shoppingCartItems = await _shoppingCartItemsApiService.GetShoppingCartItemsAsync(createdAtMin: createdAtMinDate);
 
             // Assert
             CollectionAssert.IsNotEmpty(shoppingCartItems);
@@ -79,7 +79,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ShoppingCartItems.GetShoppingCartIt
         }
 
         [Test]
-        public void WhenCalledWithCreatedAtMinParameter_GivenAllShoppingCartItemsCreatedBeforeThatDate_ShouldReturnEmptyCollection()
+        public async Task WhenCalledWithCreatedAtMinParameter_GivenAllShoppingCartItemsCreatedBeforeThatDate_ShouldReturnEmptyCollection()
         {
             // Arange
             DateTime createdAtMinDate = _baseDate.AddMonths(11);
@@ -92,14 +92,14 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ShoppingCartItems.GetShoppingCartIt
             });
 
             // Act
-            var shoppingCartItems = _shoppingCartItemsApiService.GetShoppingCartItems(createdAtMin: createdAtMinDate);
+            var shoppingCartItems = await _shoppingCartItemsApiService.GetShoppingCartItemsAsync(createdAtMin: createdAtMinDate);
 
             // Assert
             CollectionAssert.IsEmpty(shoppingCartItems);
         }
 
         [Test]
-        public void WhenCalledWithCreatedAtMaxParameter_GivenSomeShoppingCartItemsCreatedBeforeThatDate_ShouldReturnThemSortedById()
+        public async Task WhenCalledWithCreatedAtMaxParameter_GivenSomeShoppingCartItemsCreatedBeforeThatDate_ShouldReturnThemSortedById()
         {
             // Arange
             DateTime createdAtMaxDate = _baseDate.AddMonths(5);
@@ -111,11 +111,11 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ShoppingCartItems.GetShoppingCartIt
                 CreatedOnUtc = createdAtMaxDate
             });
 
-            var expectedCollection = _existigShoppingCartItems.Where(x => x.CreatedOnUtc < createdAtMaxDate).OrderBy(x => x.Id).Take(Configurations.DefaultLimit);
+            var expectedCollection = _existigShoppingCartItems.Where(x => x.CreatedOnUtc < createdAtMaxDate).OrderBy(x => x.Id).Take(Constants.Configurations.DefaultLimit);
             var expectedShoppingCartItemsCount = expectedCollection.Count();
 
             // Act
-            var shoppingCartItems = _shoppingCartItemsApiService.GetShoppingCartItems(createdAtMax: createdAtMaxDate);
+            var shoppingCartItems = await _shoppingCartItemsApiService.GetShoppingCartItemsAsync(createdAtMax: createdAtMaxDate);
 
             // Assert
             CollectionAssert.IsNotEmpty(shoppingCartItems);
@@ -124,13 +124,13 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ShoppingCartItems.GetShoppingCartIt
         }
 
         [Test]
-        public void WhenCalledWithCreatedAtMaxParameter_GivenAllShoppingCartItemsCreatedAfterThatDate_ShouldReturnEmptyCollection()
+        public async Task WhenCalledWithCreatedAtMaxParameter_GivenAllShoppingCartItemsCreatedAfterThatDate_ShouldReturnEmptyCollection()
         {
             // Arange
             DateTime createdAtMaxDate = _baseDate.Subtract(new TimeSpan(365)); // subtract one year
             
             // Act
-            var shoppingCartItems = _shoppingCartItemsApiService.GetShoppingCartItems(createdAtMax: createdAtMaxDate);
+            var shoppingCartItems = await _shoppingCartItemsApiService.GetShoppingCartItemsAsync(createdAtMax: createdAtMaxDate);
 
             // Assert
             CollectionAssert.IsEmpty(shoppingCartItems);

@@ -5,10 +5,10 @@ using Nop.Plugin.Api.Attributes;
 using Nop.Plugin.Api.Authorization.Attributes;
 using Nop.Plugin.Api.Delta;
 using Nop.Plugin.Api.DTO.Errors;
-using Nop.Plugin.Api.DTO.Orders;
 using Nop.Plugin.Api.DTOs.Topics;
 using Nop.Plugin.Api.Factories;
 using Nop.Plugin.Api.Helpers;
+using Nop.Plugin.Api.Infrastructure;
 using Nop.Plugin.Api.JSON.ActionResults;
 using Nop.Plugin.Api.JSON.Serializers;
 using Nop.Plugin.Api.ModelBinders;
@@ -65,17 +65,28 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="401">Unauthorized</response>
         [HttpGet]
         [Route("/api/topics", Name = "GetTopics")]
-        [ProducesResponseType(typeof(OrdersRootObject), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(TopicsRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [GetRequestsErrorInterceptorActionFilter]
         public async Task<IActionResult> GetTopics([FromQuery] TopicsParametersModel parameters)
         {
-            var storeId = _storeContext.GetCurrentStore().Id;
+            if (parameters.Limit < 1 || parameters.Limit > Constants.Configurations.MaxLimit)
+                return Error(HttpStatusCode.BadRequest, "limit", "invalid limit");
+            if (parameters.Page < 1)
+                return Error(HttpStatusCode.BadRequest, "page", "invalid page");
+
+            var storeId = (await _storeContext.GetCurrentStoreAsync()).Id;
 
             var topics = await _topicService.GetAllTopicsAsync(storeId);
 
-            IList<TopicDto> topicsAsDtos = topics.Select(x => _dtoHelper.PrepareTopicDTO(x)).ToList();
+            var matchingTopics = topics.Where(topic =>
+                (parameters.Ids == null || parameters.Ids.Count == 0 || parameters.Ids.Contains(topic.Id)) &&
+                topic.Id > parameters.SinceId);
+            var offset = (long)(parameters.Page - 1) * parameters.Limit;
+            IList<TopicDto> topicsAsDtos = offset >= topics.Count
+                ? new List<TopicDto>()
+                : matchingTopics.Skip((int)offset).Take(parameters.Limit).Select(_dtoHelper.PrepareTopicDTO).ToList();
 
             var topicsRootObject = new TopicsRootObject
             {
@@ -145,6 +156,13 @@ namespace Nop.Plugin.Api.Controllers
                 return Error();
             }
 
+            var topicDtoInput = topicDelta.Dto;
+            if (topicDtoInput.IncludeInTopMenu.HasValue || topicDtoInput.IncludeInFooterColumn1.HasValue ||
+                topicDtoInput.IncludeInFooterColumn2.HasValue || topicDtoInput.IncludeInFooterColumn3.HasValue)
+            {
+                return Error(HttpStatusCode.BadRequest, "menu", "Manage navigation in nopCommerce under Content management > Menus.");
+            }
+
             var newTopic = await _factory.InitializeAsync();
             newTopic.Title = topicDelta.Dto.Title;
             newTopic.Body = topicDelta.Dto.Body;
@@ -165,7 +183,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpPut]
         [Route("/api/topics/{id}", Name = "UpdateTopic")]
-        [ProducesResponseType(typeof(OrdersRootObject), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(TopicsRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
@@ -179,6 +197,13 @@ namespace Nop.Plugin.Api.Controllers
             if (!ModelState.IsValid)
             {
                 return Error();
+            }
+
+            var topicDtoInput = topicDelta.Dto;
+            if (topicDtoInput.IncludeInTopMenu.HasValue || topicDtoInput.IncludeInFooterColumn1.HasValue ||
+                topicDtoInput.IncludeInFooterColumn2.HasValue || topicDtoInput.IncludeInFooterColumn3.HasValue)
+            {
+                return Error(HttpStatusCode.BadRequest, "menu", "Manage navigation in nopCommerce under Content management > Menus.");
             }
 
             var currentTopic = await _topicService.GetTopicByIdAsync(topicDelta.Dto.Id);

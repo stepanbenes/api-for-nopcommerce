@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Nop.Core.Data;
+using Nop.Data;
 using Nop.Core.Domain.Catalog;
 using Nop.Core.Domain.Vendors;
 using Nop.Plugin.Api.Services;
 using NUnit.Framework;
-using Rhino.Mocks;
+using Moq;
 
 namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProductsCount
 {
@@ -32,8 +32,8 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProductsCount
                 new Product() {Id = 7 }
             };
 
-            var productRepo = MockRepository.GenerateStub<IRepository<Product>>();
-            productRepo.Stub(x => x.TableNoTracking).Return(_existigProducts.AsQueryable());
+            var productRepo = Mock.Of<IRepository<Product>>();
+            Mock.Get(productRepo).Setup(x => x.Table).Returns(_existigProducts.AsQueryable());
 
             _existingCategoryMappings= new List<ProductCategory>()
             {
@@ -45,19 +45,19 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProductsCount
                 new ProductCategory() { CategoryId = 5, ProductId = 5 }
             };
 
-            var productCategoryRepo = MockRepository.GenerateStub<IRepository<ProductCategory>>();
-            productCategoryRepo.Stub(x => x.TableNoTracking).Return(_existingCategoryMappings.AsQueryable());
+            var productCategoryRepo = Mock.Of<IRepository<ProductCategory>>();
+            Mock.Get(productCategoryRepo).Setup(x => x.Table).Returns(_existingCategoryMappings.AsQueryable());
 
-            var vendorRepo = MockRepository.GenerateStub<IRepository<Vendor>>();
+            var vendorRepo = Mock.Of<IRepository<Vendor>>();
 
-            var storeMappingService = MockRepository.GenerateStub<IStoreMappingService>();
-            storeMappingService.Stub(x => x.Authorize(Arg<Product>.Is.Anything)).Return(true);
+            var storeMappingService = Mock.Of<IStoreMappingService>();
+            Mock.Get(storeMappingService).Setup(x => x.AuthorizeAsync(It.IsAny<Product>())).ReturnsAsync(true);
 
             _productApiService = new ProductApiService(productRepo, productCategoryRepo, vendorRepo, storeMappingService);
         }
 
         [Test]
-        public void WhenCalledWithValidCategoryId_ShouldReturnOnlyTheCountOfTheProductsMappedToThisCategory()
+        public async Task WhenCalledWithValidCategoryId_ShouldReturnOnlyTheCountOfTheProductsMappedToThisCategory()
         {
             // Arange
             int categoryId = 3;
@@ -67,7 +67,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProductsCount
                                           select product).Count();
 
             // Act
-            var productsCount = _productApiService.GetProductsCount(categoryId: categoryId);
+            var productsCount = await _productApiService.GetProductsCountAsync(categoryId: categoryId);
 
             // Assert
             Assert.AreEqual(expectedCollectionCount, productsCount);
@@ -76,10 +76,10 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProductsCount
         [Test]
         [TestCase(0)]
         [TestCase(-10)]
-        public void WhenCalledWithNegativeOrZeroCategoryId_ShouldReturnZero(int categoryId)
+        public async Task WhenCalledWithNegativeOrZeroCategoryId_ShouldReturnZero(int categoryId)
         {
             // Act
-            var productsCount = _productApiService.GetProductsCount(categoryId: categoryId);
+            var productsCount = await _productApiService.GetProductsCountAsync(categoryId: categoryId);
 
             // Assert
             Assert.AreEqual(0, productsCount);
@@ -90,10 +90,10 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProductsCount
         [TestCase(int.MinValue)]
         [TestCase(-1)]
         [TestCase(5465464)]
-        public void WhenCalledWithCategoryIdThatDoesNotExistInTheMappings_ShouldReturnZero(int categoryId)
+        public async Task WhenCalledWithCategoryIdThatDoesNotExistInTheMappings_ShouldReturnZero(int categoryId)
         {
             // Act
-            var productsCount = _productApiService.GetProductsCount(categoryId: categoryId);
+            var productsCount = await _productApiService.GetProductsCountAsync(categoryId: categoryId);
 
             // Assert
             Assert.AreEqual(0, productsCount);

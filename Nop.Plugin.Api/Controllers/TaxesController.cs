@@ -24,6 +24,9 @@ namespace Nop.Plugin.Api.Controllers
     [AuthorizePermission(StandardPermission.Configuration.MANAGE_TAX_SETTINGS)]
     public class TaxesController : BaseApiController
     {
+        private const int MaximumNameLength = 400;
+        private const string InvalidNameMessage = "name must contain between 1 and 400 characters and cannot be blank";
+
         private readonly ITaxCategoryService _taxCategoryService;
         private readonly IDTOHelper _dtoHelper;
 
@@ -64,7 +67,7 @@ namespace Nop.Plugin.Api.Controllers
 
             IList<TaxCategoryDto> taxCategoryDtos = new List<TaxCategoryDto>();
 
-            foreach (var tax in allTaxes)
+            foreach (var tax in allTaxes.Take(limit ?? 250))
             {
                 var taxDto = _dtoHelper.prepareTaxCategoryDto(tax);
                 taxCategoryDtos.Add(taxDto);
@@ -79,8 +82,31 @@ namespace Nop.Plugin.Api.Controllers
             return new RawJsonActionResult(json);
         }
 
+        [HttpGet]
+        [Route("/api/taxcategories/{id}", Name = "GetTaxCategoryById")]
+        [ProducesResponseType(typeof(TaxCategoriesRootObject), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
+        [GetRequestsErrorInterceptorActionFilter]
+        public async Task<IActionResult> GetTaxCategoryById([FromRoute] int id, [FromQuery] string fields = "")
+        {
+            if (id <= 0)
+            {
+                return Error(HttpStatusCode.BadRequest, "id", "invalid id");
+            }
+
+            var taxCategory = await _taxCategoryService.GetTaxCategoryByIdAsync(id);
+            if (taxCategory == null)
+            {
+                return Error(HttpStatusCode.NotFound, "tax", "tax not found");
+            }
+
+            return TaxCategoryResult(taxCategory, fields);
+        }
+
         [HttpPost]
-        [Route("/api/taxCategories", Name = "createTaxCategory")]
+        [Route("/api/taxcategories", Name = "createTaxCategory")]
         [ProducesResponseType(typeof(TaxCategoriesRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), 422)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -96,22 +122,63 @@ namespace Nop.Plugin.Api.Controllers
                 return Error();
             }
 
+            if (!IsValidName(taxCategoryDelta.Dto.Name))
+            {
+                return Error(HttpStatusCode.UnprocessableEntity, "name", InvalidNameMessage);
+            }
+
             var taxCategory = new TaxCategory();
             taxCategory.Name = taxCategoryDelta.Dto.Name;
             taxCategory.DisplayOrder = taxCategoryDelta.Dto.DisplayOrder;
 
             await _taxCategoryService.InsertTaxCategoryAsync(taxCategory);
 
-            var newTaxCategoryDto = _dtoHelper.prepareTaxCategoryDto(taxCategory);
+            return TaxCategoryResult(taxCategory);
+        }
 
-            var root = new TaxCategoriesRootObject();
-            root.Taxes.Add(newTaxCategoryDto);
-            var json = JsonFieldsSerializer.Serialize(root, string.Empty);
-            return new RawJsonActionResult(json);
+        [HttpPut]
+        [Route("/api/taxcategories/{id}", Name = "UpdateTaxCategory")]
+        [ProducesResponseType(typeof(TaxCategoriesRootObject), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.UnprocessableEntity)]
+        [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
+        public async Task<IActionResult> UpdateTaxCategory(
+            [FromRoute] int id,
+            [FromBody]
+            [ModelBinder(typeof(JsonModelBinder<TaxCategoryDto>))]
+            Delta<TaxCategoryDto> taxCategoryDelta)
+        {
+            if (id <= 0)
+            {
+                return Error(HttpStatusCode.BadRequest, "id", "invalid id");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return Error();
+            }
+
+            var taxCategory = await _taxCategoryService.GetTaxCategoryByIdAsync(id);
+            if (taxCategory == null)
+            {
+                return Error(HttpStatusCode.NotFound, "tax", "tax not found");
+            }
+
+            if (taxCategoryDelta.HasProperty(nameof(TaxCategoryDto.Name)) && !IsValidName(taxCategoryDelta.Dto.Name))
+            {
+                return Error(HttpStatusCode.UnprocessableEntity, "name", InvalidNameMessage);
+            }
+
+            taxCategoryDelta.Merge(taxCategory);
+            taxCategory.Id = id;
+            await _taxCategoryService.UpdateTaxCategoryAsync(taxCategory);
+
+            return TaxCategoryResult(taxCategory);
         }
 
         [HttpDelete]
-        [Route("/api/taxCategories/{id}", Name = "DeleteTaxCategory")]
+        [Route("/api/taxcategories/{id}", Name = "DeleteTaxCategory")]
         [ProducesResponseType(typeof(void), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
@@ -138,5 +205,14 @@ namespace Nop.Plugin.Api.Controllers
             return new RawJsonActionResult("{}");
         }
 
+        private static bool IsValidName(string name) =>
+            !string.IsNullOrWhiteSpace(name) && name.Length <= MaximumNameLength;
+
+        private RawJsonActionResult TaxCategoryResult(TaxCategory taxCategory, string fields = "")
+        {
+            var root = new TaxCategoriesRootObject();
+            root.Taxes.Add(_dtoHelper.prepareTaxCategoryDto(taxCategory));
+            return new RawJsonActionResult(JsonFieldsSerializer.Serialize(root, fields));
+        }
     }
 }

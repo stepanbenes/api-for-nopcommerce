@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Nop.Core.Data;
+using Nop.Data;
 using Nop.Core.Domain.Catalog;
 using Nop.Core.Domain.Vendors;
 using Nop.Plugin.Api.Services;
 using NUnit.Framework;
-using Rhino.Mocks;
+using Moq;
 
 namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProducts
 {
@@ -18,13 +18,13 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProducts
         public void WhenCalledWithDefaultParameters_GivenNoProductsExist_ShouldReturnEmptyCollection()
         {
             // Arange
-            var productsRepo = MockRepository.GenerateStub<IRepository<Product>>();
-            productsRepo.Stub(x => x.TableNoTracking).Return(new List<Product>().AsQueryable());
+            var productsRepo = Mock.Of<IRepository<Product>>();
+            Mock.Get(productsRepo).Setup(x => x.Table).Returns(new List<Product>().AsQueryable());
 
-            var productCategoryRepo = MockRepository.GenerateStub<IRepository<ProductCategory>>();
-            var vendorRepo = MockRepository.GenerateStub<IRepository<Vendor>>();
+            var productCategoryRepo = Mock.Of<IRepository<ProductCategory>>();
+            var vendorRepo = Mock.Of<IRepository<Vendor>>();
 
-            var storeMappingService = MockRepository.GenerateStub<IStoreMappingService>();
+            var storeMappingService = Mock.Of<IStoreMappingService>();
 
             // Act
             var cut = new ProductApiService(productsRepo, productCategoryRepo, vendorRepo, storeMappingService);
@@ -42,13 +42,13 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProducts
             existingProducts.Add(new Product() { Id = 2, Deleted = true });
 
             // Arange
-            var productRepo = MockRepository.GenerateStub<IRepository<Product>>();
-            productRepo.Stub(x => x.TableNoTracking).Return(existingProducts.AsQueryable());
+            var productRepo = Mock.Of<IRepository<Product>>();
+            Mock.Get(productRepo).Setup(x => x.Table).Returns(existingProducts.AsQueryable());
 
-            var productCategoryRepo = MockRepository.GenerateStub<IRepository<ProductCategory>>();
-            var vendorRepo = MockRepository.GenerateStub<IRepository<Vendor>>();
+            var productCategoryRepo = Mock.Of<IRepository<ProductCategory>>();
+            var vendorRepo = Mock.Of<IRepository<Vendor>>();
 
-            var storeMappingService = MockRepository.GenerateStub<IStoreMappingService>();
+            var storeMappingService = Mock.Of<IStoreMappingService>();
 
             // Act
             var cut = new ProductApiService(productRepo, productCategoryRepo, vendorRepo, storeMappingService);
@@ -69,13 +69,13 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProducts
             var expectedCollection = existingProducts.Where(x => !x.Deleted).OrderBy(x => x.Id);
 
             // Arange
-            var productRepo = MockRepository.GenerateStub<IRepository<Product>>();
-            productRepo.Stub(x => x.TableNoTracking).Return(existingProducts.AsQueryable());
+            var productRepo = Mock.Of<IRepository<Product>>();
+            Mock.Get(productRepo).Setup(x => x.Table).Returns(existingProducts.AsQueryable());
 
-            var productCategoryRepo = MockRepository.GenerateStub<IRepository<ProductCategory>>();
-            var vendorRepo = MockRepository.GenerateStub<IRepository<Vendor>>();
+            var productCategoryRepo = Mock.Of<IRepository<ProductCategory>>();
+            var vendorRepo = Mock.Of<IRepository<Vendor>>();
 
-            var storeMappingService = MockRepository.GenerateStub<IStoreMappingService>();
+            var storeMappingService = Mock.Of<IStoreMappingService>();
 
             // Act
             var cut = new ProductApiService(productRepo, productCategoryRepo, vendorRepo, storeMappingService);
@@ -98,13 +98,13 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProducts
             var expectedCollection = existingProducts.Where(x => !x.Deleted).OrderBy(x => x.Id);
 
             // Arange
-            var productRepo = MockRepository.GenerateStub<IRepository<Product>>();
-            productRepo.Stub(x => x.TableNoTracking).Return(existingProducts.AsQueryable());
+            var productRepo = Mock.Of<IRepository<Product>>();
+            Mock.Get(productRepo).Setup(x => x.Table).Returns(existingProducts.AsQueryable());
 
-            var productCategoryRepo = MockRepository.GenerateStub<IRepository<ProductCategory>>();
-            var vendorRepo = MockRepository.GenerateStub<IRepository<Vendor>>();
+            var productCategoryRepo = Mock.Of<IRepository<ProductCategory>>();
+            var vendorRepo = Mock.Of<IRepository<Vendor>>();
 
-            var storeMappingService = MockRepository.GenerateStub<IStoreMappingService>();
+            var storeMappingService = Mock.Of<IStoreMappingService>();
 
             // Act
             var cut = new ProductApiService(productRepo, productCategoryRepo, vendorRepo, storeMappingService);

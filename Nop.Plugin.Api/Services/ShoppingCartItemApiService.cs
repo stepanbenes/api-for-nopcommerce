@@ -10,30 +10,44 @@ namespace Nop.Plugin.Api.Services
     {
         private readonly IRepository<ShoppingCartItem> _shoppingCartItemsRepository;
         private readonly IStoreContext _storeContext;
+        private readonly ShoppingCartSettings _shoppingCartSettings;
 
-        public ShoppingCartItemApiService(IRepository<ShoppingCartItem> shoppingCartItemsRepository, IStoreContext storeContext)
+        public ShoppingCartItemApiService(IRepository<ShoppingCartItem> shoppingCartItemsRepository, IStoreContext storeContext,
+            ShoppingCartSettings shoppingCartSettings)
         {
             _shoppingCartItemsRepository = shoppingCartItemsRepository;
             _storeContext = storeContext;
+            _shoppingCartSettings = shoppingCartSettings;
         }
 
-        public List<ShoppingCartItem> GetShoppingCartItems(
+        public async Task<List<ShoppingCartItem>> GetShoppingCartItemsAsync(
             int? customerId = null, DateTime? createdAtMin = null, DateTime? createdAtMax = null,
             DateTime? updatedAtMin = null, DateTime? updatedAtMax = null, int? limit = null,
             int? page = null, ShoppingCartType? shoppingCartType = null)
         {
-            var query = GetShoppingCartItemsQuery(customerId, createdAtMin, createdAtMax,
+            var query = await GetShoppingCartItemsQueryAsync(customerId, createdAtMin, createdAtMax,
                                                   updatedAtMin, updatedAtMax, shoppingCartType);
 
             return new ApiList<ShoppingCartItem>(query, (page ?? Constants.Configurations.DefaultPageValue) - 1, limit ?? Constants.Configurations.DefaultLimit);
         }
 
-        public Task<ShoppingCartItem> GetShoppingCartItemAsync(int id)
+        public async Task<ShoppingCartItem> GetShoppingCartItemAsync(int id, int? customerId = null)
         {
-            return _shoppingCartItemsRepository.GetByIdAsync(id);
+            var query = await GetShoppingCartItemsQueryAsync(customerId);
+            return await query.FirstOrDefaultAsync(item => item.Id == id);
         }
 
-        private IQueryable<ShoppingCartItem> GetShoppingCartItemsQuery(
+        public async Task<List<ShoppingCartItem>> GetShoppingCartItemsForDeletionAsync(int customerId,
+            ShoppingCartType? shoppingCartType, int[] ids)
+        {
+            var query = await GetShoppingCartItemsQueryAsync(customerId, shoppingCartType: shoppingCartType);
+            if (ids.Length > 0)
+                query = query.Where(item => ids.Contains(item.Id));
+
+            return await query.ToListAsync();
+        }
+
+        private async Task<IQueryable<ShoppingCartItem>> GetShoppingCartItemsQueryAsync(
             int? customerId = null, DateTime? createdAtMin = null, DateTime? createdAtMax = null,
             DateTime? updatedAtMin = null, DateTime? updatedAtMax = null, ShoppingCartType? shoppingCartType = null)
         {
@@ -69,9 +83,11 @@ namespace Nop.Plugin.Api.Services
                 query = query.Where(c => c.ShoppingCartTypeId == (int)shoppingCartType.Value);
             }
 
-            // items for the current store only
-            var currentStoreId = _storeContext.GetCurrentStore().Id;
-            query = query.Where(c => c.StoreId == currentStoreId);
+            if (!_shoppingCartSettings.CartsSharedBetweenStores)
+            {
+                var store = await _storeContext.GetCurrentStoreAsync();
+                query = query.Where(c => c.StoreId == store.Id);
+            }
 
             query = query.OrderBy(shoppingCartItem => shoppingCartItem.Id);
 

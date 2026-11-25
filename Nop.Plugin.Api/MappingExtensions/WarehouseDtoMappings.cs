@@ -1,5 +1,4 @@
 ﻿using Nop.Core.Domain.Shipping;
-using Nop.Plugin.Api.AutoMapper;
 using Nop.Plugin.Api.DTO.Warehouses;
 
 namespace Nop.Plugin.Api.MappingExtensions

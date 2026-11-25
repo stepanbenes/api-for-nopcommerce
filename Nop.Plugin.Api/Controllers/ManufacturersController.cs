@@ -92,7 +92,7 @@ namespace Nop.Plugin.Api.Controllers
                                                                             parameters.ProductId, parameters.PublishedStatus, parameters.LanguageId)
                                                           .WhereAwait(async c => await StoreMappingService.AuthorizeAsync(c));
 
-            IList<ManufacturerDto> manufacturersAsDtos = await allManufacturers.SelectAwait(async manufacturer => await _dtoHelper.PrepareManufacturerDtoAsync(manufacturer)).ToListAsync();
+            IList<ManufacturerDto> manufacturersAsDtos = await allManufacturers.Select(async (Manufacturer manufacturer, CancellationToken _) => await _dtoHelper.PrepareManufacturerDtoAsync(manufacturer)).ToListAsync();
 
             var manufacturersRootObject = new ManufacturersRootObject
             {

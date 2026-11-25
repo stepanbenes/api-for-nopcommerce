@@ -5,15 +5,14 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Rewrite;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Nop.Core.Configuration;
 using Nop.Core.Infrastructure;
@@ -21,34 +20,69 @@ using Nop.Plugin.Api.Authorization.Policies;
 using Nop.Plugin.Api.Authorization.Requirements;
 using Nop.Plugin.Api.Configuration;
 using Nop.Plugin.Api.Delta;
+using Nop.Plugin.Api.DTO.Errors;
+using Nop.Plugin.Api.Helpers;
 using Swashbuckle.AspNetCore.SwaggerGen;
-using System.Text;
 
 
 namespace Nop.Plugin.Api.Infrastructure
 {
-    class DeltaSchemaFilter : ISchemaFilter
+    internal class DeltaSchemaFilter : ISchemaFilter
     {
         public void Apply(OpenApiSchema schema, SchemaFilterContext context)
         {
-            if (context.Type is Type type &&
-              type.IsGenericType &&
-              !type.IsGenericTypeDefinition &&
-              type.GetGenericTypeDefinition() == typeof(Delta<>))
+            var type = context.Type;
+            if (!type.IsGenericType || type.GetGenericTypeDefinition() != typeof(Delta<>))
+                return;
+
+            var dtoType = type.GetGenericArguments()[0];
+            var root = ReflectionHelper.GetJsonObjectAttribute(dtoType).Title;
+            schema.Properties.Clear();
+            schema.Properties[root] = context.SchemaGenerator.GenerateSchema(dtoType, context.SchemaRepository);
+            schema.Required.Clear();
+            schema.Required.Add(root);
+        }
+    }
+
+    internal class ApiOperationFilter : IOperationFilter
+    {
+        public void Apply(OpenApiOperation operation, OperationFilterContext context)
+        {
+            if (context.ApiDescription.ActionDescriptor.EndpointMetadata.OfType<IAuthorizeData>().Any() &&
+                !context.ApiDescription.ActionDescriptor.EndpointMetadata.OfType<IAllowAnonymous>().Any())
             {
-                var underlyingType = type.GetGenericArguments()[0];
-                var attribute = underlyingType.GetCustomAttributes(typeof(JsonObjectAttribute), inherit: false).Cast<JsonObjectAttribute>().FirstOrDefault();
-                string title = attribute?.Title;
-                if (title is not null)
+                operation.Security.Add(new OpenApiSecurityRequirement
                 {
-                    string key = nameof(Delta<object>.Dto);
-                    if (schema.Properties.TryGetValue(key, out var dtoTypeSchema))
+                    [new OpenApiSecurityScheme
                     {
-                        schema.Properties.Remove(key);
-                        schema.Properties[title] = dtoTypeSchema;
+                        Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
+                    }] = Array.Empty<string>()
+                });
+            }
+
+            var delta = context.MethodInfo.GetParameters().FirstOrDefault(parameter =>
+                parameter.ParameterType.IsGenericType &&
+                parameter.ParameterType.GetGenericTypeDefinition() == typeof(Delta<>));
+
+            if (delta == null)
+                return;
+
+            operation.RequestBody = new OpenApiRequestBody
+            {
+                Required = true,
+                Content =
+                {
+                    ["application/json"] = new OpenApiMediaType
+                    {
+                        Schema = context.SchemaGenerator.GenerateSchema(delta.ParameterType, context.SchemaRepository)
                     }
                 }
-            }
+            };
+
+            // The Delta binder reads numeric IDs directly from route data.
+            var id = operation.Parameters.FirstOrDefault(parameter => parameter.In == ParameterLocation.Path && parameter.Name == "id");
+            if (id != null)
+                id.Schema = new OpenApiSchema { Type = "integer", Format = "int32" };
         }
     }
 
@@ -57,39 +91,24 @@ namespace Nop.Plugin.Api.Infrastructure
         public void ConfigureServices(IServiceCollection services, IConfiguration configuration)
         {
 
-            var apiConfigSection = configuration.GetSection("Api");
-
-            if (apiConfigSection != null)
+            var apiConfig = Singleton<AppSettings>.Instance.Get<ApiConfiguration>();
+            var signingKey = apiConfig.GetSigningKey();
+            services.AddAuthentication().AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
             {
-                var apiConfig = Singleton<AppSettings>.Instance.Get<ApiConfiguration>();
-
-
-                if (!string.IsNullOrEmpty(apiConfig.SecurityKey))
+                options.MapInboundClaims = false;
+                options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    services.AddAuthentication(options =>
-                    {
-                        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                    })
-                        .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, jwtBearerOptions =>
-                        {
-                            jwtBearerOptions.TokenValidationParameters = new TokenValidationParameters
-                            {
-                                ValidateIssuerSigningKey = true,
-                                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(apiConfig.SecurityKey)),
-                                ValidateIssuer = false, // ValidIssuer = "The name of the issuer",
-                                ValidateAudience = false, // ValidAudience = "The name of the audience",
-                                ValidateLifetime = true, // validate the expiration and not before values in the token
-                                ClockSkew = TimeSpan.FromMinutes(apiConfig.AllowedClockSkewInMinutes)
-                            };
-                        });
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = signingKey == null ? null : new SymmetricSecurityKey(signingKey),
+                    ValidAlgorithms = new[] { SecurityAlgorithms.HmacSha256 },
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.FromMinutes(apiConfig.AllowedClockSkewInMinutes)
+                };
+            });
+            AddAuthorizationPipeline(services);
 
-                    // JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
-                    JsonWebTokenHandler.DefaultInboundClaimTypeMap.Clear();
-                    AddAuthorizationPipeline(services);
-
-                }
-            }
             services.Configure<KestrelServerOptions>(options =>
             {
                 options.AllowSynchronousIO = true;
@@ -102,10 +121,32 @@ namespace Nop.Plugin.Api.Infrastructure
             {
                 options.SerializerSettings.Converters.Add(new StringEnumConverter());
             });
+            services.PostConfigure<ApiBehaviorOptions>(options =>
+            {
+                var defaultResponse = options.InvalidModelStateResponseFactory;
+                options.InvalidModelStateResponseFactory = context =>
+                {
+                    if (context.ActionDescriptor is not ControllerActionDescriptor controller ||
+                        controller.ControllerTypeInfo.Namespace != typeof(Controllers.TokenController).Namespace ||
+                        !controller.MethodInfo.GetParameters().Any(parameter => parameter.ParameterType.IsGenericType &&
+                            parameter.ParameterType.GetGenericTypeDefinition() == typeof(Delta<>)))
+                        return defaultResponse(context);
+
+                    var errors = context.ModelState
+                        .Where(item => item.Value.Errors.Count > 0)
+                        .ToDictionary(item => item.Key, item => item.Value.Errors
+                            .Select(error => string.IsNullOrEmpty(error.ErrorMessage) ? "Invalid value." : error.ErrorMessage)
+                            .ToList());
+                    return new UnprocessableEntityObjectResult(new ErrorsRootObject { Errors = errors });
+                };
+            });
             services.AddSwaggerGen(options =>
             {
                 // api description >>
                 options.SwaggerDoc("v1", new OpenApiInfo { Title = "Nop API", Version = "v1" });
+                options.DocInclusionPredicate((_, description) =>
+                    description.ActionDescriptor is ControllerActionDescriptor controller &&
+                    controller.ControllerTypeInfo.Namespace == typeof(Controllers.TokenController).Namespace);
                 // auth definition >>
                 options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
@@ -114,23 +155,10 @@ namespace Nop.Plugin.Api.Infrastructure
                     Name = "Authorization",
                     Type = SecuritySchemeType.ApiKey
                 });
-                options.AddSecurityRequirement(new OpenApiSecurityRequirement
-              {
-          {
-            new OpenApiSecurityScheme
-            {
-              Reference = new OpenApiReference
-              {
-                Type = ReferenceType.SecurityScheme,
-                Id = "Bearer"
-              }
-            },
-            Array.Empty<string>()
-          }
-              });
                 // custom type mappings >>
                 options.MapType<decimal>(() => new OpenApiSchema { Type = "number", Format = "decimal" }); // correct currency typings
                 options.SchemaFilter<DeltaSchemaFilter>();
+                options.OperationFilter<ApiOperationFilter>();
                 // TODO: options.UseAllOfToExtendReferenceSchemas(); // https://github.com/stepanbenes/api-for-nopcommerce/issues/16
             });
             services.AddSwaggerGenNewtonsoftSupport();
@@ -142,7 +170,7 @@ namespace Nop.Plugin.Api.Infrastructure
         {
             var environment = app.ApplicationServices.GetRequiredService<IWebHostEnvironment>();
 
-            var rewriteOptions = new RewriteOptions().AddRewrite("api/token", "/token", true);
+            var rewriteOptions = new RewriteOptions().AddRewrite("^api/token(/check)?$", "/token$1", true);
             app.UseRewriter(rewriteOptions);
 
             app.UseCors(x => x
@@ -189,7 +217,7 @@ namespace Nop.Plugin.Api.Infrastructure
                       a.UseSwaggerUI(c =>
                 {
                     c.RoutePrefix = "api/swagger";
-                    c.SwaggerEndpoint("/api/swagger/v1/swagger.json", "Nop.Plugin.Api v4.80");
+                    c.SwaggerEndpoint("/api/swagger/v1/swagger.json", "Nop.Plugin.Api v5.00");
                     c.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.None);
                 });
                   }
@@ -215,7 +243,7 @@ namespace Nop.Plugin.Api.Infrastructure
 
             services.AddSingleton<IAuthorizationHandler, ActiveApiPluginAuthorizationPolicy>();
             services.AddSingleton<IAuthorizationHandler, ValidSchemeAuthorizationPolicy>();
-            services.AddSingleton<IAuthorizationHandler, CustomerRoleAuthorizationPolicy>();
+            services.AddScoped<IAuthorizationHandler, CustomerRoleAuthorizationPolicy>();
 
         }
     }

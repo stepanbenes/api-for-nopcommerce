@@ -45,17 +45,22 @@ namespace Nop.Plugin.Api.Validators
                     // handle nested properties
                     if (pair.Value is Dictionary<string, object> objects)
                     {
-                        isCurrentPropertyValid = ValidateNestedProperty(propertyType, objects);
+                        isCurrentPropertyValid = propertyType.Namespace != "System" &&
+                            propertyType.GetInterface("IEnumerable") == null && ValidateNestedProperty(propertyType, objects);
                     }
                     // This case hadles collections.
-                    else if (pair.Value is ICollection<object> propertyValueAsCollection && propertyType.GetInterface("IEnumerable") != null)
+                    else if (pair.Value is ICollection<object> propertyValueAsCollection)
                     {
-                        var elementsType = ReflectionHelper.GetGenericElementType(propertyType);
+                        var elementsType = propertyType.IsArray || propertyType.IsGenericType && propertyType.GetInterface("IEnumerable") != null
+                            ? ReflectionHelper.GetGenericElementType(propertyType)
+                            : null;
+
+                        isCurrentPropertyValid = elementsType != null;
 
                         // Validate the collection items.
                         foreach (var item in propertyValueAsCollection)
                         {
-                            isCurrentPropertyValid = IsCurrentPropertyValid(elementsType, item);
+                            isCurrentPropertyValid = elementsType != null && item != null && IsCurrentPropertyValid(elementsType, item);
 
                             if (!isCurrentPropertyValid)
                             {
@@ -123,7 +128,7 @@ namespace Nop.Plugin.Api.Validators
             {
                 if (value != null)
                 {
-                    isCurrentPropertyValid = ValidateNestedProperty(type, (Dictionary<string, object>)value);
+                    isCurrentPropertyValid = value is Dictionary<string, object> properties && ValidateNestedProperty(type, properties);
                 }
             }
 

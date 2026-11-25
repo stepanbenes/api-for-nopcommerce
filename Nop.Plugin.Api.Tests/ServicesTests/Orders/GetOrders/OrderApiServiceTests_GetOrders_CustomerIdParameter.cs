@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Nop.Core.Data;
+using Nop.Data;
 using Nop.Core.Domain.Orders;
 using Nop.Plugin.Api.Services;
 using NUnit.Framework;
-using Rhino.Mocks;
+using Moq;
 
 namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
 {
@@ -28,8 +28,8 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
                 new Order() {Id = 7, CustomerId = 2}
             };
 
-            var productRepo = MockRepository.GenerateStub<IRepository<Order>>();
-            productRepo.Stub(x => x.TableNoTracking).Return(_existigOrders.AsQueryable());
+            var productRepo = Mock.Of<IRepository<Order>>();
+            Mock.Get(productRepo).Setup(x => x.Table).Returns(_existigOrders.AsQueryable());
             
             _orderApiService = new OrderApiService(productRepo);
         }

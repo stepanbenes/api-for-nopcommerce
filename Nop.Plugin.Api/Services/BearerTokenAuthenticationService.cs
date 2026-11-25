@@ -9,23 +9,19 @@ namespace Nop.Plugin.Api.Services
 {
     public class BearerTokenAuthenticationService : Nop.Services.Authentication.IAuthenticationService
     {
-        // TODO:
-
         #region Fields
 
-        private readonly CustomerSettings customerSettings;
         private readonly ICustomerService customerService;
         private readonly IHttpContextAccessor httpContextAccessor;
+        private Task<Customer> authenticatedCustomer;
 
         #endregion
 
         #region Ctor
 
-        public BearerTokenAuthenticationService(CustomerSettings customerSettings,
-          ICustomerService customerService,
+        public BearerTokenAuthenticationService(ICustomerService customerService,
           IHttpContextAccessor httpContextAccessor)
         {
-            this.customerSettings = customerSettings;
             this.customerService = customerService;
             this.httpContextAccessor = httpContextAccessor;
         }
@@ -44,10 +40,16 @@ namespace Nop.Plugin.Api.Services
             return Task.CompletedTask; // bearer token does not support signing out, so it is no-op
         }
 
-        public async Task<Customer> GetAuthenticatedCustomerAsync()
+        public Task<Customer> GetAuthenticatedCustomerAsync() => authenticatedCustomer ??= ResolveCustomerAsync();
+
+        private async Task<Customer> ResolveCustomerAsync()
         {
             //try to get authenticated user identity
-            var authenticateResult = await httpContextAccessor.HttpContext.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
+            var context = httpContextAccessor.HttpContext;
+            if (context is null)
+                return null;
+
+            var authenticateResult = await context.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
             if (!authenticateResult.Succeeded)
                 return null;
 

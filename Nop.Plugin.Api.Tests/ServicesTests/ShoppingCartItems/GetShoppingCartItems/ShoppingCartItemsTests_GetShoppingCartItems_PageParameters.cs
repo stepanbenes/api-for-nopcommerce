@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Nop.Core.Data;
+using Nop.Data;
 using Nop.Core.Domain.Orders;
 using Nop.Plugin.Api.DataStructures;
 using Nop.Plugin.Api.Services;
 using NUnit.Framework;
-using Rhino.Mocks;
+using Moq;
 
 namespace Nop.Plugin.Api.Tests.ServicesTests.ShoppingCartItems.GetShoppingCartItems
 {
@@ -31,20 +31,20 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ShoppingCartItems.GetShoppingCartIt
                 });
             }
 
-            var shoppingCartItemRepo = MockRepository.GenerateStub<IRepository<ShoppingCartItem>>();
-            shoppingCartItemRepo.Stub(x => x.TableNoTracking).Return(_existigShoppingCartItems.AsQueryable());
+            var shoppingCartItemRepo = Mock.Of<IRepository<ShoppingCartItem>>();
+            Mock.Get(shoppingCartItemRepo).Setup(x => x.Table).Returns(_existigShoppingCartItems.AsQueryable());
 
-            var storeContext = MockRepository.GenerateStub<IStoreContext>();
-            storeContext.Stub(x => x.CurrentStore).Return(new Store()
+            var storeContext = Mock.Of<IStoreContext>();
+            Mock.Get(storeContext).Setup(x => x.GetCurrentStoreAsync()).ReturnsAsync(new Store()
             {
                 Id = 0
             });
 
-            _shoppingCartItemApiService = new ShoppingCartItemApiService(shoppingCartItemRepo, storeContext);
+            _shoppingCartItemApiService = new ShoppingCartItemApiService(shoppingCartItemRepo, storeContext, new ShoppingCartSettings());
         }
 
         [Test]
-        public void WhenCalledWithPageParameter_ShouldReturnThePartOfTheCollectionThatCorrespondsToThePage()
+        public async Task WhenCalledWithPageParameter_ShouldReturnThePartOfTheCollectionThatCorrespondsToThePage()
         {
             //Arange
             var limit = 5;
@@ -52,7 +52,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ShoppingCartItems.GetShoppingCartIt
             var expectedCollection = new ApiList<ShoppingCartItem>(_existigShoppingCartItems.AsQueryable(), page - 1, limit);
 
             //Act
-            var result = _shoppingCartItemApiService.GetShoppingCartItems(limit: limit, page: page);
+            var result = await _shoppingCartItemApiService.GetShoppingCartItemsAsync(limit: limit, page: page);
 
             // Assert
             CollectionAssert.IsNotEmpty(result);
@@ -63,14 +63,14 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ShoppingCartItems.GetShoppingCartIt
         [Test]
         [TestCase(0)]
         [TestCase(-10)]
-        public void WhenCalledWithZeroOrNegativePageParameter_ShouldReturnTheFirstPage(int page)
+        public async Task WhenCalledWithZeroOrNegativePageParameter_ShouldReturnTheFirstPage(int page)
         {
             //Arange
             var limit = 5;
             var expectedCollection = new ApiList<ShoppingCartItem>(_existigShoppingCartItems.AsQueryable(), page - 1, limit);
 
             //Act
-            var result = _shoppingCartItemApiService.GetShoppingCartItems(limit: limit, page: page);
+            var result = await _shoppingCartItemApiService.GetShoppingCartItemsAsync(limit: limit, page: page);
 
             // Assert
             CollectionAssert.IsNotEmpty(result);
@@ -80,14 +80,14 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ShoppingCartItems.GetShoppingCartIt
         }
 
         [Test]
-        public void WhenCalledWithTooBigPageParameter_ShouldReturnEmptyCollection()
+        public async Task WhenCalledWithTooBigPageParameter_ShouldReturnEmptyCollection()
         {
             //Arange
             var limit = 5;
             var page = _existigShoppingCartItems.Count / limit + 100;
             
             //Act
-            var result = _shoppingCartItemApiService.GetShoppingCartItems(limit: limit, page: page);
+            var result = await _shoppingCartItemApiService.GetShoppingCartItemsAsync(limit: limit, page: page);
 
             // Assert
             CollectionAssert.IsEmpty(result);

@@ -1,0 +1,5 @@
+*
+!Nop.Plugin.Api/
+!Nop.Plugin.Api/**
+Nop.Plugin.Api/**/bin/
+Nop.Plugin.Api/**/obj/

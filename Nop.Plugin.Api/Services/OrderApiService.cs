@@ -16,10 +16,10 @@ namespace Nop.Plugin.Api.Services
             _orderRepository = orderRepository;
         }
 
-        public IList<Order> GetOrdersByCustomerId(int customerId)
+        public IList<Order> GetOrdersByCustomerId(int customerId, int? storeId = null)
         {
             var query = from order in _orderRepository.Table
-                        where order.CustomerId == customerId && !order.Deleted
+                        where order.CustomerId == customerId && !order.Deleted && (storeId == null || order.StoreId == storeId)
                         orderby order.Id
                         select order;
 
@@ -43,14 +43,14 @@ namespace Nop.Plugin.Api.Services
             return new ApiList<Order>(query, page - 1, limit);
         }
 
-        public Order GetOrderById(int orderId)
+        public Order GetOrderById(int orderId, int? storeId = null)
         {
             if (orderId <= 0)
             {
                 return null;
             }
 
-            return _orderRepository.Table.FirstOrDefault(order => order.Id == orderId && !order.Deleted);
+            return _orderRepository.Table.FirstOrDefault(order => order.Id == orderId && !order.Deleted && (storeId == null || order.StoreId == storeId));
         }
 
         public int GetOrdersCount(

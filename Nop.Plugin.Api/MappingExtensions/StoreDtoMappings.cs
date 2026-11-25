@@ -1,5 +1,4 @@
 ﻿using Nop.Core.Domain.Stores;
-using Nop.Plugin.Api.AutoMapper;
 using Nop.Plugin.Api.DTO.Stores;
 
 namespace Nop.Plugin.Api.MappingExtensions

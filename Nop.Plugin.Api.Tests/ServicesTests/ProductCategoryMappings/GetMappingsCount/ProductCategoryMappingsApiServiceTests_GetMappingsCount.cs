@@ -1,9 +1,9 @@
 ﻿using System;
-using Nop.Core.Data;
+using Nop.Data;
 using Nop.Core.Domain.Catalog;
 using Nop.Plugin.Api.Services;
 using NUnit.Framework;
-using Rhino.Mocks;
+using Moq;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -55,8 +55,8 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ProductCategoryMappings.GetMappings
         public void GivenNonEmptyValidRepository_WhenCalledWithDefaultParameters_ShouldReturnRepositorySize()
         {
             // Arange
-            var mappingRepo = MockRepository.GenerateStub<IRepository<ProductCategory>>();
-            mappingRepo.Stub(x => x.TableNoTracking).Return(_repo.AsQueryable());
+            var mappingRepo = Mock.Of<IRepository<ProductCategory>>();
+            Mock.Get(mappingRepo).Setup(x => x.Table).Returns(_repo.AsQueryable());
 
             // Act
             var cut = new ProductCategoryMappingsApiService(mappingRepo);
@@ -73,8 +73,8 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ProductCategoryMappings.GetMappings
             var repo = new List<ProductCategory>();
 
             // Arange
-            var mappingRepo = MockRepository.GenerateStub<IRepository<ProductCategory>>();
-            mappingRepo.Stub(x => x.TableNoTracking).Return(repo.AsQueryable());
+            var mappingRepo = Mock.Of<IRepository<ProductCategory>>();
+            Mock.Get(mappingRepo).Setup(x => x.Table).Returns(repo.AsQueryable());
 
             // Act
             var cut = new ProductCategoryMappingsApiService(mappingRepo);
@@ -95,8 +95,8 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ProductCategoryMappings.GetMappings
             var expectedCount = _repo.Count(x => x.CategoryId == categoryId && x.ProductId == productId);
 
             // Arange
-            var mappingRepo = MockRepository.GenerateStub<IRepository<ProductCategory>>();
-            mappingRepo.Stub(x => x.TableNoTracking).Return(_repo.AsQueryable());
+            var mappingRepo = Mock.Of<IRepository<ProductCategory>>();
+            Mock.Get(mappingRepo).Setup(x => x.Table).Returns(_repo.AsQueryable());
 
             // Act
             var cut = new ProductCategoryMappingsApiService(mappingRepo);
@@ -115,8 +115,8 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ProductCategoryMappings.GetMappings
             var expectedCount = _repo.Count(x => x.CategoryId == categoryId);
 
             // Arange
-            var mappingRepo = MockRepository.GenerateStub<IRepository<ProductCategory>>();
-            mappingRepo.Stub(x => x.TableNoTracking).Return(_repo.AsQueryable());
+            var mappingRepo = Mock.Of<IRepository<ProductCategory>>();
+            Mock.Get(mappingRepo).Setup(x => x.Table).Returns(_repo.AsQueryable());
 
             // Act
             var cut = new ProductCategoryMappingsApiService(mappingRepo);
@@ -135,8 +135,8 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ProductCategoryMappings.GetMappings
             var expectedCount = _repo.Count(x => x.ProductId == productId);
 
             // Arange
-            var mappingRepo = MockRepository.GenerateStub<IRepository<ProductCategory>>();
-            mappingRepo.Stub(x => x.TableNoTracking).Return(_repo.AsQueryable());
+            var mappingRepo = Mock.Of<IRepository<ProductCategory>>();
+            Mock.Get(mappingRepo).Setup(x => x.Table).Returns(_repo.AsQueryable());
 
             // Act
             var cut = new ProductCategoryMappingsApiService(mappingRepo);

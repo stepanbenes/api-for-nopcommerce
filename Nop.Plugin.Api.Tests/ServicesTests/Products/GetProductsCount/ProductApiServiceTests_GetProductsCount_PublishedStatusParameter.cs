@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Nop.Core.Data;
+using Nop.Data;
 using Nop.Core.Domain.Catalog;
 using Nop.Core.Domain.Vendors;
 using Nop.Plugin.Api.Services;
 using NUnit.Framework;
-using Rhino.Mocks;
+using Moq;
 
 namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategoriesCount
 {
@@ -32,39 +32,39 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategoriesCount
                 new Product() {Id = 7, Published = false }
             };
 
-            var productRepo = MockRepository.GenerateStub<IRepository<Product>>();
-            productRepo.Stub(x => x.TableNoTracking).Return(_existigProducts.AsQueryable());
+            var productRepo = Mock.Of<IRepository<Product>>();
+            Mock.Get(productRepo).Setup(x => x.Table).Returns(_existigProducts.AsQueryable());
 
-            var productCategoryRepo = MockRepository.GenerateStub<IRepository<ProductCategory>>();
-            var vendorRepo = MockRepository.GenerateStub<IRepository<Vendor>>();
+            var productCategoryRepo = Mock.Of<IRepository<ProductCategory>>();
+            var vendorRepo = Mock.Of<IRepository<Vendor>>();
             
-            var storeMappingService = MockRepository.GenerateStub<IStoreMappingService>();
-            storeMappingService.Stub(x => x.Authorize(Arg<Product>.Is.Anything)).Return(true);
+            var storeMappingService = Mock.Of<IStoreMappingService>();
+            Mock.Get(storeMappingService).Setup(x => x.AuthorizeAsync(It.IsAny<Product>())).ReturnsAsync(true);
 
             _productApiService = new ProductApiService(productRepo, productCategoryRepo, vendorRepo, storeMappingService);
         }
 
         [Test]
-        public void WhenAskForOnlyThePublishedProducts_ShouldReturnOnlyThePublishedProductsCount()
+        public async Task WhenAskForOnlyThePublishedProducts_ShouldReturnOnlyThePublishedProductsCount()
         {
             // Arange
             var expectedProductsCount = _existigProducts.Count(x => x.Published && !x.Deleted);
 
             // Act
-            var productsCount = _productApiService.GetProductsCount(publishedStatus: true);
+            var productsCount = await _productApiService.GetProductsCountAsync(publishedStatus: true);
 
             // Assert
             Assert.AreEqual(expectedProductsCount, productsCount);
         }
 
         [Test]
-        public void WhenAskForOnlyTheUnpublishedProducts_ShouldReturnOnlyTheUnpublishedProductsCount()
+        public async Task WhenAskForOnlyTheUnpublishedProducts_ShouldReturnOnlyTheUnpublishedProductsCount()
         {
             // Arange
             var expectedCollectionCount = _existigProducts.Count(x => !x.Published && !x.Deleted);
 
             // Act
-            var productsCount = _productApiService.GetProductsCount(publishedStatus: false);
+            var productsCount = await _productApiService.GetProductsCountAsync(publishedStatus: false);
 
             // Assert
             Assert.AreEqual(expectedCollectionCount, productsCount);

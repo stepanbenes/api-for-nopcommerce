@@ -1,5 +1,4 @@
 ﻿using Nop.Core.Domain.Orders;
-using Nop.Plugin.Api.AutoMapper;
 using Nop.Plugin.Api.DTO.Orders;
 
 namespace Nop.Plugin.Api.MappingExtensions
