@@ -20,7 +20,7 @@ namespace Nop.Plugin.Api.DTO.Orders
         ///     Gets or sets a value indicating whether a customer chose "pick up in store" shipping option
         /// </summary>
         [JsonProperty("pick_up_in_store")]
-        public bool? PickUpInStore { get; set; }
+        public bool? PickupInStore { get; set; }
 
         /// <summary>
         ///     Gets or sets the payment method system name
@@ -129,12 +129,6 @@ namespace Nop.Plugin.Api.DTO.Orders
         /// </summary>
         [JsonProperty("refunded_amount")]
         public decimal? RefundedAmount { get; set; }
-
-        /// <summary>
-        ///     Gets or sets the value indicating whether reward points were earned for this order
-        /// </summary>
-        [JsonProperty("reward_points_were_added")]
-        public bool? RewardPointsWereAdded { get; set; }
 
         /// <summary>
         ///     Gets or sets the checkout attribute description

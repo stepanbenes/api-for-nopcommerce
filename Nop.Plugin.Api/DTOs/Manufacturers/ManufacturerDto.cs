@@ -71,12 +71,6 @@ namespace Nop.Plugin.Api.DTO.Manufacturers
         public string? PageSizeOptions { get; set; }
 
         /// <summary>
-        ///     Gets or sets the available price ranges
-        /// </summary>
-        [JsonProperty("price_ranges")]
-        public string? PriceRanges { get; set; }
-
-        /// <summary>
         ///     Gets or sets a value indicating whether the entity is subject to ACL
         /// </summary>
         [JsonProperty("subject_to_acl")]

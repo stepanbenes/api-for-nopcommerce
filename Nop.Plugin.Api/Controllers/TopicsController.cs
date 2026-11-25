@@ -158,13 +158,6 @@ namespace Nop.Plugin.Api.Controllers
                 return Error();
             }
 
-            var topicDtoInput = topicDelta.Dto;
-            if (topicDtoInput.IncludeInTopMenu.HasValue || topicDtoInput.IncludeInFooterColumn1.HasValue ||
-                topicDtoInput.IncludeInFooterColumn2.HasValue || topicDtoInput.IncludeInFooterColumn3.HasValue)
-            {
-                return Error(HttpStatusCode.BadRequest, "menu", "Manage navigation in nopCommerce under Content management > Menus.");
-            }
-
             var newTopic = await _factory.InitializeAsync();
             newTopic.Title = topicDelta.Dto.Title;
             newTopic.Body = topicDelta.Dto.Body;
@@ -199,13 +192,6 @@ namespace Nop.Plugin.Api.Controllers
             if (!ModelState.IsValid)
             {
                 return Error();
-            }
-
-            var topicDtoInput = topicDelta.Dto;
-            if (topicDtoInput.IncludeInTopMenu.HasValue || topicDtoInput.IncludeInFooterColumn1.HasValue ||
-                topicDtoInput.IncludeInFooterColumn2.HasValue || topicDtoInput.IncludeInFooterColumn3.HasValue)
-            {
-                return Error(HttpStatusCode.BadRequest, "menu", "Manage navigation in nopCommerce under Content management > Menus.");
             }
 
             var currentTopic = await _topicService.GetTopicByIdAsync(topicDelta.Dto.Id);

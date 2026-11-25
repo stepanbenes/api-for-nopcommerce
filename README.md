@@ -45,9 +45,9 @@ The plugin build places its files in `src/Presentation/Nop.Web/Plugins/Nop.Plugi
 
 ## Navigation menus in 5.00
 
-Configure each store's navigation under **Admin → Content management → Menus**. Omit `include_in_top_menu` from category and topic write payloads and omit `include_in_footer_column1`, `include_in_footer_column2`, and `include_in_footer_column3` from topic write payloads. A non-null value, including `false`, returns HTTP 400. The legacy properties are returned as `null` when included in reads.
+Use `GET /api/menus` to discover menus for the current store and `GET /api/menus/{menuId}/items` to list their links. Add a category or topic link with `POST /api/menus/{menuId}/items`. The body accepts `link_type` of `category` or `topic`, an `entity_id`, and an optional `display_order`. For example, send `{"link_type":"category","entity_id":42,"display_order":20}`. The add request returns HTTP 201 for a new link and 200 if the link already exists. Delete a link with `DELETE /api/menus/{menuId}/items/{itemId}`.
 
-The API account needs the **Api Users** role and the nopCommerce permission to manage menus. Use `GET /api/menus` to discover menus for the current store and `GET /api/menus/{menuId}/items` to list their links. Add a category or topic link with `POST /api/menus/{menuId}/items`. The body accepts `link_type` of `category` or `topic`, an `entity_id`, and an optional `display_order`, as in `{"link_type":"category","entity_id":42,"display_order":20}`. The add request returns HTTP 201 for a new link and 200 if the link already exists. Delete a link with `DELETE /api/menus/{menuId}/items/{itemId}`.
+The API account needs the **Api Users** role and the nopCommerce permission to manage menus. You can also configure menus under **Admin → Content management → Menus**.
 
 ## Checkout attributes
 

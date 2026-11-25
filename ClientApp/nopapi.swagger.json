@@ -12125,19 +12125,7 @@
             "type": "string",
             "nullable": true
           },
-          "price_ranges": {
-            "type": "string",
-            "nullable": true
-          },
           "show_on_home_page": {
-            "type": "boolean",
-            "nullable": true
-          },
-          "include_in_top_menu": {
-            "type": "boolean",
-            "nullable": true
-          },
-          "has_discounts_applied": {
             "type": "boolean",
             "nullable": true
           },
@@ -12471,10 +12459,6 @@
           "refunded_amount": {
             "type": "number",
             "format": "decimal",
-            "nullable": true
-          },
-          "reward_points_were_added": {
-            "type": "boolean",
             "nullable": true
           },
           "checkout_attribute_description": {
@@ -13159,10 +13143,6 @@
             "type": "string",
             "nullable": true
           },
-          "price_ranges": {
-            "type": "string",
-            "nullable": true
-          },
           "subject_to_acl": {
             "type": "boolean"
           },
@@ -13592,10 +13572,6 @@
             "format": "decimal",
             "nullable": true
           },
-          "reward_points_were_added": {
-            "type": "boolean",
-            "nullable": true
-          },
           "checkout_attribute_description": {
             "type": "string",
             "nullable": true
@@ -14001,10 +13977,6 @@
             "type": "number",
             "format": "decimal",
             "nullable": true
-          },
-          "picture_id": {
-            "type": "integer",
-            "format": "int32"
           },
           "id": {
             "type": "integer",
@@ -14444,10 +14416,6 @@
             "format": "int32",
             "nullable": true
           },
-          "is_telecommunications_or_broadcasting_or_electronic_services": {
-            "type": "boolean",
-            "nullable": true
-          },
           "use_multiple_warehouses": {
             "type": "boolean",
             "nullable": true
@@ -14542,21 +14510,6 @@
             "format": "decimal",
             "nullable": true
           },
-          "special_price": {
-            "type": "number",
-            "format": "decimal",
-            "nullable": true
-          },
-          "special_price_start_date_time_utc": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "special_price_end_date_time_utc": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
           "customer_enters_price": {
             "type": "boolean",
             "nullable": true
@@ -14596,14 +14549,6 @@
           "mark_as_new_end_date_time_utc": {
             "type": "string",
             "format": "date-time",
-            "nullable": true
-          },
-          "has_tier_prices": {
-            "type": "boolean",
-            "nullable": true
-          },
-          "has_discounts_applied": {
-            "type": "boolean",
             "nullable": true
           },
           "weight": {
@@ -15442,10 +15387,6 @@
             "type": "boolean",
             "nullable": true
           },
-          "secure_url": {
-            "type": "string",
-            "nullable": true
-          },
           "hosts": {
             "type": "string",
             "nullable": true
@@ -15618,22 +15559,6 @@
           },
           "include_in_sitemap": {
             "type": "boolean"
-          },
-          "include_in_top_menu": {
-            "type": "boolean",
-            "nullable": true
-          },
-          "include_in_footer_column1": {
-            "type": "boolean",
-            "nullable": true
-          },
-          "include_in_footer_column2": {
-            "type": "boolean",
-            "nullable": true
-          },
-          "include_in_footer_column3": {
-            "type": "boolean",
-            "nullable": true
           },
           "display_order": {
             "type": "integer",

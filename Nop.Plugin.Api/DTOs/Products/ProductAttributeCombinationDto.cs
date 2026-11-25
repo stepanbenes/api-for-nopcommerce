@@ -52,11 +52,5 @@ namespace Nop.Plugin.Api.DTO.Products
         /// </summary>
         [JsonProperty("overridden_price")]
         public decimal? OverriddenPrice { get; set; }
-
-        /// <summary>
-        ///     Gets or sets the identifier of picture associated with this combination
-        /// </summary>
-        [JsonProperty("picture_id")]
-        public int PictureId { get; set; }
     }
 }
