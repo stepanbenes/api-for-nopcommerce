@@ -32,7 +32,7 @@ public class GeneratedClientTests
         var handler = new OrderResponseHandler();
         using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://example.test") };
         var client = new NopApiClient(httpClient);
-        var request = new OrderDtoDelta(new OrderDto(new AddressDto()));
+        var request = new CreateOrderRequest(new CreateOrderDto(CustomerId: 42, BillingAddress: new OrderBillingAddressDto(7)));
         var key = Guid.NewGuid().ToString("D");
 
         await client.CreateOrder(request, IdempotencyKey: key);

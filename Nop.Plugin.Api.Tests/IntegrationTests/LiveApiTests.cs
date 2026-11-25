@@ -310,8 +310,8 @@ public class LiveApiTests
             var orderRequest = new
             {
                 customer_id = customerId,
-                billing_address = orderAddress,
-                shipping_address = orderAddress,
+                billing_address = new { id = addressId },
+                shipping_address = new { id = addressId },
                 payment_method_system_name = "Payments.CheckMoneyOrder",
                 shipping_rate_computation_method_system_name = "Shipping.FixedByWeightByTotal",
                 shipping_method = "Ground",

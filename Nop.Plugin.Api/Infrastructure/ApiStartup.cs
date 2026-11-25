@@ -60,21 +60,51 @@ namespace Nop.Plugin.Api.Infrastructure
                 });
             }
 
+            if (context.MethodInfo.DeclaringType == typeof(Controllers.OrdersController) &&
+                context.MethodInfo.Name == nameof(Controllers.OrdersController.CreateOrder) &&
+                operation.Responses.TryGetValue("200", out var successResponse))
+            {
+                successResponse.Headers["Idempotency-Replayed"] = new OpenApiHeader
+                {
+                    Description = "True when this request replays a previously committed order.",
+                    Schema = new OpenApiSchema { Type = "boolean" }
+                };
+                successResponse.Headers["X-Order-Follow-Up"] = new OpenApiHeader
+                {
+                    Description = "Follow-up guidance when order placement succeeded and a subsequent step failed.",
+                    Schema = new OpenApiSchema { Type = "string" }
+                };
+            }
+
             var delta = context.MethodInfo.GetParameters().FirstOrDefault(parameter =>
                 parameter.ParameterType.IsGenericType &&
                 parameter.ParameterType.GetGenericTypeDefinition() == typeof(Delta<>));
 
-            if (delta == null)
-                return;
+            // MVC advertises aliases for JSON models. Publish the canonical representation once
+            // when an alias refers to the same schema, so clients serialize and parse it as JSON.
+            foreach (var response in operation.Responses.Values)
+                RemoveJsonAliases(response.Content, "text/plain", "text/json");
 
+            if (delta == null)
+            {
+                RemoveJsonAliases(operation.RequestBody?.Content,
+                    "application/json-patch+json", "text/json", "application/*+json");
+                return;
+            }
+
+            var createsOrder = context.MethodInfo.DeclaringType == typeof(Controllers.OrdersController) &&
+                context.MethodInfo.Name == nameof(Controllers.OrdersController.CreateOrder);
             operation.RequestBody = new OpenApiRequestBody
             {
                 Required = true,
+                Description = createsOrder ? "Supply order.customer_id and order.billing_address with an address ID owned by the customer." : null,
                 Content =
                 {
                     ["application/json"] = new OpenApiMediaType
                     {
-                        Schema = context.SchemaGenerator.GenerateSchema(delta.ParameterType, context.SchemaRepository)
+                        Schema = createsOrder
+                            ? GenerateCreateOrderRequestSchema(context)
+                            : context.SchemaGenerator.GenerateSchema(delta.ParameterType, context.SchemaRepository)
                     }
                 }
             };
@@ -83,6 +113,49 @@ namespace Nop.Plugin.Api.Infrastructure
             var id = operation.Parameters.FirstOrDefault(parameter => parameter.In == ParameterLocation.Path && parameter.Name == "id");
             if (id != null)
                 id.Schema = new OpenApiSchema { Type = "integer", Format = "int32" };
+        }
+
+        private static OpenApiSchema GenerateCreateOrderRequestSchema(OperationFilterContext context)
+        {
+            var repository = context.SchemaRepository;
+            var addressRef = context.SchemaGenerator.GenerateSchema(typeof(DTO.AddressDto), repository);
+            var address = new OpenApiSchema(repository.Schemas[addressRef.Reference.Id]);
+            address.Properties = new Dictionary<string, OpenApiSchema>(address.Properties)
+            {
+                ["id"] = new OpenApiSchema(address.Properties["id"]) { Minimum = 1 }
+            };
+            address.Required = new HashSet<string>(address.Required) { "id" };
+            var billingAddress = repository.AddDefinition("OrderBillingAddressDto", address);
+
+            var orderRef = context.SchemaGenerator.GenerateSchema(typeof(DTO.Orders.OrderDto), repository);
+            var order = new OpenApiSchema(repository.Schemas[orderRef.Reference.Id]);
+            order.Properties = new Dictionary<string, OpenApiSchema>(order.Properties)
+            {
+                ["customer_id"] = new OpenApiSchema(order.Properties["customer_id"]) { Nullable = false, Minimum = 1 },
+                ["billing_address"] = billingAddress
+            };
+            order.Required = new HashSet<string>(order.Required) { "customer_id", "billing_address" };
+
+            return repository.AddDefinition("CreateOrderRequest", new OpenApiSchema
+            {
+                Type = "object",
+                AdditionalPropertiesAllowed = false,
+                Required = { "order" },
+                Properties = { ["order"] = repository.AddDefinition("CreateOrderDto", order) }
+            });
+        }
+
+        private static void RemoveJsonAliases(IDictionary<string, OpenApiMediaType> content, params string[] aliases)
+        {
+            if (content == null || !content.TryGetValue("application/json", out var json) ||
+                json.Schema?.Reference?.Id is not { } schemaId)
+                return;
+
+            foreach (var alias in aliases)
+            {
+                if (content.TryGetValue(alias, out var representation) && representation.Schema?.Reference?.Id == schemaId)
+                    content.Remove(alias);
+            }
         }
     }
 

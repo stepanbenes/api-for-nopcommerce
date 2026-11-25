@@ -242,7 +242,7 @@ namespace Nop.Plugin.Api.DTO.Orders
         /// <summary>
         ///     Gets or sets the billing address
         /// </summary>
-        [JsonProperty("billing_address", Required = Required.Always)]
+        [JsonProperty("billing_address")]
         public AddressDto BillingAddress { get; set; }
 
         /// <summary>

@@ -75,9 +75,19 @@ With the [Docker stack](DOCKER.md) running and those API variables set, run the 
 
 The script requires Python 3 and succeeds only when all three cases run and pass. The cases clean up through the API. Tax category and cart item rows are removed. nopCommerce retains soft-deleted rows for the product and order.
 
-The sample client requests a bearer token and reads catalog and country data. It generates its bindings from [the checked-in OpenAPI snapshot](ClientApp/nopapi.swagger.json). To refresh that snapshot after changing the API, download it from the installed test store, rebuild the client, and review the resulting diff.
+The sample client requests a bearer token and reads catalog and country data. It generates its bindings from [the checked-in OpenAPI snapshot](ClientApp/nopapi.swagger.json). The client-generation checks run on GitHub branch pushes and pull requests and can also be triggered manually.
+
+Run the same checks locally with the .NET 10 SDK and Python 3.12. Both generate from the checked-in snapshot. The C# tests compile the generated client, match its methods to all OpenAPI operation IDs, and check checkout JSON, authentication, and response decoding against a disposable loopback HTTP server. The Python check generates and imports the client, checks operation coverage, and verifies request and response serialization with HTTPX’s mock transport. These checks require only this repository and the public dependency feeds.
+
+```sh
+dotnet test ClientApp.Tests/ClientApp.Tests.csproj --configuration Release
+bash scripts/test-python-client.sh
+```
+
+To refresh the OpenAPI snapshot after changing the API, download it from the installed test store, run the client-generation checks, and review the resulting diff.
 
 ```sh
 curl --fail --silent --show-error "$NOP_API_TEST_URL/api/swagger/v1/swagger.json" -o ClientApp/nopapi.swagger.json
-dotnet build ClientApp
+dotnet test ClientApp.Tests/ClientApp.Tests.csproj --configuration Release
+bash scripts/test-python-client.sh
 ```

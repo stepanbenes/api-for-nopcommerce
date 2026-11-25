@@ -1,0 +1,59 @@
+name: Client generation
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dotnet:
+    name: C# client
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+      - run: dotnet test ClientApp.Tests/ClientApp.Tests.csproj --configuration Release
+
+  python:
+    name: Python client
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - run: bash scripts/test-python-client.sh
+
+  runtime-openapi:
+    name: Runtime OpenAPI snapshot
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v6
+        with:
+          repository: nopSolutions/nopCommerce
+          # release-5.00.1
+          ref: daed7a6ab14badc5920dac1cbc2b2c77dfc1066c
+          path: upstream-nopcommerce
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Check the runtime OpenAPI snapshot
+        env:
+          NOP_ROOT: ${{ github.workspace }}/upstream-nopcommerce
+        run: bash scripts/check-runtime-openapi.sh

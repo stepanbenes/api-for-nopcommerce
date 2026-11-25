@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.3.0" />
+    <PackageReference Include="NUnit" Version="4.1.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" PrivateAssets="all" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <ProjectReference Include="../ClientApp/ClientApp.csproj" />
+    <Compile Include="../Nop.Plugin.Api.Tests/GeneratedClientTests.cs" Link="GeneratedClientTests.cs" />
+    <None Include="../ClientApp/nopapi.swagger.json" Link="nopapi.swagger.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

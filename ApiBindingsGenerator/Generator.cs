@@ -69,6 +69,8 @@ namespace ApiBindingsGenerator
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
+    using System.Linq;
     using System.Net;
     using System.Net.Http;
     using System.Net.Http.Json;
@@ -100,6 +102,19 @@ namespace ApiBindingsGenerator
             return await httpClient.SendAsync(request);
         }
 
+        protected static ApiResponse<T> CaptureResponse<T>(HttpResponseMessage response, T body, params string[] headerNames)
+        {
+            var headers = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase);
+            foreach (var name in headerNames)
+            {
+                if (response.Headers.TryGetValues(name, out var values) ||
+                    response.Content.Headers.TryGetValues(name, out values))
+                    headers.Add(name, Array.AsReadOnly(values.ToArray()));
+            }
+
+            return new ApiResponse<T>(response.StatusCode, body, new ReadOnlyDictionary<string, IReadOnlyList<string>>(headers));
+        }
+
         public void SetAuthorizationHeader(string scheme, string? parameter)
         {
             httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(scheme, parameter);
@@ -108,6 +123,20 @@ namespace ApiBindingsGenerator
         public void RemoveAuthorizationHeader()
         {
             httpClient.DefaultRequestHeaders.Authorization = null;
+        }
+    }
+
+    public sealed class ApiResponse<T>
+    {
+        public HttpStatusCode StatusCode { get; }
+        public T Body { get; }
+        public IReadOnlyDictionary<string, IReadOnlyList<string>> Headers { get; }
+
+        internal ApiResponse(HttpStatusCode statusCode, T body, IReadOnlyDictionary<string, IReadOnlyList<string>> headers)
+        {
+            StatusCode = statusCode;
+            Body = body;
+            Headers = headers;
         }
     }
 
@@ -270,7 +299,8 @@ namespace {BASE_NAMESPACE}.{apiName}.DTOs
 					requestBodyTypeName = GenerateCSharpType(requestBodyTypeDescriptor, out _);
 				}
 
-				var parameters = apiEndpoint.Parameters.OrderByDescending(p => p.Required ?? false).Select(p => GenerateApiEndpointParameter(p));
+				var orderedParameters = apiEndpoint.Parameters.OrderByDescending(p => p.Required ?? false).ToArray();
+				var parameters = orderedParameters.Select(GenerateApiEndpointParameter);
 				if (requestBodyTypeName is not null)
 				{
 					parameters = parameters.Prepend($"{requestBodyTypeName} {REQUEST_BODY_PARAMETER_NAME}");
@@ -286,7 +316,23 @@ namespace {BASE_NAMESPACE}.{apiName}.DTOs
 				{
 					case ApiClientType.NormalClass:
 						sourceCode.Append($@"{____}{____}public async {taskReturnTypeName} {operationName}({string.Join(", ", parameters)})");
-						writeNormalActionBody(sourceCode, apiEndpoint, returnType, payloadStatusCodes, requestBodyTypeName, typeMap);
+						var responseHeaders = apiEndpoint.Responses.Values
+							.Where(response => (int)response.StatusCode is >= 200 and <= 299)
+							.SelectMany(response => response.HeaderNames ?? Array.Empty<string>())
+							.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+						if (responseHeaders.Length > 0)
+						{
+							var arguments = orderedParameters.Select(GetParameterIdentifier);
+							if (requestBodyTypeName is not null)
+								arguments = arguments.Prepend(REQUEST_BODY_PARAMETER_NAME);
+							var call = $"await {operationName}WithResponse({string.Join(", ", arguments)})";
+							sourceCode.AppendLine(returnType is null ? $" => _ = {call};" : $" => ({call}).Body;");
+							sourceCode.AppendLine();
+							sourceCode.AppendLine($"{____}{____}/// <summary>Returns the body, status, and documented headers for {endpointLabel}.</summary>");
+							var bodyType = GenerateCSharpType(returnType?.MakeNullable(), out _) ?? "object?";
+							sourceCode.Append($"{____}{____}public async Task<ApiResponse<{bodyType}>> {operationName}WithResponse({string.Join(", ", parameters)})");
+						}
+						writeNormalActionBody(sourceCode, apiEndpoint, returnType, payloadStatusCodes, requestBodyTypeName, typeMap, responseHeaders);
 						break;
 					case ApiClientType.FakeClass:
 						sourceCode.Append($@"{____}{____}public virtual {taskReturnTypeName} {operationName}({string.Join(", ", parameters)})");
@@ -310,10 +356,15 @@ namespace {BASE_NAMESPACE}.{apiName}.DTOs
 				return typeDescriptor;
 			}
 
-			static void writeNormalActionBody(StringBuilder sourceCode, ApiEndpoint apiEndpoint, TypeDescriptor? returnType, HttpStatusCode[] payloadStatusCodes, string? requestBodyTypeName, Dictionary<string, TypeDescriptor> typeMap)
+			static void writeNormalActionBody(StringBuilder sourceCode, ApiEndpoint apiEndpoint, TypeDescriptor? returnType, HttpStatusCode[] payloadStatusCodes, string? requestBodyTypeName, Dictionary<string, TypeDescriptor> typeMap, string[] responseHeaders)
 			{
 				string? returnTypeName = GenerateCSharpType(returnType, out _);
-				string returnNothingToken = $"return{(returnTypeName is not null ? " null" : "")};";
+				var responseBodyType = GenerateCSharpType(returnType?.MakeNullable(), out _) ?? "object?";
+				var quotedHeaders = string.Join(", ", responseHeaders.Select(name => JsonConvert.ToString(name)));
+				string ReturnPayload(string value) => responseHeaders.Length == 0
+					? $"return {value};"
+					: $"return CaptureResponse<{responseBodyType}>(response, {value}, {quotedHeaders});";
+				string returnNothingToken = responseHeaders.Length == 0 && returnTypeName is null ? "return;" : ReturnPayload("null");
 				var queryParamDescriptions = GenerateApiEndpointQuery(apiEndpoint, typeMap);
 				sourceCode.AppendLine($@"
         {{
@@ -369,14 +420,14 @@ namespace {BASE_NAMESPACE}.{apiName}.DTOs
 						sourceCode.AppendLine($"{____}{____}{____}{____}case {(int)statusCode}:");
 
 					if (returnTypeName is "string")
-						sourceCode.AppendLine($@"                    return await response.Content.ReadAsStringAsync();");
+						sourceCode.AppendLine($"                    {ReturnPayload("await response.Content.ReadAsStringAsync()")}");
 					else
-						sourceCode.AppendLine($@"                    return await response.Content.ReadFromJsonAsync<{returnTypeName}>(SerializerOptions);");
+						sourceCode.AppendLine($"                    {ReturnPayload($"await response.Content.ReadFromJsonAsync<{returnTypeName}>(SerializerOptions)")}");
 				}
 				else
 				{
 					sourceCode.AppendLine($@"                case 200:
-                    return;");
+                    {returnNothingToken}");
 				}
 
 				foreach (var key in apiEndpoint.Responses.Keys.Except(payloadStatusCodes).Where(code => code != HttpStatusCode.OK || returnTypeName is not null))
@@ -385,7 +436,7 @@ namespace {BASE_NAMESPACE}.{apiName}.DTOs
 					sourceCode.AppendLine($"{____}{____}{____}{____}case {(int)response.StatusCode}:");
 					if ((int)response.StatusCode is > 200 and <= 299)
 					{
-						sourceCode.AppendLine($"{____}{____}{____}{____}{____}return{(returnTypeName is not null ? " null" : "")};");
+						sourceCode.AppendLine($"{____}{____}{____}{____}{____}{returnNothingToken}");
 					}
 					else
 					{
@@ -766,7 +817,9 @@ namespace {BASE_NAMESPACE}.{apiName}
 										description = descriptionToken.ToString();
 									if (responseObject["content"] is JObject responseContentObject)
 										content = parseContent(responseContentObject);
-									responses[statusCode] = new Response(statusCode, content, description);
+									var headerNames = (responseObject["headers"] as JObject)?.Properties()
+										.Select(header => header.Name).ToArray();
+									responses[statusCode] = new Response(statusCode, content, description, headerNames);
 								}
 							}
 						}

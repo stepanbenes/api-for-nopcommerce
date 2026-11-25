@@ -114,17 +114,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/CategoriesRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CategoriesRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CategoriesRootObject"
                 }
@@ -134,17 +124,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -177,17 +157,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/CategoriesRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CategoriesRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CategoriesRootObject"
                 }
@@ -197,17 +167,7 @@
           "422": {
             "description": "Unprocessable Content",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -217,17 +177,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -329,17 +279,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/CategoriesCountRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CategoriesCountRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CategoriesCountRootObject"
                 }
@@ -369,17 +309,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -423,17 +353,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/CategoriesRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CategoriesRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CategoriesRootObject"
                 }
@@ -443,17 +363,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -463,17 +373,7 @@
           "404": {
             "description": "Not Found",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -537,17 +437,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/CategoriesRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CategoriesRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CategoriesRootObject"
                 }
@@ -557,17 +447,7 @@
           "422": {
             "description": "Unprocessable Content",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -617,17 +497,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -664,17 +534,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -755,17 +615,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/CountriesRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CountriesRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CountriesRootObject"
                 }
@@ -775,17 +625,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -829,17 +669,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/CountriesRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CountriesRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CountriesRootObject"
                 }
@@ -849,17 +679,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -941,17 +761,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/CurrenciesRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CurrenciesRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CurrenciesRootObject"
                 }
@@ -981,17 +791,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -1016,17 +816,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/CurrencyDto"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CurrencyDto"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CurrencyDto"
                 }
@@ -1039,17 +829,7 @@
           "401": {
             "description": "Unauthorized",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -1074,17 +854,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/CurrencyDto"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CurrencyDto"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CurrencyDto"
                 }
@@ -1097,17 +867,7 @@
           "401": {
             "description": "Unauthorized",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -1143,17 +903,7 @@
           "404": {
             "description": "Not Found",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -1163,17 +913,7 @@
           "401": {
             "description": "Unauthorized",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -1208,17 +948,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/CustomerRolesRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CustomerRolesRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CustomerRolesRootObject"
                 }
@@ -1228,17 +958,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -1332,17 +1052,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/CustomersRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CustomersRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CustomersRootObject"
                 }
@@ -1352,17 +1062,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -1415,17 +1115,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/CustomersRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CustomersRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CustomersRootObject"
                 }
@@ -1435,17 +1125,7 @@
           "422": {
             "description": "Unprocessable Content",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -1455,17 +1135,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -1519,17 +1189,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/CustomersRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CustomersRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CustomersRootObject"
                 }
@@ -1539,17 +1199,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -1633,17 +1283,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/CustomersRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CustomersRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CustomersRootObject"
                 }
@@ -1653,17 +1293,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -1747,17 +1377,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/CustomersRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CustomersRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CustomersRootObject"
                 }
@@ -1767,17 +1387,7 @@
           "422": {
             "description": "Unprocessable Content",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -1787,17 +1397,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -1874,17 +1474,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -1949,17 +1539,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/CustomersCountRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CustomersCountRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CustomersCountRootObject"
                 }
@@ -1989,17 +1569,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -2063,17 +1633,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/CustomersRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CustomersRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CustomersRootObject"
                 }
@@ -2083,17 +1643,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -2147,22 +1697,7 @@
         ],
         "requestBody": {
           "content": {
-            "application/json-patch+json": {
-              "schema": {
-                "$ref": "#/components/schemas/AddressDto"
-              }
-            },
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AddressDto"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AddressDto"
-              }
-            },
-            "application/*+json": {
               "schema": {
                 "$ref": "#/components/schemas/AddressDto"
               }
@@ -2173,17 +1708,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/AddressDto"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AddressDto"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AddressDto"
                 }
@@ -2193,17 +1718,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -2277,22 +1792,7 @@
         ],
         "requestBody": {
           "content": {
-            "application/json-patch+json": {
-              "schema": {
-                "$ref": "#/components/schemas/AddressDto"
-              }
-            },
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AddressDto"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AddressDto"
-              }
-            },
-            "application/*+json": {
               "schema": {
                 "$ref": "#/components/schemas/AddressDto"
               }
@@ -2303,17 +1803,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/AddressDto"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AddressDto"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AddressDto"
                 }
@@ -2323,17 +1813,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -2415,17 +1895,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/LanguagesRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/LanguagesRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/LanguagesRootObject"
                 }
@@ -2455,17 +1925,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -2490,17 +1950,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/LanguageDto"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/LanguageDto"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/LanguageDto"
                 }
@@ -2513,17 +1963,7 @@
           "401": {
             "description": "Unauthorized",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -2559,17 +1999,7 @@
           "404": {
             "description": "Not Found",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -2579,17 +2009,7 @@
           "401": {
             "description": "Unauthorized",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -2713,17 +2133,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ManufacturersRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ManufacturersRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ManufacturersRootObject"
                 }
@@ -2733,17 +2143,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -2776,17 +2176,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ManufacturersRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ManufacturersRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ManufacturersRootObject"
                 }
@@ -2796,17 +2186,7 @@
           "422": {
             "description": "Unprocessable Content",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -2816,17 +2196,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -2920,17 +2290,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ManufacturersCountRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ManufacturersCountRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ManufacturersCountRootObject"
                 }
@@ -2960,17 +2320,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -3014,17 +2364,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ManufacturersRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ManufacturersRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ManufacturersRootObject"
                 }
@@ -3034,17 +2374,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -3108,17 +2438,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ManufacturersRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ManufacturersRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ManufacturersRootObject"
                 }
@@ -3128,17 +2448,7 @@
           "422": {
             "description": "Unprocessable Content",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -3188,17 +2498,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -3235,17 +2535,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -3310,17 +2600,7 @@
           "401": {
             "description": "Unauthorized",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -3330,17 +2610,7 @@
           "403": {
             "description": "Forbidden",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -3350,17 +2620,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/MenusResponse"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MenusResponse"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/MenusResponse"
                 }
@@ -3396,17 +2656,7 @@
           "401": {
             "description": "Unauthorized",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -3416,17 +2666,7 @@
           "403": {
             "description": "Forbidden",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -3436,17 +2676,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/MenuItemsResponse"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MenuItemsResponse"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/MenuItemsResponse"
                 }
@@ -3456,17 +2686,7 @@
           "404": {
             "description": "Not Found",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -3498,22 +2718,7 @@
         ],
         "requestBody": {
           "content": {
-            "application/json-patch+json": {
-              "schema": {
-                "$ref": "#/components/schemas/AddMenuItemRequest"
-              }
-            },
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AddMenuItemRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AddMenuItemRequest"
-              }
-            },
-            "application/*+json": {
               "schema": {
                 "$ref": "#/components/schemas/AddMenuItemRequest"
               }
@@ -3524,17 +2729,7 @@
           "401": {
             "description": "Unauthorized",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -3544,17 +2739,7 @@
           "403": {
             "description": "Forbidden",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -3564,17 +2749,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/MenuItemsResponse"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MenuItemsResponse"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/MenuItemsResponse"
                 }
@@ -3584,17 +2759,7 @@
           "201": {
             "description": "Created",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/MenuItemsResponse"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MenuItemsResponse"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/MenuItemsResponse"
                 }
@@ -3604,17 +2769,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -3624,17 +2779,7 @@
           "404": {
             "description": "Not Found",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -3644,17 +2789,7 @@
           "409": {
             "description": "Conflict",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -3699,17 +2834,7 @@
           "401": {
             "description": "Unauthorized",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -3719,17 +2844,7 @@
           "403": {
             "description": "Forbidden",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -3742,17 +2857,7 @@
           "404": {
             "description": "Not Found",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -3762,17 +2867,7 @@
           "409": {
             "description": "Conflict",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemDetails"
                 }
@@ -3853,17 +2948,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/NewsLetterSubscriptionsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/NewsLetterSubscriptionsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/NewsLetterSubscriptionsRootObject"
                 }
@@ -3873,17 +2958,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -3938,17 +3013,7 @@
           "422": {
             "description": "Unprocessable Content",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -4035,17 +3100,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/OrderItemsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OrderItemsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/OrderItemsRootObject"
                 }
@@ -4055,17 +3110,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -4149,17 +3194,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/OrderItemsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OrderItemsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/OrderItemsRootObject"
                 }
@@ -4169,17 +3204,7 @@
           "422": {
             "description": "Unprocessable Content",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -4189,17 +3214,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -4316,17 +3331,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -4362,17 +3367,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/OrderItemsCountRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OrderItemsCountRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/OrderItemsCountRootObject"
                 }
@@ -4422,17 +3417,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -4485,17 +3470,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/OrderItemsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OrderItemsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/OrderItemsRootObject"
                 }
@@ -4545,17 +3520,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -4608,17 +3573,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/OrderItemsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OrderItemsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/OrderItemsRootObject"
                 }
@@ -4628,17 +3583,7 @@
           "422": {
             "description": "Unprocessable Content",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -4648,17 +3593,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -4784,17 +3719,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -4908,17 +3833,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/OrdersRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OrdersRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/OrdersRootObject"
                 }
@@ -4928,17 +3843,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -4987,10 +3892,11 @@
           }
         ],
         "requestBody": {
+          "description": "Supply order.customer_id and order.billing_address with an address ID owned by the customer.",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/OrderDtoDelta"
+                "$ref": "#/components/schemas/CreateOrderRequest"
               }
             }
           },
@@ -4999,18 +3905,22 @@
         "responses": {
           "200": {
             "description": "OK",
+            "headers": {
+              "Idempotency-Replayed": {
+                "description": "True when this request replays a previously committed order.",
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "X-Order-Follow-Up": {
+                "description": "Follow-up guidance when order placement succeeded and a subsequent step failed.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/OrdersRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OrdersRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/OrdersRootObject"
                 }
@@ -5040,17 +3950,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -5080,17 +3980,7 @@
           "409": {
             "description": "Conflict",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -5100,17 +3990,7 @@
           "422": {
             "description": "Unprocessable Content",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -5182,17 +4062,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/OrdersCountRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OrdersCountRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/OrdersCountRootObject"
                 }
@@ -5222,17 +4092,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -5276,17 +4136,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/OrdersRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OrdersRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/OrdersRootObject"
                 }
@@ -5316,17 +4166,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -5390,17 +4230,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/OrdersRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OrdersRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/OrdersRootObject"
                 }
@@ -5430,17 +4260,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -5470,17 +4290,7 @@
           "422": {
             "description": "Unprocessable Content",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -5537,17 +4347,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -5577,17 +4377,7 @@
           "422": {
             "description": "Unprocessable Content",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -5623,17 +4413,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/OrdersRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OrdersRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/OrdersRootObject"
                 }
@@ -5695,17 +4475,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/CheckoutAttributesRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CheckoutAttributesRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CheckoutAttributesRootObject"
                 }
@@ -5747,17 +4517,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/BinaryFileDto"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/BinaryFileDto"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/BinaryFileDto"
                 }
@@ -5855,17 +4615,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductAttributesRootObjectDto"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductAttributesRootObjectDto"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProductAttributesRootObjectDto"
                 }
@@ -5875,17 +4625,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -5938,17 +4678,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductAttributesRootObjectDto"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductAttributesRootObjectDto"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProductAttributesRootObjectDto"
                 }
@@ -5978,17 +4708,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -6018,17 +4738,7 @@
           "422": {
             "description": "Unprocessable Content",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -6053,17 +4763,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductAttributesCountRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductAttributesCountRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProductAttributesCountRootObject"
                 }
@@ -6127,17 +4827,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductAttributesRootObjectDto"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductAttributesRootObjectDto"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProductAttributesRootObjectDto"
                 }
@@ -6147,17 +4837,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -6221,17 +4901,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductAttributesRootObjectDto"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductAttributesRootObjectDto"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProductAttributesRootObjectDto"
                 }
@@ -6261,17 +4931,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -6301,17 +4961,7 @@
           "422": {
             "description": "Unprocessable Content",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -6368,17 +5018,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -6408,17 +5048,7 @@
           "422": {
             "description": "Unprocessable Content",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -6492,17 +5122,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductCategoryMappingsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductCategoryMappingsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProductCategoryMappingsRootObject"
                 }
@@ -6532,17 +5152,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -6575,17 +5185,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductCategoryMappingsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductCategoryMappingsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProductCategoryMappingsRootObject"
                 }
@@ -6615,17 +5215,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -6655,17 +5245,7 @@
           "422": {
             "description": "Unprocessable Content",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -6708,17 +5288,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductCategoryMappingsCountRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductCategoryMappingsCountRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProductCategoryMappingsCountRootObject"
                 }
@@ -6748,17 +5318,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -6802,17 +5362,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductCategoryMappingsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductCategoryMappingsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProductCategoryMappingsRootObject"
                 }
@@ -6842,17 +5392,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -6916,17 +5456,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductCategoryMappingsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductCategoryMappingsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProductCategoryMappingsRootObject"
                 }
@@ -6976,17 +5506,7 @@
           "422": {
             "description": "Unprocessable Content",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -6996,17 +5516,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -7063,17 +5573,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -7167,17 +5667,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductManufacturerMappingsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductManufacturerMappingsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProductManufacturerMappingsRootObject"
                 }
@@ -7207,17 +5697,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -7250,17 +5730,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductManufacturerMappingsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductManufacturerMappingsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProductManufacturerMappingsRootObject"
                 }
@@ -7290,17 +5760,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -7330,17 +5790,7 @@
           "422": {
             "description": "Unprocessable Content",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -7383,17 +5833,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductManufacturerMappingsCountRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductManufacturerMappingsCountRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProductManufacturerMappingsCountRootObject"
                 }
@@ -7423,17 +5863,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -7477,17 +5907,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductManufacturerMappingsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductManufacturerMappingsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProductManufacturerMappingsRootObject"
                 }
@@ -7517,17 +5937,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -7591,17 +6001,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductManufacturerMappingsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductManufacturerMappingsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProductManufacturerMappingsRootObject"
                 }
@@ -7651,17 +6051,7 @@
           "422": {
             "description": "Unprocessable Content",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -7671,17 +6061,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -7738,17 +6118,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -7908,17 +6278,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductsRootObjectDto"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductsRootObjectDto"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProductsRootObjectDto"
                 }
@@ -7948,17 +6308,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -7991,17 +6341,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductsRootObjectDto"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductsRootObjectDto"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProductsRootObjectDto"
                 }
@@ -8031,17 +6371,7 @@
           "422": {
             "description": "Unprocessable Content",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -8129,17 +6459,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductsCountRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductsCountRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProductsCountRootObject"
                 }
@@ -8169,17 +6489,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -8223,17 +6533,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductsRootObjectDto"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductsRootObjectDto"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProductsRootObjectDto"
                 }
@@ -8263,17 +6563,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -8337,17 +6627,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductsRootObjectDto"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductsRootObjectDto"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProductsRootObjectDto"
                 }
@@ -8397,17 +6677,7 @@
           "422": {
             "description": "Unprocessable Content",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -8417,17 +6687,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -8504,17 +6764,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -8552,17 +6802,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductCategoriesRootObjectDto"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductCategoriesRootObjectDto"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProductCategoriesRootObjectDto"
                 }
@@ -8592,17 +6832,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -8690,17 +6920,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductSpecificationAttributesRootObjectDto"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductSpecificationAttributesRootObjectDto"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProductSpecificationAttributesRootObjectDto"
                 }
@@ -8710,17 +6930,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -8773,17 +6983,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductSpecificationAttributesRootObjectDto"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductSpecificationAttributesRootObjectDto"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProductSpecificationAttributesRootObjectDto"
                 }
@@ -8813,17 +7013,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -8853,17 +7043,7 @@
           "422": {
             "description": "Unprocessable Content",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -8906,17 +7086,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductSpecificationAttributesCountRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductSpecificationAttributesCountRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProductSpecificationAttributesCountRootObject"
                 }
@@ -8946,17 +7116,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -9000,17 +7160,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductSpecificationAttributesRootObjectDto"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductSpecificationAttributesRootObjectDto"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProductSpecificationAttributesRootObjectDto"
                 }
@@ -9040,17 +7190,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -9114,17 +7254,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductSpecificationAttributesRootObjectDto"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductSpecificationAttributesRootObjectDto"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProductSpecificationAttributesRootObjectDto"
                 }
@@ -9154,17 +7284,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -9194,17 +7314,7 @@
           "422": {
             "description": "Unprocessable Content",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -9261,17 +7371,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -9301,17 +7401,7 @@
           "422": {
             "description": "Unprocessable Content",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -9385,17 +7475,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductWarehouseInventoryRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductWarehouseInventoryRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProductWarehouseInventoryRootObject"
                 }
@@ -9425,17 +7505,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -9468,17 +7538,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductWarehouseInventoryRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductWarehouseInventoryRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProductWarehouseInventoryRootObject"
                 }
@@ -9508,17 +7568,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -9548,17 +7598,7 @@
           "422": {
             "description": "Unprocessable Content",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -9602,17 +7642,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductWarehouseInventoryRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductWarehouseInventoryRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProductWarehouseInventoryRootObject"
                 }
@@ -9642,17 +7672,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -9716,17 +7736,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductWarehouseInventoryRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProductWarehouseInventoryRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProductWarehouseInventoryRootObject"
                 }
@@ -9776,17 +7786,7 @@
           "422": {
             "description": "Unprocessable Content",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -9796,17 +7796,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -9863,17 +7853,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -9990,17 +7970,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ShoppingCartItemsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ShoppingCartItemsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ShoppingCartItemsRootObject"
                 }
@@ -10030,17 +8000,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -10073,17 +8033,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ShoppingCartItemsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ShoppingCartItemsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ShoppingCartItemsRootObject"
                 }
@@ -10113,17 +8063,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -10217,17 +8157,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -10252,17 +8182,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ShoppingCartItemsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ShoppingCartItemsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ShoppingCartItemsRootObject"
                 }
@@ -10317,17 +8237,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ShoppingCartItemsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ShoppingCartItemsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ShoppingCartItemsRootObject"
                 }
@@ -10357,17 +8267,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -10433,17 +8333,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ShoppingCartItemsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ShoppingCartItemsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ShoppingCartItemsRootObject"
                 }
@@ -10473,17 +8363,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -10560,17 +8440,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -10628,17 +8498,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/SpecificationAttributesRootObjectDto"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SpecificationAttributesRootObjectDto"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SpecificationAttributesRootObjectDto"
                 }
@@ -10648,17 +8508,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -10720,17 +8570,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/SpecificationAttributesRootObjectDto"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SpecificationAttributesRootObjectDto"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SpecificationAttributesRootObjectDto"
                 }
@@ -10760,17 +8600,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -10800,17 +8630,7 @@
           "422": {
             "description": "Unprocessable Content",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -10844,17 +8664,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/SpecificationAttributesCountRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SpecificationAttributesCountRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SpecificationAttributesCountRootObject"
                 }
@@ -10884,17 +8694,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -10938,17 +8738,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/SpecificationAttributesRootObjectDto"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SpecificationAttributesRootObjectDto"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SpecificationAttributesRootObjectDto"
                 }
@@ -10978,17 +8768,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -11052,17 +8832,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/SpecificationAttributesRootObjectDto"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SpecificationAttributesRootObjectDto"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SpecificationAttributesRootObjectDto"
                 }
@@ -11092,17 +8862,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -11132,17 +8892,7 @@
           "422": {
             "description": "Unprocessable Content",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -11199,17 +8949,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -11239,17 +8979,7 @@
           "422": {
             "description": "Unprocessable Content",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -11274,17 +9004,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/StateProvincesRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StateProvincesRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/StateProvincesRootObject"
                 }
@@ -11294,17 +9014,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -11348,17 +9058,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/StateProvincesRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StateProvincesRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/StateProvincesRootObject"
                 }
@@ -11368,17 +9068,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -11453,17 +9143,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/StoresRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StoresRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/StoresRootObject"
                 }
@@ -11513,17 +9193,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -11558,17 +9228,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/StoresRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StoresRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/StoresRootObject"
                 }
@@ -11598,17 +9258,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -11652,17 +9302,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/TaxCategoriesRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TaxCategoriesRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/TaxCategoriesRootObject"
                 }
@@ -11692,17 +9332,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -11735,17 +9365,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/TaxCategoriesRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TaxCategoriesRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/TaxCategoriesRootObject"
                 }
@@ -11755,17 +9375,7 @@
           "422": {
             "description": "Unprocessable Content",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -11775,17 +9385,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -11849,17 +9449,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/TaxCategoriesRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TaxCategoriesRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/TaxCategoriesRootObject"
                 }
@@ -11869,17 +9459,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -11889,17 +9469,7 @@
           "404": {
             "description": "Not Found",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -11963,17 +9533,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/TaxCategoriesRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TaxCategoriesRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/TaxCategoriesRootObject"
                 }
@@ -11983,17 +9543,7 @@
           "422": {
             "description": "Unprocessable Content",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -12003,17 +9553,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -12023,17 +9563,7 @@
           "404": {
             "description": "Not Found",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -12090,17 +9620,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -12163,22 +9683,7 @@
         "operationId": "RequestToken",
         "requestBody": {
           "content": {
-            "application/json-patch+json": {
-              "schema": {
-                "$ref": "#/components/schemas/TokenRequest"
-              }
-            },
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/TokenRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/TokenRequest"
-              }
-            },
-            "application/*+json": {
               "schema": {
                 "$ref": "#/components/schemas/TokenRequest"
               }
@@ -12189,17 +9694,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/TokenResponse"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TokenResponse"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/TokenResponse"
                 }
@@ -12398,17 +9893,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/TopicsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TopicsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/TopicsRootObject"
                 }
@@ -12418,17 +9903,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -12481,17 +9956,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/TopicsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TopicsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/TopicsRootObject"
                 }
@@ -12521,17 +9986,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -12561,17 +10016,7 @@
           "422": {
             "description": "Unprocessable Content",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -12615,17 +10060,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/TopicsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TopicsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/TopicsRootObject"
                 }
@@ -12655,17 +10090,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -12729,17 +10154,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/TopicsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TopicsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/TopicsRootObject"
                 }
@@ -12769,17 +10184,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -12809,17 +10214,7 @@
           "422": {
             "description": "Unprocessable Content",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -12876,17 +10271,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -12916,17 +10301,7 @@
           "422": {
             "description": "Unprocessable Content",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -12979,17 +10354,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/WarehousesRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/WarehousesRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/WarehousesRootObject"
                 }
@@ -12999,17 +10364,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -13042,17 +10397,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/WarehousesRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/WarehousesRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/WarehousesRootObject"
                 }
@@ -13062,17 +10407,7 @@
           "422": {
             "description": "Unprocessable Content",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -13082,17 +10417,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -13156,17 +10481,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/WarehousesRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/WarehousesRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/WarehousesRootObject"
                 }
@@ -13176,17 +10491,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -13196,17 +10501,7 @@
           "404": {
             "description": "Not Found",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -13270,17 +10565,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/WarehousesRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/WarehousesRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/WarehousesRootObject"
                 }
@@ -13290,17 +10575,7 @@
           "422": {
             "description": "Unprocessable Content",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -13350,17 +10625,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -13397,17 +10662,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorsRootObject"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorsRootObject"
                 }
@@ -13883,6 +11138,237 @@
           "id": {
             "type": "integer",
             "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateOrderDto": {
+        "required": [
+          "customer_id",
+          "billing_address"
+        ],
+        "type": "object",
+        "properties": {
+          "store_id": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "pick_up_in_store": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "payment_method_system_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "customer_currency_code": {
+            "type": "string",
+            "nullable": true
+          },
+          "currency_rate": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "customer_tax_display_type_id": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "vat_number": {
+            "type": "string",
+            "nullable": true
+          },
+          "order_subtotal_incl_tax": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "order_subtotal_excl_tax": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "order_sub_total_discount_incl_tax": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "order_sub_total_discount_excl_tax": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "order_shipping_incl_tax": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "order_shipping_excl_tax": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "payment_method_additional_fee_incl_tax": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "payment_method_additional_fee_excl_tax": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "tax_rates": {
+            "type": "string",
+            "nullable": true
+          },
+          "order_tax": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "order_discount": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "order_total": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "refunded_amount": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "reward_points_were_added": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "checkout_attribute_description": {
+            "type": "string",
+            "nullable": true
+          },
+          "checkout_attributes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CheckoutAttributeSelectionDto"
+            },
+            "nullable": true
+          },
+          "customer_language_id": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "affiliate_id": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "customer_ip": {
+            "type": "string",
+            "nullable": true
+          },
+          "authorization_transaction_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "authorization_transaction_code": {
+            "type": "string",
+            "nullable": true
+          },
+          "authorization_transaction_result": {
+            "type": "string",
+            "nullable": true
+          },
+          "capture_transaction_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "capture_transaction_result": {
+            "type": "string",
+            "nullable": true
+          },
+          "subscription_transaction_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "paid_date_utc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "shipping_method": {
+            "type": "string",
+            "nullable": true
+          },
+          "shipping_rate_computation_method_system_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "custom_values_xml": {
+            "type": "string",
+            "nullable": true
+          },
+          "deleted": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "created_on_utc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "customer_id": {
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "billing_address": {
+            "$ref": "#/components/schemas/OrderBillingAddressDto"
+          },
+          "shipping_address": {
+            "$ref": "#/components/schemas/AddressDto"
+          },
+          "order_items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderItemDto"
+            },
+            "nullable": true
+          },
+          "order_status": {
+            "$ref": "#/components/schemas/OrderStatus"
+          },
+          "payment_status": {
+            "$ref": "#/components/schemas/PaymentStatus"
+          },
+          "shipping_status": {
+            "$ref": "#/components/schemas/ShippingStatus"
+          },
+          "customer_tax_display_type": {
+            "type": "string",
+            "nullable": true
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateOrderRequest": {
+        "required": [
+          "order"
+        ],
+        "type": "object",
+        "properties": {
+          "order": {
+            "$ref": "#/components/schemas/CreateOrderDto"
           }
         },
         "additionalProperties": false
@@ -14614,10 +12100,88 @@
         },
         "additionalProperties": false
       },
-      "OrderDto": {
+      "OrderBillingAddressDto": {
         "required": [
-          "billing_address"
+          "id"
         ],
+        "type": "object",
+        "properties": {
+          "first_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "last_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "company": {
+            "type": "string",
+            "nullable": true
+          },
+          "country_id": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "country": {
+            "type": "string",
+            "nullable": true
+          },
+          "state_province_id": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "city": {
+            "type": "string",
+            "nullable": true
+          },
+          "address1": {
+            "type": "string",
+            "nullable": true
+          },
+          "address2": {
+            "type": "string",
+            "nullable": true
+          },
+          "zip_postal_code": {
+            "type": "string",
+            "nullable": true
+          },
+          "phone_number": {
+            "type": "string",
+            "nullable": true
+          },
+          "fax_number": {
+            "type": "string",
+            "nullable": true
+          },
+          "customer_attributes": {
+            "type": "string",
+            "nullable": true
+          },
+          "created_on_utc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "province": {
+            "type": "string",
+            "nullable": true
+          },
+          "id": {
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "OrderDto": {
         "type": "object",
         "properties": {
           "store_id": {
