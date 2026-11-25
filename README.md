@@ -103,6 +103,14 @@ dotnet test ClientApp.Tests/ClientApp.Tests.csproj --configuration Release
 bash scripts/test-python-client.sh
 ```
 
+The **Runtime OpenAPI snapshot** job installs a fresh sample store and PostgreSQL database from the pinned nopCommerce release. It checks the live OpenAPI against the snapshot, runs the full Release API suite, and requires every case to pass, including all three PostgreSQL cases. To run that job locally, install the SDK listed in the upstream checkout's `global.json` and use Docker Compose and Python 3.
+
+```sh
+NOP_ROOT="$(cd ../nopCommerce && pwd)" bash scripts/check-runtime-openapi.sh --test-api
+```
+
+The script generates temporary credentials and removes its dedicated Compose project and volumes on exit.
+
 To refresh the OpenAPI snapshot after changing the API, download it from the installed test store, run the client-generation checks, and review the resulting diff.
 
 ```sh
