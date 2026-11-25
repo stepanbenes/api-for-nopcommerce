@@ -165,6 +165,8 @@ SQL
         echo "Could not assign the API role to exactly one temporary administrator." >&2
         exit 1
     fi
+    # This project owns a fresh database that cleanup removes on exit.
+    export NOP_API_TEST_POSTGRES_ALLOW_FAULT_INJECTION=1
     export NOP_API_TEST_URL="http://127.0.0.1:$NOP_PORT"
     export NOP_API_TEST_USER="openapi-ci@example.test"
     export NOP_API_TEST_PASSWORD="$NOP_OPENAPI_ADMIN_PASSWORD"
@@ -185,10 +187,15 @@ import xml.etree.ElementTree as xml
 report = xml.parse(sys.argv[1])
 counters = report.find("./{*}ResultSummary/{*}Counters")
 total = int(counters.get("total", "0")) if counters is not None else 0
-if total < 572 or any(int(counters.get(key, "0")) != total for key in ("executed", "passed")):
-    raise SystemExit("Expected at least 572 API tests with every case executed and passed.")
+if total < 573 or any(int(counters.get(key, "0")) != total for key in ("executed", "passed")):
+    raise SystemExit("Expected at least 573 API tests with every case executed and passed.")
 
 expected_database_tests = {
+    "BulkPriceStockReplaysAnUnreadResponseAfterANewerUpdate",
+    "BulkPriceStockValidatesTheBatchBeforeWritingAndReportsUnavailableItems",
+    "ConcurrentBulkPriceStockRetriesWriteOneHistoryEntry",
+    "ConcurrentBulkPriceStockVersionsLeaveTheNewerUpdateInPlace",
+    "BulkPriceStockRollsBackProductAndHistoryWhenReceiptWriteFails",
     "CacheClearRequiresMaintenancePermissionAndAuditsTheCaller(True)",
     "CheckoutAcceptsAnItemWithoutAttributesAndPartialUpdatePreservesShipping(True)",
     "ProductAndCartItemCanBeCreatedUpdatedAndDeleted(True)",

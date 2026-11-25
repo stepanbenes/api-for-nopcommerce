@@ -36,6 +36,7 @@ namespace Nop.Plugin.Api.Infrastructure
             services.AddScoped<ICustomerApiService, CustomerApiService>();
             services.AddScoped<ICategoryApiService, CategoryApiService>();
             services.AddScoped<IProductApiService, ProductApiService>();
+            services.AddScoped<IBulkPriceStockService, BulkPriceStockService>();
             services.AddScoped<IProductCategoryMappingsApiService, ProductCategoryMappingsApiService>();
             services.AddScoped<IProductManufacturerMappingsApiService, ProductManufacturerMappingsApiService>();
             services.AddScoped<IOrderApiService, OrderApiService>();

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Nop.Core;
 using Nop.Core.Domain.Catalog;
 using Nop.Core.Domain.Discounts;
 using Nop.Plugin.Api.Attributes;
@@ -15,6 +16,7 @@ using Nop.Plugin.Api.JSON.Serializers;
 using Nop.Plugin.Api.ModelBinders;
 using Nop.Plugin.Api.Models.ProductsParameters;
 using Nop.Plugin.Api.Services;
+using Nop.Services.Authentication;
 using Nop.Services.Catalog;
 using Nop.Services.Customers;
 using Nop.Services.Discounts;
@@ -24,6 +26,7 @@ using Nop.Services.Media;
 using Nop.Services.Security;
 using Nop.Services.Seo;
 using Nop.Services.Stores;
+using System.ComponentModel.DataAnnotations;
 using System.Net;
 
 namespace Nop.Plugin.Api.Controllers
@@ -69,6 +72,42 @@ namespace Nop.Plugin.Api.Controllers
             _productAttributeService = productAttributeService;
             _dtoHelper = dtoHelper;
             _copyProductService = copyProductService;
+        }
+
+        [HttpPost("/api/products/bulk-price-stock", Name = "BulkUpdateProductPriceStock")]
+        [AuthorizePermission(StandardPermission.Catalog.PRODUCTS_CREATE_EDIT_DELETE)]
+        [RequestSizeLimit(64 * 1024)]
+        [ProducesResponseType(typeof(BulkPriceStockResponse), 200)]
+        [ProducesResponseType(typeof(ValidationProblemDetails), 400)]
+        [ProducesResponseType(typeof(void), 401)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(typeof(ErrorsRootObject), 409)]
+        [ProducesResponseType(typeof(void), 413)]
+        [ProducesResponseType(typeof(ProblemDetails), 503)]
+        public async Task<IActionResult> BulkUpdateProductPriceStock(
+            [FromBody, Required] BulkPriceStockRequest request,
+            [FromServices] IAuthenticationService authenticationService,
+            [FromServices] IStoreContext storeContext,
+            [FromServices] IBulkPriceStockService bulkService,
+            CancellationToken cancellationToken)
+        {
+            var actor = await authenticationService.GetAuthenticatedCustomerAsync();
+            if (actor == null)
+                return AccessDenied();
+
+            var store = await storeContext.GetCurrentStoreAsync();
+            try
+            {
+                return Ok(await bulkService.ExecuteAsync(actor, store.Id, request, cancellationToken));
+            }
+            catch (BulkPriceStockConflictException)
+            {
+                return Error(HttpStatusCode.Conflict, "version", "This operation version conflicts with an earlier request.");
+            }
+            catch (BulkPriceStockBusyException)
+            {
+                return Problem(statusCode: (int)HttpStatusCode.ServiceUnavailable);
+            }
         }
 
         /// <summary>
