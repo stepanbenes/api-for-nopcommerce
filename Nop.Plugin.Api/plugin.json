@@ -2,7 +2,7 @@
   "Group": "Api",
   "FriendlyName": "Api plugin",
   "SystemName": "Nop.Plugin.Api",
-  "Version": "5.00.1",
+  "Version": "5.00.2",
   "SupportedVersions": [ "5.00" ],
   "Author": "Nop-Templates team",
   "DisplayOrder": -1,
