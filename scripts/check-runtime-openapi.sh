@@ -189,6 +189,7 @@ if total < 572 or any(int(counters.get(key, "0")) != total for key in ("executed
     raise SystemExit("Expected at least 572 API tests with every case executed and passed.")
 
 expected_database_tests = {
+    "CacheClearRequiresMaintenancePermissionAndAuditsTheCaller(True)",
     "CheckoutAcceptsAnItemWithoutAttributesAndPartialUpdatePreservesShipping(True)",
     "ProductAndCartItemCanBeCreatedUpdatedAndDeleted(True)",
     "TaxCategoryCanBeListedReadUpdatedAndDeleted(True)",
@@ -197,7 +198,7 @@ passed = {item.get("testName") for item in report.findall("./{*}Results/{*}UnitT
           if item.get("outcome") == "Passed"}
 missing = expected_database_tests - passed
 if missing:
-    raise SystemExit(f"Expected all three PostgreSQL cases to run and pass. Missing: {sorted(missing)}")
-print(f"Passed {total} Release API tests, including all three PostgreSQL cases.")
+    raise SystemExit(f"Expected all {len(expected_database_tests)} PostgreSQL cases to run and pass. Missing {sorted(missing)}")
+print(f"Passed {total} Release API tests, including all {len(expected_database_tests)} PostgreSQL cases.")
 PYTEST
 fi

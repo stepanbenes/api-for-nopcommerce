@@ -99,11 +99,35 @@ namespace Nop.Plugin.Api.Infrastructure
                 });
             }
 
+            await EnsureClearCacheActivityTypeAsync();
             await base.InstallAsync();
 
             // Changes to Web.Config trigger application restart.
             // This doesn't appear to affect the Install function, but just to be safe we will made web.config changes after the plugin was installed.
             //_webConfigMangerHelper.AddConfiguration();
+        }
+
+        public override async Task UpdateAsync(string currentVersion, string targetVersion)
+        {
+            await EnsureClearCacheActivityTypeAsync();
+            await base.UpdateAsync(currentVersion, targetVersion);
+        }
+
+        private static async Task EnsureClearCacheActivityTypeAsync()
+        {
+            var repository = EngineContext.Current.Resolve<IRepository<ActivityLogType>>();
+            var activityTypes = await repository.GetAllAsync(query =>
+                query.Where(type => type.SystemKeyword == Constants.ClearCacheActivity));
+
+            if (activityTypes.Count == 0)
+            {
+                await repository.InsertAsync(new ActivityLogType
+                {
+                    SystemKeyword = Constants.ClearCacheActivity,
+                    Name = "API cache clear request",
+                    Enabled = true
+                });
+            }
         }
 
         public override async Task UninstallAsync()

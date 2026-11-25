@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Net;
 using System.Text.Json;
+using ApiBindings;
 using ApiBindings.NopApi;
 using ApiBindings.NopApi.DTOs;
 using Microsoft.AspNetCore.Builder;
@@ -48,6 +49,39 @@ public class ClientGenerationTests
         Assert.That(query, Is.EqualTo("?Status=Pending"));
         await client.GetOrders();
         Assert.That(query, Is.EqualTo(string.Empty));
+    }
+
+    [TestCase(HttpStatusCode.NoContent)]
+    [TestCase(HttpStatusCode.Unauthorized)]
+    public async Task ClearCacheHandlesEmptyResponsesOverHttp(HttpStatusCode status)
+    {
+        var builder = WebApplication.CreateSlimBuilder();
+        builder.Logging.ClearProviders();
+        builder.WebHost.ConfigureKestrel(options => options.Listen(IPAddress.Loopback, 0));
+        await using var server = builder.Build();
+
+        var cacheRequest = new TaskCompletionSource<(string Body, string Authorization)>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        server.MapPost("/api/admin/cache/clear", async (HttpRequest request, CancellationToken cancellationToken) =>
+        {
+            using var reader = new StreamReader(request.Body);
+            cacheRequest.SetResult((await reader.ReadToEndAsync(cancellationToken), request.Headers.Authorization.ToString()));
+            return Results.StatusCode((int)status);
+        });
+        await server.StartAsync();
+
+        using var http = new HttpClient { BaseAddress = new Uri(server.Urls.Single()), Timeout = TimeSpan.FromSeconds(10) };
+        var client = new NopApiClient(http);
+        client.SetAuthorizationHeader("Bearer", "mock-token");
+
+        if (status == HttpStatusCode.NoContent)
+            await client.ClearCache();
+        else
+            Assert.That(Assert.ThrowsAsync<ApiException>(async () => await client.ClearCache())?.StatusCode, Is.EqualTo(status));
+
+        var request = await cacheRequest.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        Assert.That(request.Body, Is.Empty);
+        Assert.That(request.Authorization, Is.EqualTo("Bearer mock-token"));
     }
 
     [TestCase("en-US")]

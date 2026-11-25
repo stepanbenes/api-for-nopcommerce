@@ -28,7 +28,7 @@ import sys
 import xml.etree.ElementTree as xml
 
 counters = xml.parse(sys.argv[1]).find("./{*}ResultSummary/{*}Counters")
-expected = {"total": "3", "executed": "3", "passed": "3"}
+expected = {"total": "4", "executed": "4", "passed": "4"}
 if counters is None or any(counters.get(name) != count for name, count in expected.items()):
-    sys.exit("Expected all three PostgreSQL integration cases to run and pass.")
+    sys.exit("Expected all four PostgreSQL integration cases to run and pass.")
 PY
