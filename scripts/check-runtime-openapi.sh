@@ -37,7 +37,8 @@ if [[ -n "${NOP_PLUGIN_PACKAGE_DIR:-}" ]]; then
     python3 scripts/package-plugin.py "$scratch/Nop.Plugin.Api" "$NOP_PLUGIN_PACKAGE_DIR"
     python3 -m zipfile -e "$NOP_PLUGIN_PACKAGE_DIR/Nop.Plugin.Api.zip" "$scratch/package"
 
-    # Boot nopCommerce with the exact files that will be published.
+    # Boot nopCommerce with the exact files that will be published. The loader
+    # removes the plugin's deps.json from the extracted directory at startup.
     export NOP_PACKAGED_PLUGIN="$scratch/package/Nop.Plugin.Api"
     cat > "$scratch/compose.package.yaml" <<'YAML'
 services:
@@ -46,7 +47,6 @@ services:
       - type: bind
         source: ${NOP_PACKAGED_PLUGIN}
         target: /app/Plugins/Nop.Plugin.Api
-        read_only: true
 YAML
     compose+=(-f "$scratch/compose.package.yaml")
     "${compose[@]}" up --no-build -d
