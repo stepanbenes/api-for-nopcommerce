@@ -51,12 +51,16 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProducts
             var vendorRepo = Mock.Of<IRepository<Vendor>>();
 
             var storeMappingService = Mock.Of<IStoreMappingService>();
+            Mock.Get(storeMappingService).Setup(x => x.ApplyStoreMapping(It.IsAny<IQueryable<Product>>(), 1))
+                .ReturnsAsync((IQueryable<Product> query, int _) => query);
+            var storeContext = Mock.Of<Nop.Core.IStoreContext>();
+            Mock.Get(storeContext).Setup(x => x.GetCurrentStoreAsync()).ReturnsAsync(new Nop.Core.Domain.Stores.Store { Id = 1 });
 
-            _productApiService = new ProductApiService(productRepo, productCategoryRepo, vendorRepo, storeMappingService);
+            _productApiService = new ProductApiService(productRepo, productCategoryRepo, vendorRepo, storeMappingService, storeContext);
         }
 
         [Test]
-        public void WhenCalledWithValidCategoryId_ShouldReturnOnlyTheProductsMappedToThisCategory()
+        public async Task WhenCalledWithValidCategoryId_ShouldReturnOnlyTheProductsMappedToThisCategory()
         {
             // Arange
             int categoryId = 3;
@@ -66,7 +70,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProducts
                                       select product);
 
             // Act
-            var products = _productApiService.GetProducts(categoryId: categoryId);
+            var products = await _productApiService.GetProductsAsync(categoryId: categoryId);
 
             // Assert
             CollectionAssert.IsNotEmpty(products);
@@ -77,10 +81,10 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProducts
         [Test]
         [TestCase(0)]
         [TestCase(-10)]
-        public void WhenCalledWithNegativeOrZeroCategoryId_ShouldReturnEmptyCollection(int categoryId)
+        public async Task WhenCalledWithNegativeOrZeroCategoryId_ShouldReturnEmptyCollection(int categoryId)
         {
             // Act
-            var products = _productApiService.GetProducts(categoryId: categoryId);
+            var products = await _productApiService.GetProductsAsync(categoryId: categoryId);
 
             // Assert
             CollectionAssert.IsEmpty(products);
@@ -91,10 +95,10 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProducts
         [TestCase(int.MinValue)]
         [TestCase(-1)]
         [TestCase(5465464)]
-        public void WhenCalledWithCategoryIdThatDoesNotExistInTheMappings_ShouldReturnEmptyCollection(int categoryId)
+        public async Task WhenCalledWithCategoryIdThatDoesNotExistInTheMappings_ShouldReturnEmptyCollection(int categoryId)
         {
             // Act
-            var products = _productApiService.GetProducts(categoryId: categoryId);
+            var products = await _productApiService.GetProductsAsync(categoryId: categoryId);
 
             // Assert
             CollectionAssert.IsEmpty(products);

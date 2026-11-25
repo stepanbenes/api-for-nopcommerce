@@ -1,4 +1,5 @@
-﻿using Nop.Core.Domain.Catalog;
+﻿using Nop.Core;
+using Nop.Core.Domain.Catalog;
 using Nop.Data;
 using Nop.Plugin.Api.DataStructures;
 using Nop.Plugin.Api.Infrastructure;
@@ -11,6 +12,7 @@ namespace Nop.Plugin.Api.Services
     {
         private readonly IRepository<Category> _categoryRepository;
         private readonly IRepository<ProductCategory> _productCategoryMappingRepository;
+        private readonly IStoreContext _storeContext;
         private readonly IStoreMappingService _storeMappingService;
         private readonly ICategoryService _categoryService;
 
@@ -18,15 +20,17 @@ namespace Nop.Plugin.Api.Services
                 IRepository<Category> categoryRepository,
                 IRepository<ProductCategory> productCategoryMappingRepository,
                 IStoreMappingService storeMappingService,
+            IStoreContext storeContext,
                 ICategoryService categoryService)
         {
             _categoryRepository = categoryRepository;
             _productCategoryMappingRepository = productCategoryMappingRepository;
             _storeMappingService = storeMappingService;
+            _storeContext = storeContext;
             this._categoryService = categoryService;
         }
 
-        public IList<Category> GetCategories(
+        public async Task<IList<Category>> GetCategoriesAsync(
             IList<int> ids = null,
             DateTime? createdAtMin = null, DateTime? createdAtMax = null, DateTime? updatedAtMin = null, DateTime? updatedAtMax = null,
             int limit = Constants.Configurations.DefaultLimit, int page = Constants.Configurations.DefaultPageValue,
@@ -42,17 +46,18 @@ namespace Nop.Plugin.Api.Services
                 query = query.Where(c => c.Id > sinceId);
             }
 
-            return new ApiList<Category>(query, page - 1, limit);
+            query = await _storeMappingService.ApplyStoreMapping(query, (await _storeContext.GetCurrentStoreAsync()).Id);
+            return await ApiList<Category>.CreateAsync(query, page - 1, limit);
         }
 
-        public Category GetCategoryById(int id)
+        public async Task<Category> GetCategoryByIdAsync(int id)
         {
             if (id <= 0)
             {
                 return null;
             }
 
-            var category = _categoryRepository.Table.FirstOrDefault(cat => cat.Id == id && !cat.Deleted);
+            var category = await _categoryRepository.Table.FirstOrDefaultAsync(cat => cat.Id == id && !cat.Deleted);
 
             return category;
         }
@@ -64,13 +69,24 @@ namespace Nop.Plugin.Api.Services
         {
             var query = GetCategoriesQuery(createdAtMin, createdAtMax, updatedAtMin, updatedAtMax, publishedStatus, productId, ids: null, parentCategoryId);
 
-            return await query.WhereAwait(async c => await _storeMappingService.AuthorizeAsync(c)).CountAsync();
+            query = await _storeMappingService.ApplyStoreMapping(query, (await _storeContext.GetCurrentStoreAsync()).Id);
+            return await query.CountAsync();
         }
 
         public async Task<IDictionary<int, IList<Category>>> GetProductCategories(IList<int> productIds)
         {
             var productCategories = await _categoryService.GetProductCategoryIdsAsync(productIds.ToArray());
-            return productCategories.ToDictionary(prodCat => prodCat.Key, prodCat => prodCat.Value.Select(catId => GetCategoryById(catId)).ToList() as IList<Category>);
+            var categoriesByProduct = new Dictionary<int, IList<Category>>();
+            foreach (var (productId, categoryIds) in productCategories)
+            {
+                var categories = new List<Category>();
+                foreach (var categoryId in categoryIds)
+                    categories.Add(await GetCategoryByIdAsync(categoryId));
+
+                categoriesByProduct.Add(productId, categories);
+            }
+
+            return categoriesByProduct;
         }
 
         private IQueryable<Category> GetCategoriesQuery(

@@ -545,15 +545,28 @@ namespace {BASE_NAMESPACE}.{apiName}
 
 		private static List<(string paramName, string paramValue)> GenerateApiEndpointQuery(ApiEndpoint endpoint, Dictionary<string, TypeDescriptor> typeMap)
 		{
-			return endpoint.Parameters.Where(p => p.In == ParameterLocation.Query).Select(p => getParameterValue(p.Name, p.Schema)).ToList();
+			return endpoint.Parameters.Where(p => p.In == ParameterLocation.Query).Select(getParameterValue).ToList();
 
-			(string paramName, string paramValue) getParameterValue(string paramName, TypeDescriptor paramSchema) =>
-				paramSchema.Type switch
+			(string paramName, string paramValue) getParameterValue(ApiEndpointParameter parameter)
+			{
+				var identifier = GetParameterIdentifier(parameter);
+				var schema = parameter.Schema;
+				var value = (schema.Type, schema.Format) switch
 				{
-					"string" or "number" or "integer" or "boolean" => (paramName, $@"{{{paramName}}}"),
-					"array" => (paramName, $@"{{string.Join(',', ({paramName} as System.Collections.IEnumerable)?.Cast<object>().Select(o => o.ToString()) ?? Enumerable.Empty<string>())}}"),
-					_ => (paramName, string.Empty)
+					("string", "date") => formatDate(identifier, "yyyy-MM-dd"),
+					("string", "date-time") => formatDate(identifier, "O"),
+					("string" or "number" or "integer" or "boolean", _) => $@"{{{identifier}}}",
+					("array", _) => $@"{{string.Join(',', ({identifier} as System.Collections.IEnumerable)?.Cast<object>().Select(o => o.ToString()) ?? Enumerable.Empty<string>())}}",
+					_ when schema.RefType is { } reference &&
+						typeMap.TryGetValue(reference.Substring("#/components/schemas/".Length), out var referenced) &&
+						referenced.EnumValues is not null => $@"{{{identifier}}}",
+					_ => string.Empty
 				};
+				return (parameter.Name, value);
+			}
+
+			static string formatDate(string identifier, string format) =>
+				$@"{{({identifier} is {{ }} {identifier}DateValue ? Uri.EscapeDataString({identifier}DateValue.ToString(""{format}"", System.Globalization.CultureInfo.InvariantCulture)) : string.Empty)}}";
 		}
 
 		private static string GenerateApiEndpointParameter(ApiEndpointParameter parameter)
@@ -742,6 +755,19 @@ namespace {BASE_NAMESPACE}.{apiName}
 			var refToken = schema["$ref"];
 			if (refToken is { Type: JTokenType.String })
 				refType = refToken.ToString();
+			else if ((schema["anyOf"] ?? schema["oneOf"]) is JArray { Count: 2 } choices)
+			{
+				var nullChoice = choices.OfType<JObject>().FirstOrDefault(choice =>
+					choice["type"]?.ToString() == "null" ||
+					(choice["nullable"]?.Value<bool>() == true && choice["enum"] is JArray { Count: 1 } values &&
+						values[0]?.Type == JTokenType.Null));
+				var referenceChoice = choices.OfType<JObject>().FirstOrDefault(choice => choice["$ref"]?.Type == JTokenType.String);
+				if (nullChoice is not null && referenceChoice is not null)
+				{
+					refType = referenceChoice["$ref"]!.ToString();
+					nullable = true;
+				}
+			}
 			var propertiesToken = schema["properties"];
 			if (propertiesToken is JObject propertiesObject)
 			{

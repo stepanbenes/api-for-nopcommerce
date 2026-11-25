@@ -4,32 +4,20 @@ namespace Nop.Plugin.Api.Converters
 {
     public class ApiTypeConverter : IApiTypeConverter
     {
+        private static readonly string[] DateTimeFormats =
+        [
+            "yyyy", "yyyy-MM", "yyyy-MM-dd",
+            "yyyy-MM-dd'T'HH:mmK", "yyyy-MM-dd'T'HH:mm:ssK", "yyyy-MM-dd'T'HH:mm:ss.FFFFFFFK",
+            "yyyy-MM-dd HH:mmK", "yyyy-MM-dd HH:mm:ssK", "yyyy-MM-dd HH:mm:ss.FFFFFFFK"
+        ];
+
         /// <summary>
-        ///     Converts the value, which should be in ISO 8601 format to UTC time or null if not valid
+        /// Converts ISO 8601 and legacy query dates to UTC, assuming UTC for dates without an offset.
         /// </summary>
-        /// <param name="value">The time format in ISO 8601. If no timezone or offset specified we assume it is in UTC</param>
-        /// <returns>The time in UTC or null if the time is not valid</returns>
         public DateTime? ToUtcDateTimeNullable(string value)
         {
-            DateTime result;
-
-            var formats = new[]
-                          {
-                              "yyyy", "yyyy-MM", "yyyy-MM-dd", "yyyy-MM-ddTHH:mm", "yyyy-MM-ddTHH:mm:ss", "yyyy-MM-ddTHH:mm:sszzz", "yyyy-MM-ddTHH:mm:ss.FFFFFFFK"
-                          };
-
-            if (DateTime.TryParseExact(value, formats, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out result))
-            {
-                // only if parsed in Local time then we need to convert it to UTC
-                if (result.Kind == DateTimeKind.Local)
-                {
-                    return result.ToUniversalTime();
-                }
-
-                return result;
-            }
-
-            return null;
+            return DateTimeOffset.TryParseExact(value?.Trim(), DateTimeFormats, CultureInfo.InvariantCulture,
+                DateTimeStyles.AssumeUniversal, out var result) ? result.UtcDateTime : null;
         }
 
         public int ToInt(string value)

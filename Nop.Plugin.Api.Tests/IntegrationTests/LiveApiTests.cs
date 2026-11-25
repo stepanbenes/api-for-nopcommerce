@@ -10,7 +10,7 @@ namespace Nop.Plugin.Api.Tests.IntegrationTests;
 
 [TestFixture]
 [Category("Integration")]
-public class LiveApiTests
+public partial class LiveApiTests
 {
     private HttpClient _client;
     private string _username;
@@ -405,6 +405,8 @@ public class LiveApiTests
             var shippingAddress = snapshotted.GetProperty("orders")[0].GetProperty("shipping_address");
             TestAssert.That(shippingAddress.GetProperty("id").GetInt32(), Is.Not.EqualTo(addressId));
             TestAssert.That(shippingAddress.GetProperty("address1").GetString(), Is.EqualTo(address.address1));
+
+            await VerifyShipmentLifecycleAsync(orderId, item.GetProperty("id").GetInt32(), database);
 
             await Send(HttpMethod.Delete, orderPath, HttpStatusCode.OK);
             await Submit(idempotencyKey, HttpStatusCode.Conflict);

@@ -40,20 +40,24 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategories
             var productCategoryRepo = Mock.Of<IRepository<ProductCategory>>();
 
             var storeMappingService = Mock.Of<IStoreMappingService>();
+            Mock.Get(storeMappingService).Setup(x => x.ApplyStoreMapping(It.IsAny<IQueryable<Category>>(), 1))
+                .ReturnsAsync((IQueryable<Category> query, int _) => query);
+            var storeContext = Mock.Of<Nop.Core.IStoreContext>();
+            Mock.Get(storeContext).Setup(x => x.GetCurrentStoreAsync()).ReturnsAsync(new Nop.Core.Domain.Stores.Store { Id = 1 });
 
-            _categoryApiService = new CategoryApiService(categoryRepo, productCategoryRepo, storeMappingService, Mock.Of<Nop.Services.Catalog.ICategoryService>());
+            _categoryApiService = new CategoryApiService(categoryRepo, productCategoryRepo, storeMappingService, storeContext, Mock.Of<Nop.Services.Catalog.ICategoryService>());
         }
 
         [Test]
-        public void WhenCalledWithPageParameter_GivenLimitedCategoriesCollection_ShouldReturnThePartOfTheCollectionThatCorrespondsToThePage()
+        public async Task WhenCalledWithPageParameter_GivenLimitedCategoriesCollection_ShouldReturnThePartOfTheCollectionThatCorrespondsToThePage()
         {
             //Arange
             var limit = 5;
             var page = 6;
-            var expectedCollection = new ApiList<Category>(_existigCategories.Where(x => !x.Deleted).AsQueryable(), page - 1, limit);
+            var expectedCollection = ApiList<Category>.FromPage(_existigCategories.Where(x => !x.Deleted).AsQueryable(), page - 1, limit);
 
             //Act
-            var categories = _categoryApiService.GetCategories(limit: limit, page: page);
+            var categories = await _categoryApiService.GetCategoriesAsync(limit: limit, page: page);
 
             // Assert
             // Not Empty assert is a good practice when you assert something about collection. Because you can get a false positive if the collection is empty.
@@ -63,15 +67,15 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategories
         }
 
         [Test]
-        public void WhenCalledWithZeroPageParameter_GivenLimitedCategoriesCollection_ShouldReturnTheFirstPage()
+        public async Task WhenCalledWithZeroPageParameter_GivenLimitedCategoriesCollection_ShouldReturnTheFirstPage()
         {
             //Arange
             var limit = 5;
             var page = 0;
-            var expectedCollection = new ApiList<Category>(_existigCategories.Where(x => !x.Deleted).AsQueryable(), page - 1, limit);
+            var expectedCollection = ApiList<Category>.FromPage(_existigCategories.Where(x => !x.Deleted).AsQueryable(), page - 1, limit);
 
             //Act
-            var categories = _categoryApiService.GetCategories(limit: limit, page: page);
+            var categories = await _categoryApiService.GetCategoriesAsync(limit: limit, page: page);
 
             // Assert
             // Not Empty assert is a good practice when you assert something about collection. Because you can get a false positive if the collection is empty.
@@ -82,15 +86,15 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategories
         }
 
         [Test]
-        public void WhenCalledWithNegativePageParameter_GivenLimitedCategoriesCollection_ShouldReturnTheFirstPage()
+        public async Task WhenCalledWithNegativePageParameter_GivenLimitedCategoriesCollection_ShouldReturnTheFirstPage()
         {
             //Arange
             var limit = 5;
             var page = -30;
-            var expectedCollection = new ApiList<Category>(_existigCategories.Where(x => !x.Deleted).AsQueryable(), page - 1, limit);
+            var expectedCollection = ApiList<Category>.FromPage(_existigCategories.Where(x => !x.Deleted).AsQueryable(), page - 1, limit);
 
             //Act
-            var categories = _categoryApiService.GetCategories(limit: limit, page: page);
+            var categories = await _categoryApiService.GetCategoriesAsync(limit: limit, page: page);
 
             // Assert
             // Not Empty assert is a good practice when you assert something about collection. Because you can get a false positive if the collection is empty.
@@ -101,14 +105,14 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategories
         }
 
         [Test]
-        public void WhenCalledWithTooBigPageParameter_GivenLimitedCategoriesCollection_ShouldReturnEmptyCollection()
+        public async Task WhenCalledWithTooBigPageParameter_GivenLimitedCategoriesCollection_ShouldReturnEmptyCollection()
         {
             //Arange
             var limit = 5;
             var page = _existigCategories.Count / limit + 100;
             
             //Act
-            var categories = _categoryApiService.GetCategories(limit: limit, page: page);
+            var categories = await _categoryApiService.GetCategoriesAsync(limit: limit, page: page);
 
             // Assert
             CollectionAssert.IsEmpty(categories);

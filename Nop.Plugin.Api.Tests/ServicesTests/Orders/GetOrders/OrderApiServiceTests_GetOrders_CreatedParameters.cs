@@ -39,7 +39,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
         }
 
         [Test]
-        public void WhenCalledWithCreatedAtMinParameter_GivenSomeOrdersCreatedAfterThatDate_ShouldReturnThemSortedById()
+        public async Task WhenCalledWithCreatedAtMinParameter_GivenSomeOrdersCreatedAfterThatDate_ShouldReturnThemSortedById()
         {
             // Arange
             DateTime createdAtMinDate = _baseDate.AddMonths(5);
@@ -50,7 +50,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
             var expectedOrdersCount = expectedCollection.Count();
 
             // Act
-            var orders = _orderApiService.GetOrders(createdAtMin: createdAtMinDate);
+            var orders = await _orderApiService.GetOrdersAsync(createdAtMin: createdAtMinDate);
 
             // Assert
             CollectionAssert.IsNotEmpty(orders);
@@ -59,20 +59,20 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
         }
 
         [Test]
-        public void WhenCalledWithCreatedAtMinParameter_GivenAllOrdersCreatedBeforeThatDate_ShouldReturnEmptyCollection()
+        public async Task WhenCalledWithCreatedAtMinParameter_GivenAllOrdersCreatedBeforeThatDate_ShouldReturnEmptyCollection()
         {
             // Arange
             DateTime createdAtMinDate = _baseDate.AddMonths(11);
 
             // Act
-            var orders = _orderApiService.GetOrders(createdAtMin: createdAtMinDate);
+            var orders = await _orderApiService.GetOrdersAsync(createdAtMin: createdAtMinDate);
 
             // Assert
             CollectionAssert.IsEmpty(orders);
         }
 
         [Test]
-        public void WhenCalledWithCreatedAtMaxParameter_GivenSomeOrdersCreatedBeforeThatDate_ShouldReturnThemSortedById()
+        public async Task WhenCalledWithCreatedAtMaxParameter_GivenSomeOrdersCreatedBeforeThatDate_ShouldReturnThemSortedById()
         {
             // Arange
             DateTime createdAtMaxDate = _baseDate.AddMonths(5);
@@ -80,7 +80,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
             var expectedOrdersCount = expectedCollection.Count();
 
             // Act
-            var orders = _orderApiService.GetOrders(createdAtMax: createdAtMaxDate);
+            var orders = await _orderApiService.GetOrdersAsync(createdAtMax: createdAtMaxDate);
 
             // Assert
             CollectionAssert.IsNotEmpty(orders);
@@ -89,13 +89,13 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
         }
 
         [Test]
-        public void WhenCalledWithCreatedAtMaxParameter_GivenAllOrdersCreatedAfterThatDate_ShouldReturnEmptyCollection()
+        public async Task WhenCalledWithCreatedAtMaxParameter_GivenAllOrdersCreatedAfterThatDate_ShouldReturnEmptyCollection()
         {
             // Arange
             DateTime createdAtMaxDate = _baseDate.Subtract(new TimeSpan(365)); // subtract one year
 
             // Act
-            var orders = _orderApiService.GetOrders(createdAtMax: createdAtMaxDate);
+            var orders = await _orderApiService.GetOrdersAsync(createdAtMax: createdAtMaxDate);
 
             // Assert
             CollectionAssert.IsEmpty(orders);

@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿#nullable enable
+
+using Newtonsoft.Json;
 
 namespace Nop.Plugin.Api.DTO.Languages
 {
@@ -14,6 +16,6 @@ namespace Nop.Plugin.Api.DTO.Languages
         ///     Gets or sets the localized name
         /// </summary>
         [JsonProperty("localized_name")]
-        public string LocalizedName { get; set; }
+        public string? LocalizedName { get; set; }
     }
 }

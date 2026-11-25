@@ -74,6 +74,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(ManufacturersRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [GetRequestsErrorInterceptorActionFilter]
+        [UnpagedCollection]
         public async Task<IActionResult> GetManufacturers([FromQuery] ManufacturersParametersModel parameters)
         {
             if (parameters.Limit < Constants.Configurations.MinLimit || parameters.Limit > Constants.Configurations.MaxLimit)
@@ -86,10 +87,10 @@ namespace Nop.Plugin.Api.Controllers
                 return Error(HttpStatusCode.BadRequest, "page", "Invalid page parameter");
             }
 
-            var allManufacturers = _manufacturerApiService.GetManufacturers(parameters.Ids, parameters.CreatedAtMin, parameters.CreatedAtMax,
+            var allManufacturers = (await _manufacturerApiService.GetManufacturersAsync(parameters.Ids, parameters.CreatedAtMin, parameters.CreatedAtMax,
                                                                             parameters.UpdatedAtMin, parameters.UpdatedAtMax,
-                                                                            parameters.Limit, parameters.Page, parameters.SinceId,
-                                                                            parameters.ProductId, parameters.PublishedStatus, parameters.LanguageId)
+                                                                            GetCollectionLimit(parameters.Limit), parameters.Page, parameters.SinceId,
+                                                                            parameters.ProductId, parameters.PublishedStatus, parameters.LanguageId))
                                                           .WhereAwait(async c => await StoreMappingService.AuthorizeAsync(c));
 
             IList<ManufacturerDto> manufacturersAsDtos = await allManufacturers.Select(async (Manufacturer manufacturer, CancellationToken _) => await _dtoHelper.PrepareManufacturerDtoAsync(manufacturer)).ToListAsync();
@@ -115,9 +116,9 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [GetRequestsErrorInterceptorActionFilter]
-        public IActionResult GetManufacturersCount([FromQuery] ManufacturersCountParametersModel parameters)
+        public async Task<IActionResult> GetManufacturersCount([FromQuery] ManufacturersCountParametersModel parameters)
         {
-            var allManufacturersCount = _manufacturerApiService.GetManufacturersCount(parameters.CreatedAtMin, parameters.CreatedAtMax,
+            var allManufacturersCount = await _manufacturerApiService.GetManufacturersCountAsync(parameters.CreatedAtMin, parameters.CreatedAtMax,
                                                                                       parameters.UpdatedAtMin, parameters.UpdatedAtMax,
                                                                                       parameters.PublishedStatus, parameters.ProductId);
 
@@ -150,7 +151,7 @@ namespace Nop.Plugin.Api.Controllers
                 return Error(HttpStatusCode.BadRequest, "id", "invalid id");
             }
 
-            var manufacturer = _manufacturerApiService.GetManufacturerById(id);
+            var manufacturer = await _manufacturerApiService.GetManufacturerByIdAsync(id);
 
             if (manufacturer == null)
             {
@@ -252,7 +253,7 @@ namespace Nop.Plugin.Api.Controllers
                 return Error();
             }
 
-            var manufacturer = _manufacturerApiService.GetManufacturerById(manufacturerDelta.Dto.Id);
+            var manufacturer = await _manufacturerApiService.GetManufacturerByIdAsync(manufacturerDelta.Dto.Id);
 
             if (manufacturer == null)
             {
@@ -309,7 +310,7 @@ namespace Nop.Plugin.Api.Controllers
                 return Error(HttpStatusCode.BadRequest, "id", "invalid id");
             }
 
-            var manufacturerToDelete = _manufacturerApiService.GetManufacturerById(id);
+            var manufacturerToDelete = await _manufacturerApiService.GetManufacturerByIdAsync(id);
 
             if (manufacturerToDelete == null)
             {

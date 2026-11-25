@@ -14,19 +14,19 @@ namespace Nop.Plugin.Api.Services
             _productManufacturerMappingsRepository = productManufacturerMappingsRepository;
         }
 
-        public IList<ProductManufacturer> GetMappings(
+        public async Task<IList<ProductManufacturer>> GetMappingsAsync(
             int? productId = null,
             int? manufacturerId = null, int limit = Constants.Configurations.DefaultLimit,
             int page = Constants.Configurations.DefaultPageValue, int sinceId = Constants.Configurations.DefaultSinceId)
         {
             var query = GetMappingsQuery(productId, manufacturerId, sinceId);
 
-            return new ApiList<ProductManufacturer>(query, page - 1, limit);
+            return await ApiList<ProductManufacturer>.CreateAsync(query, page - 1, limit);
         }
 
-        public int GetMappingsCount(int? productId = null, int? manufacturerId = null)
+        public async Task<int> GetMappingsCountAsync(int? productId = null, int? manufacturerId = null)
         {
-            return GetMappingsQuery(productId, manufacturerId).Count();
+            return await GetMappingsQuery(productId, manufacturerId).CountAsync();
         }
 
         public Task<ProductManufacturer> GetByIdAsync(int id)

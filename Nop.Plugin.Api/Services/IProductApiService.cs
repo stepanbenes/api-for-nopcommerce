@@ -4,7 +4,7 @@ namespace Nop.Plugin.Api.Services
 {
     public interface IProductApiService
     {
-        IList<Product> GetProducts(
+        Task<IList<Product>> GetProductsAsync(
             IList<int> ids = null,
             DateTime? createdAtMin = null, DateTime? createdAtMax = null, DateTime? updatedAtMin = null, DateTime? updatedAtMax = null,
             int? limit = null, int? page = null,
@@ -16,8 +16,8 @@ namespace Nop.Plugin.Api.Services
             DateTime? updatedAtMin = null, DateTime? updatedAtMax = null, bool? publishedStatus = null,
             string vendorName = null, int? categoryId = null, IList<string> manufacturerPartNumbers = null, bool? isDownload = null);
 
-        Product GetProductById(int productId);
+        Task<Product> GetProductByIdAsync(int productId);
 
-        Product GetProductByIdNoTracking(int productId);
+        Task<Product> GetProductByIdNoTrackingAsync(int productId);
     }
 }

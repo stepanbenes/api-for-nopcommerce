@@ -40,12 +40,16 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategories
             var productCategoryRepo = Mock.Of<IRepository<ProductCategory>>();
 
             var storeMappingService = Mock.Of<IStoreMappingService>();
+            Mock.Get(storeMappingService).Setup(x => x.ApplyStoreMapping(It.IsAny<IQueryable<Category>>(), 1))
+                .ReturnsAsync((IQueryable<Category> query, int _) => query);
+            var storeContext = Mock.Of<Nop.Core.IStoreContext>();
+            Mock.Get(storeContext).Setup(x => x.GetCurrentStoreAsync()).ReturnsAsync(new Nop.Core.Domain.Stores.Store { Id = 1 });
 
-            _categoryApiService = new CategoryApiService(categoryRepo, productCategoryRepo, storeMappingService, Mock.Of<Nop.Services.Catalog.ICategoryService>());
+            _categoryApiService = new CategoryApiService(categoryRepo, productCategoryRepo, storeMappingService, storeContext, Mock.Of<Nop.Services.Catalog.ICategoryService>());
         }
 
         [Test]
-        public void WhenCalledWithCreatedAtMinParameter_GivenSomeCategoriesCreatedAfterThatDate_ShouldReturnThemSortedById()
+        public async Task WhenCalledWithCreatedAtMinParameter_GivenSomeCategoriesCreatedAfterThatDate_ShouldReturnThemSortedById()
         {
             // Arange
             DateTime createdAtMinDate = _baseDate.AddMonths(5);
@@ -54,7 +58,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategories
             var expectedCategoriesCount = expectedCollection.Count();
 
             // Act
-            var categories = _categoryApiService.GetCategories(createdAtMin: createdAtMinDate);
+            var categories = await _categoryApiService.GetCategoriesAsync(createdAtMin: createdAtMinDate);
 
             // Assert
             // Not Empty assert is a good practice when you assert something about collection. Because you can get a false positive if the collection is empty.
@@ -64,20 +68,20 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategories
         }
 
         [Test]
-        public void WhenCalledWithCreatedAtMinParameter_GivenAllCategoriesCreatedBeforeThatDate_ShouldReturnEmptyCollection()
+        public async Task WhenCalledWithCreatedAtMinParameter_GivenAllCategoriesCreatedBeforeThatDate_ShouldReturnEmptyCollection()
         {
             // Arange
             DateTime createdAtMinDate = _baseDate.AddMonths(11);
 
             // Act
-            var categories = _categoryApiService.GetCategories(createdAtMin: createdAtMinDate);
+            var categories = await _categoryApiService.GetCategoriesAsync(createdAtMin: createdAtMinDate);
 
             // Assert
             CollectionAssert.IsEmpty(categories);
         }
         
         [Test]
-        public void WhenCalledWithCreatedAtMaxParameter_GivenSomeCategoriesCreatedBeforeThatDate_ShouldReturnThemSortedById()
+        public async Task WhenCalledWithCreatedAtMaxParameter_GivenSomeCategoriesCreatedBeforeThatDate_ShouldReturnThemSortedById()
         {
             // Arange
             DateTime createdAtMaxDate = _baseDate.AddMonths(5);
@@ -85,7 +89,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategories
             var expectedCategoriesCount = expectedCollection.Count();
 
             // Act
-            var categories = _categoryApiService.GetCategories(createdAtMax: createdAtMaxDate);
+            var categories = await _categoryApiService.GetCategoriesAsync(createdAtMax: createdAtMaxDate);
 
             // Assert
             // Not Empty assert is a good practice when you assert something about collection. Because you can get a false positive if the collection is empty.
@@ -95,13 +99,13 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategories
         }
 
         [Test]
-        public void WhenCalledWithCreatedAtMaxParameter_GivenAllCategoriesCreatedAfterThatDate_ShouldReturnEmptyCollection()
+        public async Task WhenCalledWithCreatedAtMaxParameter_GivenAllCategoriesCreatedAfterThatDate_ShouldReturnEmptyCollection()
         {
             // Arange
             DateTime createdAtMaxDate = _baseDate.Subtract(new TimeSpan(365)); // subtract one year
 
             // Act
-            var categories = _categoryApiService.GetCategories(createdAtMax: createdAtMaxDate);
+            var categories = await _categoryApiService.GetCategoriesAsync(createdAtMax: createdAtMaxDate);
 
             // Assert
             CollectionAssert.IsEmpty(categories);

@@ -52,24 +52,28 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProducts
             Mock.Get(vendorRepo).Setup(x => x.Table).Returns(_existingVendors.AsQueryable());
 
             var storeMappingService = Mock.Of<IStoreMappingService>();
+            Mock.Get(storeMappingService).Setup(x => x.ApplyStoreMapping(It.IsAny<IQueryable<Product>>(), 1))
+                .ReturnsAsync((IQueryable<Product> query, int _) => query);
+            var storeContext = Mock.Of<Nop.Core.IStoreContext>();
+            Mock.Get(storeContext).Setup(x => x.GetCurrentStoreAsync()).ReturnsAsync(new Nop.Core.Domain.Stores.Store { Id = 1 });
 
-            _productApiService = new ProductApiService(productRepo, productCategoryRepo, vendorRepo, storeMappingService);
+            _productApiService = new ProductApiService(productRepo, productCategoryRepo, vendorRepo, storeMappingService, storeContext);
         }
 
         [Test]
         [TestCase("vendor 1")]
         [TestCase("vendor 2")]
-        public void WhenCalledWithValidVendorName_ShouldReturnOnlyTheProductsMappedToThisVendor(string vendorName)
+        public async Task WhenCalledWithValidVendorName_ShouldReturnOnlyTheProductsMappedToThisVendor(string vendorName)
         {
             // Arange
             var expectedCollection = (from product in _existigProducts
                                       join vendor in _existingVendors on product.VendorId equals vendor.Id
-                                      where vendor.Name == vendorName && !vendor.Deleted && vendor.Active
+                                      where !product.Deleted && vendor.Name == vendorName && !vendor.Deleted && vendor.Active
                                       orderby product.Id
                                       select product);
 
             // Act
-            var products = _productApiService.GetProducts(vendorName: vendorName);
+            var products = await _productApiService.GetProductsAsync(vendorName: vendorName);
 
             // Assert
             CollectionAssert.IsNotEmpty(products);
@@ -78,39 +82,39 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProducts
         }
 
         [Test]
-        public void WhenCalledWithValidVendorName_GivenVendorCollectionWhereThisVendorIsDeleted_ShouldReturnEmptyCollections()
+        public async Task WhenCalledWithValidVendorName_GivenVendorCollectionWhereThisVendorIsDeleted_ShouldReturnEmptyCollections()
         {
             // Arange
             string vendorName = "vendor 3";
 
             // Act
-            var products = _productApiService.GetProducts(vendorName: vendorName);
+            var products = await _productApiService.GetProductsAsync(vendorName: vendorName);
 
             // Assert
             CollectionAssert.IsEmpty(products);
         }
 
         [Test]
-        public void WhenCalledWithValidVendorName_GivenVendorCollectionWhereThisVendorIsUnactive_ShouldReturnEmptyCollection()
+        public async Task WhenCalledWithValidVendorName_GivenVendorCollectionWhereThisVendorIsUnactive_ShouldReturnEmptyCollection()
         {
             // Arange
             string vendorName = "vendor 4";
 
             // Act
-            var products = _productApiService.GetProducts(vendorName: vendorName);
+            var products = await _productApiService.GetProductsAsync(vendorName: vendorName);
 
             // Assert
             CollectionAssert.IsEmpty(products);
         }
 
         [Test]
-        public void WhenCalledWithValidVendorName_GivenProductsCollectionWhereThereAreNoProductsMappedToThisVendor_ShouldReturnEmptyCollection()
+        public async Task WhenCalledWithValidVendorName_GivenProductsCollectionWhereThereAreNoProductsMappedToThisVendor_ShouldReturnEmptyCollection()
         {
             // Arange
             string vendorName = "vendor 5";
 
             // Act
-            var products = _productApiService.GetProducts(vendorName: vendorName);
+            var products = await _productApiService.GetProductsAsync(vendorName: vendorName);
 
             // Assert
             CollectionAssert.IsEmpty(products);
@@ -119,13 +123,13 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProducts
         [Test]
         [TestCase(null)]
         [TestCase("")]
-        public void WhenCalledWithNullOrEmptyVendorName_ShouldReturnTheEntireProductsCollectionSortedById(string vendorName)
+        public async Task WhenCalledWithNullOrEmptyVendorName_ShouldReturnTheEntireProductsCollectionSortedById(string vendorName)
         {
             // Arange
             var expectedCollection = _existigProducts.Where(p => !p.Deleted).OrderBy(x => x.Id);
 
             // Act
-            var products = _productApiService.GetProducts(vendorName: vendorName);
+            var products = await _productApiService.GetProductsAsync(vendorName: vendorName);
 
             // Assert
             CollectionAssert.IsNotEmpty(products);
@@ -137,10 +141,10 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProducts
         [TestCase("invalid vendor name")]
         [TestCase("$&@#*@(!(&%)@_@_!*%^&/sd")]
         [TestCase("345")]
-        public void WhenCalledWithInvalidVendorName_ShouldReturnEmptyCollection(string vendorName)
+        public async Task WhenCalledWithInvalidVendorName_ShouldReturnEmptyCollection(string vendorName)
         {
             // Act
-            var products = _productApiService.GetProducts(vendorName: vendorName);
+            var products = await _productApiService.GetProductsAsync(vendorName: vendorName);
 
             // Assert
             CollectionAssert.IsEmpty(products);

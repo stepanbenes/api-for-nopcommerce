@@ -16,7 +16,7 @@ from nop_api_client.api.categories import create_category
 from nop_api_client.api.customers import set_billing_address
 from nop_api_client.api.menus import add_menu_item, remove_menu_item
 from nop_api_client.api.order_items import create_order_item
-from nop_api_client.api.orders import create_order, get_checkout_attributes, get_pdf_invoice, update_order
+from nop_api_client.api.orders import create_order, get_checkout_attributes, get_orders, get_pdf_invoice, update_order
 from nop_api_client.api.products import get_products, get_products_count
 from nop_api_client.api.token import request_token
 from nop_api_client.models import (
@@ -34,6 +34,7 @@ from nop_api_client.models import (
     OrderDtoDelta,
     OrderItemDto,
     OrderItemDtoDelta,
+    OrderStatus,
     ShippingStatus,
     TokenRequest,
     TokenResponse,
@@ -44,7 +45,7 @@ def check_operations(spec):
     operations = [(method, path, operation) for path, item in spec["paths"].items()
                   for method, operation in item.items()
                   if method in {"get", "post", "put", "delete", "patch", "head", "options", "trace"}]
-    assert len(operations) == 124, f"Expected 124 documented operations, got {len(operations)}"
+    assert len(operations) == 133, f"Expected 133 documented operations, got {len(operations)}"
     modules = set()
     for method, path, operation in operations:
         module = f"nop_api_client.api.{snake_case(operation['tags'][0])}.{snake_case(operation['operationId'])}"
@@ -114,6 +115,11 @@ def mock_api():
     assert type(products[0].id) is int and type(products[0].price) is float
     assert products[0].price == 12.50 and products[0].published is True
 
+    all_products = call(auth, get_products, request_to(
+        "GET", "/api/products", {"products": [{"id": 8}]}, query=(("unpaged", "true"),)),
+        unpaged=True).parsed.products
+    assert all_products[0].id == 8
+
     category = call(auth, create_category, request_to(
         "POST", "/api/categories", {"categories": [{"id": 6, "name": "Parts"}]},
         body={"category": {"name": "Parts", "published": False}}),
@@ -138,12 +144,17 @@ def mock_api():
         customer_id=42, billing_address=OrderBillingAddressDto(id=17),
         order_items=[item], checkout_attributes=[CheckoutAttributeSelectionDto(id=3, values=["7"])]))
     committed = call(auth, create_order, request_to("POST", "/api/orders", {
-        "orders": [{"id": 23, "customer_id": 42, "store_id": 1}],
+        "orders": [{"id": 23, "customer_id": 42, "store_id": 1, "shipping_status": None}],
     }, headers={"Idempotency-Key": str(uuid)}, body={"order": {
         "customer_id": 42, "billing_address": {"id": 17},
         "order_items": [{"product_id": 8, "quantity": 2}], "checkout_attributes": [{"id": 3, "values": ["7"]}],
     }}), body=order, idempotency_key=str(uuid)).parsed.orders[0]
     assert type(committed.id) is int and committed.id == 23
+    assert committed.shipping_status is None
+
+    orders = call(auth, get_orders, request_to("GET", "/api/orders", {"orders": []}, query=(("Status", "Pending"),)),
+        status=OrderStatus.PENDING)
+    assert orders.parsed.orders == []
 
     amended = call(auth, update_order, request_to("PUT", "/api/orders/23", {
         "orders": [{"id": 23, "shipping_status": "NotYetShipped"}],

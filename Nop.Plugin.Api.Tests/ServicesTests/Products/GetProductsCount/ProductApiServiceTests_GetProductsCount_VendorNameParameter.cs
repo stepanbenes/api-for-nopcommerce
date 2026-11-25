@@ -52,9 +52,12 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProductsCount
             Mock.Get(vendorRepo).Setup(x => x.Table).Returns(_existingVendors.AsQueryable());
 
             var storeMappingService = Mock.Of<IStoreMappingService>();
-            Mock.Get(storeMappingService).Setup(x => x.AuthorizeAsync(It.IsAny<Product>())).ReturnsAsync(true);
+            Mock.Get(storeMappingService).Setup(x => x.ApplyStoreMapping(It.IsAny<IQueryable<Product>>(), 1))
+                .ReturnsAsync((IQueryable<Product> query, int _) => query);
+            var storeContext = Mock.Of<Nop.Core.IStoreContext>();
+            Mock.Get(storeContext).Setup(x => x.GetCurrentStoreAsync()).ReturnsAsync(new Nop.Core.Domain.Stores.Store { Id = 1 });
 
-            _productApiService = new ProductApiService(productRepo, productCategoryRepo, vendorRepo, storeMappingService);
+            _productApiService = new ProductApiService(productRepo, productCategoryRepo, vendorRepo, storeMappingService, storeContext);
         }
 
         [Test]
@@ -65,7 +68,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProductsCount
             // Arange
             var expectedCollectionCount = (from product in _existigProducts
                                           join vendor in _existingVendors on product.VendorId equals vendor.Id
-                                          where vendor.Name == vendorName && !vendor.Deleted && vendor.Active
+                                          where !product.Deleted && vendor.Name == vendorName && !vendor.Deleted && vendor.Active
                                           select product).Count();
 
             // Act
@@ -82,7 +85,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProductsCount
             string vendorName = "vendor 3";
             var expectedCollectionCount = (from product in _existigProducts
                                            join vendor in _existingVendors on product.VendorId equals vendor.Id
-                                           where vendor.Name == vendorName && !vendor.Deleted && vendor.Active
+                                           where !product.Deleted && vendor.Name == vendorName && !vendor.Deleted && vendor.Active
                                            select product).Count();
 
             // Act
@@ -99,7 +102,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProductsCount
             string vendorName = "vendor 4";
             var expectedCollectionCount = (from product in _existigProducts
                                            join vendor in _existingVendors on product.VendorId equals vendor.Id
-                                           where vendor.Name == vendorName && !vendor.Deleted && vendor.Active
+                                           where !product.Deleted && vendor.Name == vendorName && !vendor.Deleted && vendor.Active
                                            select product).Count();
 
             // Act
@@ -116,7 +119,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProductsCount
             string vendorName = "vendor 5";
             var expectedCollectionCount = (from product in _existigProducts
                                            join vendor in _existingVendors on product.VendorId equals vendor.Id
-                                           where vendor.Name == vendorName && !vendor.Deleted && vendor.Active
+                                           where !product.Deleted && vendor.Name == vendorName && !vendor.Deleted && vendor.Active
                                            select product).Count();
 
             // Act

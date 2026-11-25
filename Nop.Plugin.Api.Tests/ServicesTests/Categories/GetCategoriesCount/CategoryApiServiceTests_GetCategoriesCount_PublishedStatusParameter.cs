@@ -36,9 +36,12 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategoriesCount
             var productCategoryRepo = Mock.Of<IRepository<ProductCategory>>();
 
             var storeMappingService = Mock.Of<IStoreMappingService>();
-            Mock.Get(storeMappingService).Setup(x => x.AuthorizeAsync(It.IsAny<Category>())).ReturnsAsync(true);
+            Mock.Get(storeMappingService).Setup(x => x.ApplyStoreMapping(It.IsAny<IQueryable<Category>>(), 1))
+                .ReturnsAsync((IQueryable<Category> query, int _) => query);
+            var storeContext = Mock.Of<Nop.Core.IStoreContext>();
+            Mock.Get(storeContext).Setup(x => x.GetCurrentStoreAsync()).ReturnsAsync(new Nop.Core.Domain.Stores.Store { Id = 1 });
 
-            _categoryApiService = new CategoryApiService(categoryRepo, productCategoryRepo, storeMappingService, Mock.Of<Nop.Services.Catalog.ICategoryService>());
+            _categoryApiService = new CategoryApiService(categoryRepo, productCategoryRepo, storeMappingService, storeContext, Mock.Of<Nop.Services.Catalog.ICategoryService>());
         }
 
         [Test]

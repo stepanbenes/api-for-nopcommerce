@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿#nullable enable
+
+using Newtonsoft.Json;
 using Nop.Plugin.Api.DTO.Base;
 
 namespace Nop.Plugin.Api.DTO.Languages
@@ -10,25 +12,25 @@ namespace Nop.Plugin.Api.DTO.Languages
         ///     Gets or sets the name
         /// </summary>
         [JsonProperty("name")]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         /// <summary>
         ///     Gets or sets the language culture
         /// </summary>
         [JsonProperty("language_culture")]
-        public string LanguageCulture { get; set; }
+        public string? LanguageCulture { get; set; }
 
         /// <summary>
         ///     Gets or sets the unique SEO code
         /// </summary>
         [JsonProperty("unique_seo_code")]
-        public string UniqueSeoCode { get; set; }
+        public string? UniqueSeoCode { get; set; }
 
         /// <summary>
         ///     Gets or sets the flag image file name
         /// </summary>
         [JsonProperty("flag_image_file_name")]
-        public string FlagImageFileName { get; set; }
+        public string? FlagImageFileName { get; set; }
 
         /// <summary>
         ///     Gets or sets a value indicating whether the language supports "Right-to-left"
@@ -65,6 +67,6 @@ namespace Nop.Plugin.Api.DTO.Languages
         ///     Gets or sets the store ids in which the language is enabled
         /// </summary>
         [JsonProperty("store_ids")]
-        public List<int> StoreIds { get; set; }
+        public List<int>? StoreIds { get; set; }
     }
 }

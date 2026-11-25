@@ -64,6 +64,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [GetRequestsErrorInterceptorActionFilter]
+        [UnpagedCollection]
         public async Task<IActionResult> GetSpecificationAttributes([FromQuery] SpecificationAttributesParametersModel parameters)
         {
             if (parameters.Limit < Constants.Configurations.MinLimit || parameters.Limit > Constants.Configurations.MaxLimit)
@@ -76,7 +77,7 @@ namespace Nop.Plugin.Api.Controllers
                 return Error(HttpStatusCode.BadRequest, "page", "invalid page parameter");
             }
 
-            var specificationAttribtues = _specificationAttributeApiService.GetSpecificationAttributes(parameters.Limit, parameters.Page, parameters.SinceId);
+            var specificationAttribtues = await _specificationAttributeApiService.GetSpecificationAttributesAsync(GetCollectionLimit(parameters.Limit), parameters.Page, parameters.SinceId);
 
             var specificationAttributeDtos = specificationAttribtues.Select(x => _dtoHelper.PrepareSpecificationAttributeDto(x)).ToList();
 

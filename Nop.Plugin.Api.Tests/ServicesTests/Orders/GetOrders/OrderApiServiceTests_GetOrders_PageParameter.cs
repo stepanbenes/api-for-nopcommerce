@@ -38,15 +38,15 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
         }
 
         [Test]
-        public void WhenCalledWithPageParameter_GivenLimitedOrdersCollection_ShouldReturnThePartOfTheCollectionThatCorrespondsToThePage()
+        public async Task WhenCalledWithPageParameter_GivenLimitedOrdersCollection_ShouldReturnThePartOfTheCollectionThatCorrespondsToThePage()
         {
             //Arange
             var limit = 5;
             var page = 6;
-            var expectedCollection = new ApiList<Order>(_existigOrders.Where(x => !x.Deleted).AsQueryable(), page - 1, limit);
+            var expectedCollection = ApiList<Order>.FromPage(_existigOrders.Where(x => !x.Deleted).AsQueryable(), page - 1, limit);
 
             //Act
-            var orders = _orderApiService.GetOrders(limit: limit, page: page);
+            var orders = await _orderApiService.GetOrdersAsync(limit: limit, page: page);
 
             // Assert
             CollectionAssert.IsNotEmpty(orders);
@@ -55,15 +55,15 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
         }
 
         [Test]
-        public void WhenCalledWithZeroPageParameter_GivenLimitedOrdersCollection_ShouldReturnTheFirstPage()
+        public async Task WhenCalledWithZeroPageParameter_GivenLimitedOrdersCollection_ShouldReturnTheFirstPage()
         {
             //Arange
             var limit = 5;
             var page = 0;
-            var expectedCollection = new ApiList<Order>(_existigOrders.Where(x => !x.Deleted).AsQueryable(), page - 1, limit);
+            var expectedCollection = ApiList<Order>.FromPage(_existigOrders.Where(x => !x.Deleted).AsQueryable(), page - 1, limit);
 
             //Act
-            var orders = _orderApiService.GetOrders(limit: limit, page: page);
+            var orders = await _orderApiService.GetOrdersAsync(limit: limit, page: page);
 
             // Assert
             CollectionAssert.IsNotEmpty(orders);
@@ -73,15 +73,15 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
         }
 
         [Test]
-        public void WhenCalledWithNegativePageParameter_GivenLimitedOrdersCollection_ShouldReturnTheFirstPage()
+        public async Task WhenCalledWithNegativePageParameter_GivenLimitedOrdersCollection_ShouldReturnTheFirstPage()
         {
             //Arange
             var limit = 5;
             var page = -30;
-            var expectedCollection = new ApiList<Order>(_existigOrders.Where(x => !x.Deleted).AsQueryable(), page - 1, limit);
+            var expectedCollection = ApiList<Order>.FromPage(_existigOrders.Where(x => !x.Deleted).AsQueryable(), page - 1, limit);
 
             //Act
-            var orders = _orderApiService.GetOrders(limit: limit, page: page);
+            var orders = await _orderApiService.GetOrdersAsync(limit: limit, page: page);
 
             // Assert
             CollectionAssert.IsNotEmpty(orders);
@@ -91,14 +91,14 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
         }
 
         [Test]
-        public void WhenCalledWithTooBigPageParameter_GivenLimitedOrdersCollection_ShouldReturnEmptyCollection()
+        public async Task WhenCalledWithTooBigPageParameter_GivenLimitedOrdersCollection_ShouldReturnEmptyCollection()
         {
             //Arange
             var limit = 5;
             var page = _existigOrders.Count / limit + 100;
             
             //Act
-            var orders = _orderApiService.GetOrders(limit: limit, page: page);
+            var orders = await _orderApiService.GetOrdersAsync(limit: limit, page: page);
 
             // Assert
             CollectionAssert.IsEmpty(orders);

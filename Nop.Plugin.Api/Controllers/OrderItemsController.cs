@@ -90,6 +90,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [GetRequestsErrorInterceptorActionFilter]
+        [UnpagedCollection]
         public async Task<IActionResult> GetOrderItems([FromRoute] int orderId, [FromQuery] OrderItemsParametersModel parameters)
         {
             if (parameters.Limit < Constants.Configurations.MinLimit || parameters.Limit > Constants.Configurations.MaxLimit)
@@ -112,7 +113,7 @@ namespace Nop.Plugin.Api.Controllers
             if (!await CanViewOrderAsync(order))
                 return AccessDenied();
 
-            var allOrderItemsForOrder = await _orderItemApiService.GetOrderItemsForOrderAsync(order, parameters.Limit, parameters.Page,
+            var allOrderItemsForOrder = await _orderItemApiService.GetOrderItemsForOrderAsync(order, GetCollectionLimit(parameters.Limit), parameters.Page,
                                                            parameters.SinceId);
 
             var orderItemsRootObject = new OrderItemsRootObject
@@ -223,7 +224,7 @@ namespace Nop.Plugin.Api.Controllers
                 return Error(HttpStatusCode.NotFound, "order", "not found");
             }
 
-            var product = GetProduct(orderItemDelta.Dto.ProductId);
+            var product = await GetProductAsync(orderItemDelta.Dto.ProductId);
 
             if (product == null)
             {
@@ -391,7 +392,7 @@ namespace Nop.Plugin.Api.Controllers
         private async Task<Order> GetOrderForCurrentStoreAsync(int orderId)
         {
             var store = await _storeContext.GetCurrentStoreAsync();
-            return _orderApiService.GetOrderById(orderId, store.Id);
+            return await _orderApiService.GetOrderByIdAsync(orderId, store.Id);
         }
 
         private async Task<bool> CanViewOrderAsync(Order order)
@@ -403,7 +404,7 @@ namespace Nop.Plugin.Api.Controllers
                     : StandardPermission.Orders.ORDERS_VIEW, customer);
         }
 
-        private Product GetProduct(int? productId)
+        private async Task<Product> GetProductAsync(int? productId)
         {
             Product product = null;
 
@@ -411,7 +412,7 @@ namespace Nop.Plugin.Api.Controllers
             {
                 var id = productId.Value;
 
-                product = _productApiService.GetProductById(id);
+                product = await _productApiService.GetProductByIdAsync(id);
             }
 
             return product;

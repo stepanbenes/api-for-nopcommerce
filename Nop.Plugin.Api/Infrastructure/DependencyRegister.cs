@@ -75,7 +75,6 @@ namespace Nop.Plugin.Api.Infrastructure
             services.AddScoped<IJsonPropertyMapper, JsonPropertyMapper>();
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            services.AddSingleton<Dictionary<string, object>>(); // TODO: refactor to typed class. make Scoped?
 
             services.AddScoped<ITopicService, TopicService>();
 

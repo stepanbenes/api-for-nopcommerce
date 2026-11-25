@@ -141,6 +141,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [GetRequestsErrorInterceptorActionFilter]
+        [UnpagedCollection]
         public async Task<IActionResult> GetOrders([FromQuery] OrdersParametersModel parameters)
         {
             if (parameters.Page < Constants.Configurations.DefaultPageValue)
@@ -160,9 +161,9 @@ namespace Nop.Plugin.Api.Controllers
 
             var storeId = (await _storeContext.GetCurrentStoreAsync()).Id;
 
-            var orders = _orderApiService.GetOrders(parameters.Ids, parameters.CreatedAtMin,
+            var orders = await _orderApiService.GetOrdersAsync(parameters.Ids, parameters.CreatedAtMin,
                                 parameters.CreatedAtMax,
-                                parameters.Limit, parameters.Page, parameters.SinceId,
+                                GetCollectionLimit(parameters.Limit), parameters.Page, parameters.SinceId,
                                 parameters.Status.HasValue ? (Core.Domain.Orders.OrderStatus)parameters.Status : null,
                                 parameters.PaymentStatus.HasValue ? (Core.Domain.Payments.PaymentStatus)parameters.PaymentStatus : null,
                                 parameters.ShippingStatus.HasValue ? (Core.Domain.Shipping.ShippingStatus)parameters.ShippingStatus : null,
@@ -202,7 +203,7 @@ namespace Nop.Plugin.Api.Controllers
 
             var storeId = (await _storeContext.GetCurrentStoreAsync()).Id;
 
-            var ordersCount = _orderApiService.GetOrdersCount(parameters.CreatedAtMin, parameters.CreatedAtMax,
+            var ordersCount = await _orderApiService.GetOrdersCountAsync(parameters.CreatedAtMin, parameters.CreatedAtMax,
                                       parameters.Status.HasValue ? (Core.Domain.Orders.OrderStatus)parameters.Status : null,
                                       parameters.PaymentStatus.HasValue ? (Core.Domain.Payments.PaymentStatus)parameters.PaymentStatus : null,
                                       parameters.ShippingStatus.HasValue ? (Core.Domain.Shipping.ShippingStatus)parameters.ShippingStatus : null,
@@ -280,7 +281,7 @@ namespace Nop.Plugin.Api.Controllers
             }
 
             var storeId = (await _storeContext.GetCurrentStoreAsync()).Id;
-            IList<OrderDto> ordersForCustomer = await _orderApiService.GetOrdersByCustomerId(customerId, storeId).SelectAwait(async x => await _dtoHelper.PrepareOrderDTOAsync(x)).ToListAsync();
+            IList<OrderDto> ordersForCustomer = await (await _orderApiService.GetOrdersByCustomerIdAsync(customerId, storeId)).SelectAwait(async x => await _dtoHelper.PrepareOrderDTOAsync(x)).ToListAsync();
 
             var ordersRootObject = new OrdersRootObject
             {
@@ -791,7 +792,7 @@ namespace Nop.Plugin.Api.Controllers
         private async Task<Order> GetOrderForCurrentStoreAsync(int orderId)
         {
             var store = await _storeContext.GetCurrentStoreAsync();
-            return _orderApiService.GetOrderById(orderId, store.Id);
+            return await _orderApiService.GetOrderByIdAsync(orderId, store.Id);
         }
 
         private async Task<bool> CheckPermissions(int? customerId, bool isCheckout = false)

@@ -38,18 +38,22 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategories
             var productCategoryRepo = Mock.Of<IRepository<ProductCategory>>();
 
             var storeMappingService = Mock.Of<IStoreMappingService>();
+            Mock.Get(storeMappingService).Setup(x => x.ApplyStoreMapping(It.IsAny<IQueryable<Category>>(), 1))
+                .ReturnsAsync((IQueryable<Category> query, int _) => query);
+            var storeContext = Mock.Of<Nop.Core.IStoreContext>();
+            Mock.Get(storeContext).Setup(x => x.GetCurrentStoreAsync()).ReturnsAsync(new Nop.Core.Domain.Stores.Store { Id = 1 });
 
-            _categoryApiService = new CategoryApiService(categoryRepo, productCategoryRepo, storeMappingService, Mock.Of<Nop.Services.Catalog.ICategoryService>());
+            _categoryApiService = new CategoryApiService(categoryRepo, productCategoryRepo, storeMappingService, storeContext, Mock.Of<Nop.Services.Catalog.ICategoryService>());
         }
 
         [Test]
-        public void WhenCalledWithLimitParameter_GivenCategoriesAboveTheLimit_ShouldReturnCollectionWithCountEqualToTheLimit()
+        public async Task WhenCalledWithLimitParameter_GivenCategoriesAboveTheLimit_ShouldReturnCollectionWithCountEqualToTheLimit()
         {
             //Arange
             var expectedLimit = 5;
 
             //Act
-            var categories = _categoryApiService.GetCategories(limit: expectedLimit);
+            var categories = await _categoryApiService.GetCategoriesAsync(limit: expectedLimit);
 
             // Assert
             // Not Empty assert is a good practice when you assert something about collection. Because you can get a false positive if the collection is empty.
@@ -58,13 +62,13 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategories
         }
 
         [Test]
-        public void WhenCalledWithLimitParameter_GivenCategoriesBellowTheLimit_ShouldReturnCollectionWithCountEqualToTheAvailableCategories()
+        public async Task WhenCalledWithLimitParameter_GivenCategoriesBellowTheLimit_ShouldReturnCollectionWithCountEqualToTheAvailableCategories()
         {
             //Arange
             var expectedLimit = _existigCategories.Count(x => !x.Deleted);
 
             //Act
-            var categories = _categoryApiService.GetCategories(limit: expectedLimit + 10);
+            var categories = await _categoryApiService.GetCategoriesAsync(limit: expectedLimit + 10);
 
             // Assert
             // Not Empty assert is a good practice when you assert something about collection. Because you can get a false positive if the collection is empty.
@@ -73,26 +77,26 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategories
         }
 
         [Test]
-        public void WhenCalledWithZeroLimitParameter_GivenSomeCategories_ShouldReturnEmptyCollection()
+        public async Task WhenCalledWithZeroLimitParameter_GivenSomeCategories_ShouldReturnEmptyCollection()
         {
             //Arange
             var expectedLimit = 0;
 
             //Act
-            var categories = _categoryApiService.GetCategories(limit: expectedLimit);
+            var categories = await _categoryApiService.GetCategoriesAsync(limit: expectedLimit);
 
             // Assert
             CollectionAssert.IsEmpty(categories);
         }
 
         [Test]
-        public void WhenCalledWithNegativeLimitParameter_GivenSomeCategories_ShouldReturnEmptyCollection()
+        public async Task WhenCalledWithNegativeLimitParameter_GivenSomeCategories_ShouldReturnEmptyCollection()
         {
             //Arange
             var expectedLimit = -10;
 
             //Act
-            var categories = _categoryApiService.GetCategories(limit: expectedLimit);
+            var categories = await _categoryApiService.GetCategoriesAsync(limit: expectedLimit);
 
             // Assert
             CollectionAssert.IsEmpty(categories);

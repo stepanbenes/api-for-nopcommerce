@@ -4,7 +4,7 @@ namespace Nop.Plugin.Api.Services;
 
 public interface IWarehouseApiService
 {
-    IList<Warehouse> GetWarehouses(IList<int> ids = null, int? productId = null);
+    Task<IList<Warehouse>> GetWarehousesAsync(IList<int> ids = null, int? productId = null);
 
-    Warehouse GetWarehouseById(int id);
+    Task<Warehouse> GetWarehouseByIdAsync(int id);
 }

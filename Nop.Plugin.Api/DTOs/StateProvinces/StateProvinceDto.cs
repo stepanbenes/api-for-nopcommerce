@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿#nullable enable
+
+using Newtonsoft.Json;
 using Nop.Plugin.Api.DTO.Base;
 
 namespace Nop.Plugin.Api.DTOs.StateProvinces
@@ -8,10 +10,10 @@ namespace Nop.Plugin.Api.DTOs.StateProvinces
     public class StateProvinceDto : BaseDto
     {
         [JsonProperty("name")]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         [JsonProperty("abbreviation")]
-        public string Abbreviation { get; set; }
+        public string? Abbreviation { get; set; }
 
         [JsonProperty("published")]
         public bool Published { get; set; }

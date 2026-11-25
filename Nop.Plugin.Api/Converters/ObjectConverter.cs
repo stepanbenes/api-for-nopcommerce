@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using Newtonsoft.Json;
+using System.Reflection;
 
 namespace Nop.Plugin.Api.Converters
 {
@@ -11,7 +12,7 @@ namespace Nop.Plugin.Api.Converters
             _apiTypeConverter = apiTypeConverter;
         }
 
-        public T ToObject<T>(ICollection<KeyValuePair<string, string>> source)
+        public T ToObject<T>(ICollection<KeyValuePair<string, string>> source, Action<string, string> onError = null)
             where T : class, new()
         {
             var someObject = new T();
@@ -19,16 +20,32 @@ namespace Nop.Plugin.Api.Converters
 
             if (source != null)
             {
+                var dateProperties = new HashSet<PropertyInfo>();
                 foreach (var item in source)
                 {
                     var itemKey = item.Key.Replace("_", string.Empty);
-                    var currentProperty = someObjectType.GetProperty(itemKey,
-                                                                     BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
+                    var property = someObjectType.GetProperty(itemKey, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
+                    if (property == null)
+                        continue;
 
-                    if (currentProperty != null)
+                    var value = To(item.Value, property.PropertyType);
+                    if (onError != null && property.PropertyType == typeof(DateTime?))
                     {
-                        currentProperty.SetValue(someObject, To(item.Value, currentProperty.PropertyType), null);
+                        var key = property.GetCustomAttribute<JsonPropertyAttribute>()?.PropertyName ?? property.Name;
+                        if (!dateProperties.Add(property))
+                        {
+                            onError(key, "Supply this date filter only once.");
+                            continue;
+                        }
+
+                        if (value == null)
+                        {
+                            onError(key, "Supply a valid date or timestamp, such as 2008-12-31 03:00 or 2008-12-31T03:00:00Z.");
+                            continue;
+                        }
                     }
+
+                    property.SetValue(someObject, value);
                 }
             }
 

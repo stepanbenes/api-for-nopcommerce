@@ -108,6 +108,14 @@
               "type": "integer",
               "format": "int32"
             }
+          },
+          {
+            "name": "unpaged",
+            "in": "query",
+            "description": "Return all matching results. Administrators only. Omit page and limit.",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
@@ -123,6 +131,16 @@
           },
           "400": {
             "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorsRootObject"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unpaged collections require an administrator.",
             "content": {
               "application/json": {
                 "schema": {
@@ -577,6 +595,180 @@
               "text/json": {
                 "schema": {
                   "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/checkout/shipping-options": {
+      "get": {
+        "tags": [
+          "Checkout"
+        ],
+        "operationId": "GetCheckoutShippingOptions",
+        "parameters": [
+          {
+            "name": "shipping_address_id",
+            "in": "query",
+            "schema": {
+              "maximum": 2147483647,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "customer_id",
+            "in": "query",
+            "schema": {
+              "maximum": 2147483647,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShippingOptionsDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorsRootObject"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/checkout/payment-methods": {
+      "get": {
+        "tags": [
+          "Checkout"
+        ],
+        "operationId": "GetCheckoutPaymentMethods",
+        "parameters": [
+          {
+            "name": "customer_id",
+            "in": "query",
+            "schema": {
+              "maximum": 2147483647,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "billing_address_id",
+            "in": "query",
+            "schema": {
+              "maximum": 2147483647,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentMethodsDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorsRootObject"
                 }
               }
             }
@@ -1046,6 +1238,14 @@
               "type": "string",
               "format": "date-time"
             }
+          },
+          {
+            "name": "unpaged",
+            "in": "query",
+            "description": "Return all matching results. Administrators only. Omit page and limit.",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
@@ -1085,6 +1285,16 @@
               "text/json": {
                 "schema": {
                   "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unpaged collections require an administrator.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorsRootObject"
                 }
               }
             }
@@ -1627,6 +1837,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "unpaged",
+            "in": "query",
+            "description": "Return all matching results. Administrators only. Omit page and limit.",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
@@ -1666,6 +1884,16 @@
               "text/json": {
                 "schema": {
                   "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unpaged collections require an administrator.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorsRootObject"
                 }
               }
             }
@@ -2127,6 +2355,14 @@
               "type": "integer",
               "format": "int32"
             }
+          },
+          {
+            "name": "unpaged",
+            "in": "query",
+            "description": "Return all matching results. Administrators only. Omit page and limit.",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
@@ -2142,6 +2378,16 @@
           },
           "400": {
             "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorsRootObject"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unpaged collections require an administrator.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2942,6 +3188,14 @@
             "schema": {
               "type": "boolean"
             }
+          },
+          {
+            "name": "unpaged",
+            "in": "query",
+            "description": "Return all matching results. Administrators only. Omit page and limit.",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
@@ -2957,6 +3211,16 @@
           },
           "400": {
             "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorsRootObject"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unpaged collections require an administrator.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3094,6 +3358,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "unpaged",
+            "in": "query",
+            "description": "Return all matching results. Administrators only. Omit page and limit.",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
@@ -3153,6 +3425,16 @@
               "text/json": {
                 "schema": {
                   "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unpaged collections require an administrator.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorsRootObject"
                 }
               }
             }
@@ -3803,21 +4085,54 @@
             "name": "Status",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/OrderStatus"
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/OrderStatus"
+                },
+                {
+                  "enum": [
+                    null
+                  ],
+                  "type": "string",
+                  "nullable": true
+                }
+              ]
             }
           },
           {
             "name": "PaymentStatus",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/PaymentStatus"
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/PaymentStatus"
+                },
+                {
+                  "enum": [
+                    null
+                  ],
+                  "type": "string",
+                  "nullable": true
+                }
+              ]
             }
           },
           {
             "name": "ShippingStatus",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/ShippingStatus"
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/ShippingStatus"
+                },
+                {
+                  "enum": [
+                    null
+                  ],
+                  "type": "string",
+                  "nullable": true
+                }
+              ]
             }
           },
           {
@@ -3826,6 +4141,14 @@
             "schema": {
               "type": "integer",
               "format": "int32"
+            }
+          },
+          {
+            "name": "unpaged",
+            "in": "query",
+            "description": "Return all matching results. Administrators only. Omit page and limit.",
+            "schema": {
+              "type": "boolean"
             }
           }
         ],
@@ -3866,6 +4189,16 @@
               "text/json": {
                 "schema": {
                   "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unpaged collections require an administrator.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorsRootObject"
                 }
               }
             }
@@ -4032,21 +4365,54 @@
             "name": "Status",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/OrderStatus"
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/OrderStatus"
+                },
+                {
+                  "enum": [
+                    null
+                  ],
+                  "type": "string",
+                  "nullable": true
+                }
+              ]
             }
           },
           {
             "name": "PaymentStatus",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/PaymentStatus"
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/PaymentStatus"
+                },
+                {
+                  "enum": [
+                    null
+                  ],
+                  "type": "string",
+                  "nullable": true
+                }
+              ]
             }
           },
           {
             "name": "ShippingStatus",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/ShippingStatus"
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/ShippingStatus"
+                },
+                {
+                  "enum": [
+                    null
+                  ],
+                  "type": "string",
+                  "nullable": true
+                }
+              ]
             }
           },
           {
@@ -4609,6 +4975,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "unpaged",
+            "in": "query",
+            "description": "Return all matching results. Administrators only. Omit page and limit.",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
@@ -4648,6 +5022,16 @@
               "text/json": {
                 "schema": {
                   "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unpaged collections require an administrator.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorsRootObject"
                 }
               }
             }
@@ -5116,6 +5500,14 @@
               "type": "integer",
               "format": "int32"
             }
+          },
+          {
+            "name": "unpaged",
+            "in": "query",
+            "description": "Return all matching results. Administrators only. Omit page and limit.",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
@@ -5151,6 +5543,16 @@
           },
           "400": {
             "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorsRootObject"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unpaged collections require an administrator.",
             "content": {
               "application/json": {
                 "schema": {
@@ -5661,6 +6063,14 @@
               "type": "integer",
               "format": "int32"
             }
+          },
+          {
+            "name": "unpaged",
+            "in": "query",
+            "description": "Return all matching results. Administrators only. Omit page and limit.",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
@@ -5696,6 +6106,16 @@
           },
           "400": {
             "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorsRootObject"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unpaged collections require an administrator.",
             "content": {
               "application/json": {
                 "schema": {
@@ -6272,6 +6692,14 @@
               "type": "integer",
               "format": "int32"
             }
+          },
+          {
+            "name": "unpaged",
+            "in": "query",
+            "description": "Return all matching results. Administrators only. Omit page and limit.",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
@@ -6307,6 +6735,16 @@
           },
           "400": {
             "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorsRootObject"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unpaged collections require an administrator.",
             "content": {
               "application/json": {
                 "schema": {
@@ -6914,6 +7352,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "unpaged",
+            "in": "query",
+            "description": "Return all matching results. Administrators only. Omit page and limit.",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
@@ -6953,6 +7399,16 @@
               "text/json": {
                 "schema": {
                   "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unpaged collections require an administrator.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorsRootObject"
                 }
               }
             }
@@ -7469,6 +7925,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "unpaged",
+            "in": "query",
+            "description": "Return all matching results. Administrators only. Omit page and limit.",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
@@ -7504,6 +7968,16 @@
           },
           "400": {
             "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorsRootObject"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unpaged collections require an administrator.",
             "content": {
               "application/json": {
                 "schema": {
@@ -7888,6 +8362,671 @@
         ]
       }
     },
+    "/api/orders/{orderId}/shipments": {
+      "get": {
+        "tags": [
+          "Shipments"
+        ],
+        "operationId": "GetOrderShipments",
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentsRootObject"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Shipments"
+        ],
+        "operationId": "CreateOrderShipment",
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateShipmentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorsRootObject"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorsRootObject"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorsRootObject"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/orders/{orderId}/shipments/{shipmentId}": {
+      "get": {
+        "tags": [
+          "Shipments"
+        ],
+        "operationId": "GetOrderShipment",
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "shipmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Shipments"
+        ],
+        "operationId": "UpdateOrderShipment",
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "shipmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentMetadata"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorsRootObject"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorsRootObject"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorsRootObject"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/orders/{orderId}/shipments/{shipmentId}/ship": {
+      "post": {
+        "tags": [
+          "Shipments"
+        ],
+        "operationId": "ShipOrderShipment",
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "shipmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "notify_customer",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorsRootObject"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorsRootObject"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/orders/{orderId}/shipments/{shipmentId}/ready-for-pickup": {
+      "post": {
+        "tags": [
+          "Shipments"
+        ],
+        "operationId": "MarkOrderShipmentReadyForPickup",
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "shipmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "notify_customer",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorsRootObject"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorsRootObject"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
+    "/api/orders/{orderId}/shipments/{shipmentId}/deliver": {
+      "post": {
+        "tags": [
+          "Shipments"
+        ],
+        "operationId": "DeliverOrderShipment",
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "shipmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "notify_customer",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorsRootObject"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorsRootObject"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": [ ]
+          }
+        ]
+      }
+    },
     "/api/shopping_cart_items": {
       "get": {
         "tags": [
@@ -7954,7 +9093,18 @@
             "name": "ShoppingCartType",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/ShoppingCartType"
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/ShoppingCartType"
+                },
+                {
+                  "enum": [
+                    null
+                  ],
+                  "type": "string",
+                  "nullable": true
+                }
+              ]
             }
           },
           {
@@ -7963,6 +9113,14 @@
             "schema": {
               "type": "integer",
               "format": "int32"
+            }
+          },
+          {
+            "name": "unpaged",
+            "in": "query",
+            "description": "Return all matching results. Administrators only. Omit page and limit.",
+            "schema": {
+              "type": "boolean"
             }
           }
         ],
@@ -7999,6 +9157,16 @@
           },
           "400": {
             "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorsRootObject"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unpaged collections require an administrator.",
             "content": {
               "application/json": {
                 "schema": {
@@ -8118,7 +9286,18 @@
             "name": "ShoppingCartType",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/ShoppingCartType"
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/ShoppingCartType"
+                },
+                {
+                  "enum": [
+                    null
+                  ],
+                  "type": "string",
+                  "nullable": true
+                }
+              ]
             }
           },
           {
@@ -8492,6 +9671,14 @@
               "type": "integer",
               "format": "int32"
             }
+          },
+          {
+            "name": "unpaged",
+            "in": "query",
+            "description": "Return all matching results. Administrators only. Omit page and limit.",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
@@ -8531,6 +9718,16 @@
               "text/json": {
                 "schema": {
                   "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unpaged collections require an administrator.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorsRootObject"
                 }
               }
             }
@@ -9887,6 +11084,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "unpaged",
+            "in": "query",
+            "description": "Return all matching results. Administrators only. Omit page and limit.",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
@@ -9926,6 +11131,16 @@
               "text/json": {
                 "schema": {
                   "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unpaged collections require an administrator.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorsRootObject"
                 }
               }
             }
@@ -11094,6 +12309,20 @@
         },
         "additionalProperties": false
       },
+      "CheckoutPaymentMethodDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "system_name": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "CountriesRootObject": {
         "type": "object",
         "properties": {
@@ -11342,13 +12571,46 @@
             "nullable": true
           },
           "order_status": {
-            "$ref": "#/components/schemas/OrderStatus"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OrderStatus"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "type": "string",
+                "nullable": true
+              }
+            ]
           },
           "payment_status": {
-            "$ref": "#/components/schemas/PaymentStatus"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentStatus"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "type": "string",
+                "nullable": true
+              }
+            ]
           },
           "shipping_status": {
-            "$ref": "#/components/schemas/ShippingStatus"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ShippingStatus"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "type": "string",
+                "nullable": true
+              }
+            ]
           },
           "customer_tax_display_type": {
             "type": "string",
@@ -11369,6 +12631,57 @@
         "properties": {
           "order": {
             "$ref": "#/components/schemas/CreateOrderDto"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateShipmentItem": {
+        "type": "object",
+        "properties": {
+          "order_item_id": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "quantity": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "warehouse_id": {
+            "maximum": 2147483647,
+            "minimum": 0,
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateShipmentRequest": {
+        "required": [
+          "items"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreateShipmentItem"
+            }
+          },
+          "tracking_number": {
+            "maxLength": 400,
+            "minLength": 0,
+            "type": "string",
+            "nullable": true
+          },
+          "admin_comment": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -12377,13 +13690,46 @@
             "nullable": true
           },
           "order_status": {
-            "$ref": "#/components/schemas/OrderStatus"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OrderStatus"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "type": "string",
+                "nullable": true
+              }
+            ]
           },
           "payment_status": {
-            "$ref": "#/components/schemas/PaymentStatus"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentStatus"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "type": "string",
+                "nullable": true
+              }
+            ]
           },
           "shipping_status": {
-            "$ref": "#/components/schemas/ShippingStatus"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ShippingStatus"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "type": "string",
+                "nullable": true
+              }
+            ]
           },
           "customer_tax_display_type": {
             "type": "string",
@@ -12567,6 +13913,19 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/OrderDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "PaymentMethodsDto": {
+        "type": "object",
+        "properties": {
+          "payment_methods": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CheckoutPaymentMethodDto"
             },
             "nullable": true
           }
@@ -13658,6 +15017,143 @@
           "Rounding1Up"
         ],
         "type": "string"
+      },
+      "ShipmentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "order_id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "total_weight": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "created_on_utc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "shipped_date_utc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "ready_for_pickup_date_utc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "delivery_date_utc": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShipmentItemDto"
+            },
+            "nullable": true
+          },
+          "tracking_number": {
+            "maxLength": 400,
+            "minLength": 0,
+            "type": "string",
+            "nullable": true
+          },
+          "admin_comment": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "order_item_id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "warehouse_id": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentMetadata": {
+        "type": "object",
+        "properties": {
+          "tracking_number": {
+            "maxLength": 400,
+            "minLength": 0,
+            "type": "string",
+            "nullable": true
+          },
+          "admin_comment": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShipmentsRootObject": {
+        "type": "object",
+        "properties": {
+          "shipments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShipmentDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShippingOptionsDto": {
+        "type": "object",
+        "properties": {
+          "shipping_options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShippingQuoteDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShippingQuoteDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "shipping_rate_computation_method_system_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "rate": {
+            "type": "number",
+            "format": "decimal"
+          }
+        },
+        "additionalProperties": false
       },
       "ShippingStatus": {
         "enum": [

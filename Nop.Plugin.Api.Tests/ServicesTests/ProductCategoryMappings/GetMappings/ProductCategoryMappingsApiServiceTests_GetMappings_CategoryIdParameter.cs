@@ -16,7 +16,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ProductCategoryMappings.GetMappings
         [Test]
         [TestCase(0)]
         [TestCase(-132340)]
-        public void GivenNegativeOrZeroCategoryId_ShouldReturnEmptyCollection(int categoryId)
+        public async Task GivenNegativeOrZeroCategoryId_ShouldReturnEmptyCollection(int categoryId)
         {
             var repo = new List<ProductCategory>();
 
@@ -40,14 +40,14 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ProductCategoryMappings.GetMappings
             // Act
             var cut = new ProductCategoryMappingsApiService(mappingRepo);
 
-            var result = cut.GetMappings(categoryId: categoryId);
+            var result = await cut.GetMappingsAsync(categoryId: categoryId);
 
             // Assert
             Assert.IsEmpty(result);
         }
 
         [Test]
-        public void GivenPositiveCategoryId_ShouldReturnCollectionContainingAllMappingsWithThisCategoryId()
+        public async Task GivenPositiveCategoryId_ShouldReturnCollectionContainingAllMappingsWithThisCategoryId()
         {
             var repo = new List<ProductCategory>();
 
@@ -79,7 +79,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ProductCategoryMappings.GetMappings
             // Act
             var cut = new ProductCategoryMappingsApiService(mappingRepo);
 
-            var result = cut.GetMappings(categoryId: categoryId);
+            var result = await cut.GetMappingsAsync(categoryId: categoryId);
 
             // Assert
             Assert.IsTrue(result.Select(x => new { x.CategoryId, x.ProductId })

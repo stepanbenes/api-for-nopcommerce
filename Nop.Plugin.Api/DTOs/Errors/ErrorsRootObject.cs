@@ -1,11 +1,13 @@
-﻿using Newtonsoft.Json;
+﻿#nullable enable
+
+using Newtonsoft.Json;
 
 namespace Nop.Plugin.Api.DTO.Errors
 {
     public class ErrorsRootObject : ISerializableObject
     {
         [JsonProperty("errors")]
-        public Dictionary<string, List<string>> Errors { get; set; }
+        public Dictionary<string, List<string>?> Errors { get; set; } = null!;
 
         public string GetPrimaryPropertyName()
         {

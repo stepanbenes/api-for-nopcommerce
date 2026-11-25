@@ -39,13 +39,13 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrdersCount
         [Test]
         [TestCase(OrderStatus.Complete)]
         [TestCase(OrderStatus.Cancelled)]
-        public void WhenCalledWithSomeOrderStatus_GivenOrdersCollectionContainingOrdersHavingThisStatus_ShouldReturnTheCountOfTheOrdersHavingThisStatus(OrderStatus orderStatus)
+        public async Task WhenCalledWithSomeOrderStatus_GivenOrdersCollectionContainingOrdersHavingThisStatus_ShouldReturnTheCountOfTheOrdersHavingThisStatus(OrderStatus orderStatus)
         {
             // Arange
             var expectedCollectionCount = _existigOrders.Count(x => x.OrderStatus == orderStatus);
 
             // Act
-            var resultCount = _orderApiService.GetOrdersCount(status: orderStatus);
+            var resultCount = await _orderApiService.GetOrdersCountAsync(status: orderStatus);
 
             // Assert
             Assert.AreEqual(expectedCollectionCount, resultCount);
@@ -54,13 +54,13 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrdersCount
         [Test]
         [TestCase(PaymentStatus.Paid)]
         [TestCase(PaymentStatus.Refunded)]
-        public void WhenCalledWithSomePaymentStatus_GivenOrdersCollectionContainingOrdersHavingThisStatus_ShouldReturnTheCountOfTheOrdersHavingThisStatus(PaymentStatus paymentStatus)
+        public async Task WhenCalledWithSomePaymentStatus_GivenOrdersCollectionContainingOrdersHavingThisStatus_ShouldReturnTheCountOfTheOrdersHavingThisStatus(PaymentStatus paymentStatus)
         {
             // Arange
             var expectedCollectionCount = _existigOrders.Count(x => x.PaymentStatus == paymentStatus);
 
             // Act
-            var resultCount = _orderApiService.GetOrdersCount(paymentStatus: paymentStatus);
+            var resultCount = await _orderApiService.GetOrdersCountAsync(paymentStatus: paymentStatus);
 
             // Assert
             Assert.AreEqual(expectedCollectionCount, resultCount);
@@ -69,20 +69,20 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrdersCount
         [Test]
         [TestCase(ShippingStatus.Delivered)]
         [TestCase(ShippingStatus.ShippingNotRequired)]
-        public void WhenCalledWithSomeShippingStatus_GivenOrdersCollectionContainingOrdersHavingThisStatus_ShouldReturnTheCountOfTheOrdersHavingThisStatus(ShippingStatus shippingStatus)
+        public async Task WhenCalledWithSomeShippingStatus_GivenOrdersCollectionContainingOrdersHavingThisStatus_ShouldReturnTheCountOfTheOrdersHavingThisStatus(ShippingStatus shippingStatus)
         {
             // Arange
             var expectedCollectionCount = _existigOrders.Count(x => x.ShippingStatus == shippingStatus);
 
             // Act
-            var resultCount = _orderApiService.GetOrdersCount(shippingStatus: shippingStatus);
+            var resultCount = await _orderApiService.GetOrdersCountAsync(shippingStatus: shippingStatus);
 
             // Assert
             Assert.AreEqual(expectedCollectionCount, resultCount);
         }
 
         [Test]
-        public void WhenCalledWithStatus_GivenOrdersCollectionThatDoNotHaveThisStatus_ShouldReturnZero()
+        public async Task WhenCalledWithStatus_GivenOrdersCollectionThatDoNotHaveThisStatus_ShouldReturnZero()
         {
             // Arange
             var orderStatus = OrderStatus.Processing;
@@ -90,9 +90,9 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrdersCount
             var shippingStatus = ShippingStatus.Shipped;
 
             // Act
-            var resultCount = _orderApiService.GetOrdersCount(status: orderStatus) + 
-                              _orderApiService.GetOrdersCount(paymentStatus: paymentStatus) +
-                              _orderApiService.GetOrdersCount(shippingStatus: shippingStatus); 
+            var resultCount = await _orderApiService.GetOrdersCountAsync(status: orderStatus) +
+                              await _orderApiService.GetOrdersCountAsync(paymentStatus: paymentStatus) +
+                              await _orderApiService.GetOrdersCountAsync(shippingStatus: shippingStatus);
 
             // Assert
             Assert.AreEqual(0, resultCount);

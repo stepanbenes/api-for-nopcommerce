@@ -1,29 +1,31 @@
-﻿using Newtonsoft.Json;
+﻿#nullable enable
+
+using Newtonsoft.Json;
 using Nop.Plugin.Api.DTO.Base;
 
 namespace Nop.Plugin.Api.DTO.Customers
 {
     public class BaseCustomerDto : BaseDto
     {
-        private List<int> _roleIds;
+        private List<int>? _roleIds;
 
         [JsonProperty("customer_guid")]
         public Guid CustomerGuid { get; set; }
 
         [JsonProperty("username")]
-        public string Username { get; set; }
+        public string? Username { get; set; }
 
         /// <summary>
         ///     Gets or sets the email
         /// </summary>
         [JsonProperty("email")]
-        public string Email { get; set; }
+        public string? Email { get; set; }
 
         [JsonProperty("first_name")]
-        public string FirstName { get; set; }
+        public string? FirstName { get; set; }
 
         [JsonProperty("last_name")]
-        public string LastName { get; set; }
+        public string? LastName { get; set; }
 
         [JsonProperty("language_id")]
         public int? LanguageId { get; set; }
@@ -35,13 +37,13 @@ namespace Nop.Plugin.Api.DTO.Customers
         public DateTime? DateOfBirth { get; set; }
 
         [JsonProperty("gender")]
-        public string Gender { get; set; }
+        public string? Gender { get; set; }
 
         /// <summary>
         ///     Gets or sets the admin comment
         /// </summary>
         [JsonProperty("admin_comment")]
-        public string AdminComment { get; set; }
+        public string? AdminComment { get; set; }
 
         /// <summary>
         ///     Gets or sets a value indicating whether the customer is tax exempt
@@ -84,13 +86,13 @@ namespace Nop.Plugin.Api.DTO.Customers
         ///     Gets or sets the customer system name
         /// </summary>
         [JsonProperty("system_name")]
-        public string SystemName { get; set; }
+        public string? SystemName { get; set; }
 
         /// <summary>
         ///     Gets or sets the last IP address
         /// </summary>
         [JsonProperty("last_ip_address")]
-        public string LastIpAddress { get; set; }
+        public string? LastIpAddress { get; set; }
 
         /// <summary>
         ///     Gets or sets the date and time of entity creation
@@ -123,7 +125,7 @@ namespace Nop.Plugin.Api.DTO.Customers
         public bool SubscribedToNewsletter { get; set; }
 
         [JsonProperty("vat_number")]
-        public string VatNumber { get; set; }
+        public string? VatNumber { get; set; }
         /// <summary>
         /// Gets or set the EU vat number status id 
         /// </summary>
@@ -136,9 +138,10 @@ namespace Nop.Plugin.Api.DTO.Customers
         /// get or set the company Name
         /// </summary>
         [JsonProperty("company")]
-        public string Company { get; set; }
+        public string? Company { get; set; }
 
         [JsonProperty("role_ids")]
+        [System.Diagnostics.CodeAnalysis.AllowNull]
         public List<int> RoleIds
         {
             get

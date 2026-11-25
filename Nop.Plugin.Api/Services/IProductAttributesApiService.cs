@@ -5,11 +5,11 @@ namespace Nop.Plugin.Api.Services
 {
     public interface IProductAttributesApiService
     {
-        IList<ProductAttribute> GetProductAttributes(
+        Task<IList<ProductAttribute>> GetProductAttributesAsync(
             int limit = Constants.Configurations.DefaultLimit,
             int page = Constants.Configurations.DefaultPageValue, int sinceId = Constants.Configurations.DefaultSinceId);
 
-        int GetProductAttributesCount();
+        Task<int> GetProductAttributesCountAsync();
 
         Task<ProductAttribute> GetByIdAsync(int id);
     }

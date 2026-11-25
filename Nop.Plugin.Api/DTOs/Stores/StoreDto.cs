@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿#nullable enable
+
+using Newtonsoft.Json;
 using Nop.Plugin.Api.DTO.Base;
 
 namespace Nop.Plugin.Api.DTO.Stores
@@ -10,13 +12,13 @@ namespace Nop.Plugin.Api.DTO.Stores
         ///     Gets or sets the store name
         /// </summary>
         [JsonProperty("name")]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         /// <summary>
         ///     Gets or sets the store URL
         /// </summary>
         [JsonProperty("url")]
-        public string Url { get; set; }
+        public string? Url { get; set; }
 
         /// <summary>
         ///     Gets or sets a value indicating whether SSL is enabled
@@ -28,13 +30,13 @@ namespace Nop.Plugin.Api.DTO.Stores
         ///     Gets or sets the store secure URL (HTTPS)
         /// </summary>
         [JsonProperty("secure_url")]
-        public string SecureUrl { get; set; }
+        public string? SecureUrl { get; set; }
 
         /// <summary>
         ///     Gets or sets the comma separated list of possible HTTP_HOST values
         /// </summary>
         [JsonProperty("hosts")]
-        public string Hosts { get; set; }
+        public string? Hosts { get; set; }
 
         /// <summary>
         ///     Gets or sets the identifier of the default language for this store; 0 is set when we use the default language
@@ -47,13 +49,13 @@ namespace Nop.Plugin.Api.DTO.Stores
         ///     Gets or sets the languages
         /// </summary>
         [JsonProperty("languages")]
-        public List<Languages.LanguageDto> Languages { get; set; }
+        public List<Languages.LanguageDto>? Languages { get; set; }
 
         /// <summary>
         ///     Gets or sets the currencies
         /// </summary>
         [JsonProperty("currencies")]
-        public List<CurrencyDto> Currencies { get; set; }
+        public List<CurrencyDto>? Currencies { get; set; }
 
         /// <summary>
         ///     Gets or sets the display order
@@ -65,24 +67,24 @@ namespace Nop.Plugin.Api.DTO.Stores
         ///     Gets or sets the company name
         /// </summary>
         [JsonProperty("company_name")]
-        public string CompanyName { get; set; }
+        public string? CompanyName { get; set; }
 
         /// <summary>
         ///     Gets or sets the company address
         /// </summary>
         [JsonProperty("company_address")]
-        public string CompanyAddress { get; set; }
+        public string? CompanyAddress { get; set; }
 
         /// <summary>
         ///     Gets or sets the store phone number
         /// </summary>
         [JsonProperty("company_phone_number")]
-        public string CompanyPhoneNumber { get; set; }
+        public string? CompanyPhoneNumber { get; set; }
 
         /// <summary>
         ///     Gets or sets the company VAT (used in Europe Union countries)
         /// </summary>
         [JsonProperty("company_vat")]
-        public string CompanyVat { get; set; }
+        public string? CompanyVat { get; set; }
     }
 }

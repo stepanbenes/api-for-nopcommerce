@@ -12,7 +12,7 @@ namespace Nop.Plugin.Api.Services
             _productPictureRepository = productPictureRepository;
         }
 
-        public ProductPicture GetProductPictureByPictureId(int pictureId)
+        public async Task<ProductPicture> GetProductPictureByPictureIdAsync(int pictureId)
         {
             if (pictureId == 0)
             {
@@ -23,9 +23,7 @@ namespace Nop.Plugin.Api.Services
                         where pp.PictureId == pictureId
                         select pp;
 
-            var productPictures = query.ToList();
-
-            return productPictures.FirstOrDefault();
+            return await query.FirstOrDefaultAsync();
         }
     }
 }

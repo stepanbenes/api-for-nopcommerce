@@ -2,6 +2,8 @@
 
 This plugin exposes REST endpoints for nopCommerce. This branch is built and tested against nopCommerce `release-5.00.1` and .NET 10. Use the matching release branch of this plugin for older versions of nopCommerce.
 
+See the [feature coverage and upstream issue audit](docs/api-coverage.md), [date and paging filters](docs/query-filters.md), and [checkout discovery endpoints](docs/checkout-discovery.md).
+
 ## Run with Docker
 
 Follow the [Docker quickstart](DOCKER.md) to build the plugin and store together, install the database, and assign the API role.
@@ -52,9 +54,13 @@ For safe retries, send a non-empty UUID in the optional `Idempotency-Key` header
 
 Use `GET /api/taxcategories/{id}` to read a tax category and `PUT /api/taxcategories/{id}` to update its supplied fields. A create request requires a nonblank name of at most 400 characters. Updates validate the name when it is supplied.
 
+## Shipments
+
+Store operators can list and create shipments, update tracking, and mark shipments as shipped, ready for pickup, or delivered. See the [shipment API routes and request examples](Shipments.md).
+
 ## Tests and generated client
 
-Run the unit tests from this repository.
+Run the unit tests from this repository. The .NET 10 suite covers services, serializers, validators, and query binding. The legacy controller, model-binder, and mapping sources remain outside the build. Live tests exercise the HTTP controller and binding paths against an installed store.
 
 ```sh
 dotnet test Nop.Plugin.Api.Tests -p:NopRoot="$(cd ../nopCommerce && pwd)" --filter 'TestCategory!=Integration'
@@ -74,6 +80,19 @@ With the [Docker stack](DOCKER.md) running and those API variables set, run the 
 ```
 
 The script requires Python 3 and succeeds only when all three cases run and pass. The cases clean up through the API. Tax category and cart item rows are removed. nopCommerce retains soft-deleted rows for the product and order.
+
+### Place an order with the generated C# client
+
+The read-only example runs with just a store URL. To place an order in the Docker sample store, sign in as an API-enabled customer with saved billing and shipping addresses. Add a published shippable product that requires no product options to that customer's cart. For example, use `POST /api/shopping_cart_items` with `{"shopping_cart_item":{"customer_id":42,"product_id":8,"shopping_cart_type":"ShoppingCart","quantity":1}}` and replace the IDs with the customer's and product's IDs. You can create the addresses with `POST /api/customers/{customerId}/billingaddress` and `POST /api/customers/{customerId}/shippingaddress`, then use the IDs from their responses. Query `GET /api/checkout_attributes?shipping_required=true` to find the Gift wrapping attribute and its **No** choice. The two IDs below are illustrative.
+
+```sh
+checkout_key="$(uuidgen)"
+dotnet run --project ClientApp -- "$NOP_API_TEST_URL" checkout BILLING_ADDRESS_ID SHIPPING_ADDRESS_ID "$checkout_key" 1=1
+```
+
+The example queries available shipping and payment methods for the cart and addresses, selects **Ground** and **Check/Money Order**, and places the cart's contents. It prints the committed order ID, payment and shipping statuses, and any follow-up guidance. If the response is lost, rerun with `checkout-retry` and the same key and addresses. This resubmits the original options without quoting an already purchased cart. Use a new key for each new order. Check/Money Order payment is recorded separately when received.
+
+For stores with different methods, configure `PaymentMethodSystemName`, `ShippingMethod`, and `ShippingRateComputationMethodSystemName` in the request. A customer cart with items can query `GET /api/checkout/shipping-options?shipping_address_id=ID` and `GET /api/checkout/payment-methods?billing_address_id=ID` to find the methods available for its addresses. Use `GET /api/orders/{id}` to check final status. A store operator with shipment permissions can track [shipments](Shipments.md) separately.
 
 The sample client requests a bearer token and reads catalog and country data. It generates its bindings from [the checked-in OpenAPI snapshot](ClientApp/nopapi.swagger.json). The client-generation checks run on GitHub branch pushes and pull requests and can also be triggered manually.
 

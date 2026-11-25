@@ -39,13 +39,13 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ProductCategoryMappings.GetMappings
         }
 
         [Test]
-        public void WhenCalledWithLimitParameter_GivenMappingsAboveTheLimit_ShouldReturnCollectionWithCountEqualToTheLimit()
+        public async Task WhenCalledWithLimitParameter_GivenMappingsAboveTheLimit_ShouldReturnCollectionWithCountEqualToTheLimit()
         {
             //Arange
             var expectedLimit = 5;
 
             //Act
-            var categories = _productCategoryMappingsService.GetMappings(limit: expectedLimit);
+            var categories = await _productCategoryMappingsService.GetMappingsAsync(limit: expectedLimit);
 
             // Assert
             // Not Empty assert is a good practice when you assert something about collection. Because you can get a false positive if the collection is empty.
@@ -54,13 +54,13 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ProductCategoryMappings.GetMappings
         }
 
         [Test]
-        public void WhenCalledWithLimitParameter_GivenMappingsBellowTheLimit_ShouldReturnCollectionWithCountEqualToTheAvailableCategories()
+        public async Task WhenCalledWithLimitParameter_GivenMappingsBellowTheLimit_ShouldReturnCollectionWithCountEqualToTheAvailableCategories()
         {
             //Arange
             var expectedLimit = _existigMappings.Count();
 
             //Act
-            var categories = _productCategoryMappingsService.GetMappings(limit: expectedLimit + 10);
+            var categories = await _productCategoryMappingsService.GetMappingsAsync(limit: expectedLimit + 10);
 
             // Assert
             // Not Empty assert is a good practice when you assert something about collection. Because you can get a false positive if the collection is empty.
@@ -69,26 +69,26 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ProductCategoryMappings.GetMappings
         }
 
         [Test]
-        public void WhenCalledWithZeroLimitParameter_GivenSomeMappings_ShouldReturnEmptyCollection()
+        public async Task WhenCalledWithZeroLimitParameter_GivenSomeMappings_ShouldReturnEmptyCollection()
         {
             //Arange
             var expectedLimit = 0;
 
             //Act
-            var categories = _productCategoryMappingsService.GetMappings(limit: expectedLimit);
+            var categories = await _productCategoryMappingsService.GetMappingsAsync(limit: expectedLimit);
 
             // Assert
             CollectionAssert.IsEmpty(categories);
         }
 
         [Test]
-        public void WhenCalledWithNegativeLimitParameter_GivenSomeMappings_ShouldReturnEmptyCollection()
+        public async Task WhenCalledWithNegativeLimitParameter_GivenSomeMappings_ShouldReturnEmptyCollection()
         {
             //Arange
             var expectedLimit = -10;
 
             //Act
-            var categories = _productCategoryMappingsService.GetMappings(limit: expectedLimit);
+            var categories = await _productCategoryMappingsService.GetMappingsAsync(limit: expectedLimit);
 
             // Assert
             CollectionAssert.IsEmpty(categories);

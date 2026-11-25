@@ -38,18 +38,22 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProducts
             var vendorRepo = Mock.Of<IRepository<Vendor>>();
 
             var storeMappingService = Mock.Of<IStoreMappingService>();
+            Mock.Get(storeMappingService).Setup(x => x.ApplyStoreMapping(It.IsAny<IQueryable<Product>>(), 1))
+                .ReturnsAsync((IQueryable<Product> query, int _) => query);
+            var storeContext = Mock.Of<Nop.Core.IStoreContext>();
+            Mock.Get(storeContext).Setup(x => x.GetCurrentStoreAsync()).ReturnsAsync(new Nop.Core.Domain.Stores.Store { Id = 1 });
 
-            _productApiService = new ProductApiService(productRepo, productCategoryRepo, vendorRepo, storeMappingService);
+            _productApiService = new ProductApiService(productRepo, productCategoryRepo, vendorRepo, storeMappingService, storeContext);
         }
 
         [Test]
-        public void WhenAskForOnlyThePublishedProducts_ShouldReturnOnlyThePublishedProductsOrderedByid()
+        public async Task WhenAskForOnlyThePublishedProducts_ShouldReturnOnlyThePublishedProductsOrderedByid()
         {
             // Arange
             var expectedProducts = _existigProducts.Where(x => x.Published && !x.Deleted).OrderBy(x => x.Id);
 
             // Act
-            var products = _productApiService.GetProducts(publishedStatus: true);
+            var products = await _productApiService.GetProductsAsync(publishedStatus: true);
 
             // Assert
             CollectionAssert.IsNotEmpty(products);
@@ -58,13 +62,13 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProducts
         }
 
         [Test]
-        public void WhenAskForOnlyTheUnpublishedProducts_ShouldReturnOnlyTheUnpublishedProductsCount()
+        public async Task WhenAskForOnlyTheUnpublishedProducts_ShouldReturnOnlyTheUnpublishedProductsCount()
         {
             // Arange
             var expectedCollection = _existigProducts.Where(x => !x.Published && !x.Deleted).OrderBy(x => x.Id);
 
             // Act
-            var products = _productApiService.GetProducts(publishedStatus: false);
+            var products = await _productApiService.GetProductsAsync(publishedStatus: false);
 
             // Assert
             CollectionAssert.IsNotEmpty(products);

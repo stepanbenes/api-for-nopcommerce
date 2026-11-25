@@ -67,7 +67,8 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [GetRequestsErrorInterceptorActionFilter]
-        public IActionResult GetInventories([FromQuery] ProductWarehouseInventoryParametersModel parameters)
+        [UnpagedCollection]
+        public async Task<IActionResult> GetInventories([FromQuery] ProductWarehouseInventoryParametersModel parameters)
         {
             if (parameters.Limit < Constants.Configurations.MinLimit || parameters.Limit > Constants.Configurations.MaxLimit)
             {
@@ -80,11 +81,11 @@ namespace Nop.Plugin.Api.Controllers
             }
 
             IList<ProductWarehouseInventoryDto> inventoryDtos =
-                _productWarehouseInventoriesService.GetMappings(parameters.ProductId,
+                (await _productWarehouseInventoriesService.GetMappingsAsync(parameters.ProductId,
                     parameters.WarehouseId,
-                    parameters.Limit,
+                    GetCollectionLimit(parameters.Limit),
                     parameters.Page,
-                    parameters.SinceId).Select(x => x.ToDto()).ToList();
+                    parameters.SinceId)).Select(x => x.ToDto()).ToList();
 
             var productWarehouseInventoryRootObject = new ProductWarehouseInventoryRootObject()
             {
@@ -152,19 +153,19 @@ namespace Nop.Plugin.Api.Controllers
                 return Error();
             }
 
-            var warehouse = _warehouseApiService.GetWarehouseById(productWarehouseInventoryDelta.Dto.WarehouseId.Value);
+            var warehouse = await _warehouseApiService.GetWarehouseByIdAsync(productWarehouseInventoryDelta.Dto.WarehouseId.Value);
             if (warehouse == null)
             {
                 return Error(HttpStatusCode.NotFound, "warehouse_id", "not found");
             }
 
-            var product = _productApiService.GetProductById(productWarehouseInventoryDelta.Dto.ProductId.Value);
+            var product = await _productApiService.GetProductByIdAsync(productWarehouseInventoryDelta.Dto.ProductId.Value);
             if (product == null)
             {
                 return Error(HttpStatusCode.NotFound, "product_id", "not found");
             }
 
-            var ivnentoriesCount = _productWarehouseInventoriesService.GetIvnentoriesCount(product.Id, warehouse.Id);
+            var ivnentoriesCount = await _productWarehouseInventoriesService.GetIvnentoriesCountAsync(product.Id, warehouse.Id);
 
             if (ivnentoriesCount > 0)
             {
@@ -213,7 +214,7 @@ namespace Nop.Plugin.Api.Controllers
 
             if (productWarehouseInventoryDelta.Dto.WarehouseId.HasValue)
             {
-                var warehouse = _warehouseApiService.GetWarehouseById(productWarehouseInventoryDelta.Dto.WarehouseId.Value);
+                var warehouse = await _warehouseApiService.GetWarehouseByIdAsync(productWarehouseInventoryDelta.Dto.WarehouseId.Value);
                 if (warehouse == null)
                 {
                     return Error(HttpStatusCode.NotFound, "warehouse_id", "not found");
@@ -222,7 +223,7 @@ namespace Nop.Plugin.Api.Controllers
 
             if (productWarehouseInventoryDelta.Dto.ProductId.HasValue)
             {
-                var product = _productApiService.GetProductById(productWarehouseInventoryDelta.Dto.ProductId.Value);
+                var product = await _productApiService.GetProductByIdAsync(productWarehouseInventoryDelta.Dto.ProductId.Value);
                 if (product == null)
                 {
                     return Error(HttpStatusCode.NotFound, "product_id", "not found");

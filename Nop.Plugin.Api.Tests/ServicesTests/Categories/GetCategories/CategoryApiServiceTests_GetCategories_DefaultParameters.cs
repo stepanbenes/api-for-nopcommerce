@@ -15,7 +15,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategories
     public class CategoryApiServiceTests_GetCategories_DefaultParameters
     {
         [Test]
-        public void WhenCalledWithDefaultParameters_GivenNoCategoriesExist_ShouldReturnEmptyCollection()
+        public async Task WhenCalledWithDefaultParameters_GivenNoCategoriesExist_ShouldReturnEmptyCollection()
         {
             // Arange
             var categoryRepo = Mock.Of<IRepository<Category>>();
@@ -24,17 +24,21 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategories
             var productCategoryRepo = Mock.Of<IRepository<ProductCategory>>();
 
             var storeMappingService = Mock.Of<IStoreMappingService>();
+            Mock.Get(storeMappingService).Setup(x => x.ApplyStoreMapping(It.IsAny<IQueryable<Category>>(), 1))
+                .ReturnsAsync((IQueryable<Category> query, int _) => query);
+            var storeContext = Mock.Of<Nop.Core.IStoreContext>();
+            Mock.Get(storeContext).Setup(x => x.GetCurrentStoreAsync()).ReturnsAsync(new Nop.Core.Domain.Stores.Store { Id = 1 });
 
             // Act
-            var cut = new CategoryApiService(categoryRepo, productCategoryRepo, storeMappingService, Mock.Of<Nop.Services.Catalog.ICategoryService>());
-            var categories = cut.GetCategories();
+            var cut = new CategoryApiService(categoryRepo, productCategoryRepo, storeMappingService, storeContext, Mock.Of<Nop.Services.Catalog.ICategoryService>());
+            var categories = await cut.GetCategoriesAsync();
 
             // Assert
             Assert.AreEqual(0, categories.Count);
         }
         
         [Test]
-        public void WhenCalledWithDefaultParameters_GivenOnlyDeletedCategoriesExist_ShouldReturnEmptyCollection()
+        public async Task WhenCalledWithDefaultParameters_GivenOnlyDeletedCategoriesExist_ShouldReturnEmptyCollection()
         {
             var existingCategories = new List<Category>();
             existingCategories.Add(new Category() { Id = 1, Deleted = true });
@@ -47,17 +51,21 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategories
             var productCategoryRepo = Mock.Of<IRepository<ProductCategory>>();
 
             var storeMappingService = Mock.Of<IStoreMappingService>();
+            Mock.Get(storeMappingService).Setup(x => x.ApplyStoreMapping(It.IsAny<IQueryable<Category>>(), 1))
+                .ReturnsAsync((IQueryable<Category> query, int _) => query);
+            var storeContext = Mock.Of<Nop.Core.IStoreContext>();
+            Mock.Get(storeContext).Setup(x => x.GetCurrentStoreAsync()).ReturnsAsync(new Nop.Core.Domain.Stores.Store { Id = 1 });
 
             // Act
-            var cut = new CategoryApiService(categoryRepo, productCategoryRepo, storeMappingService, Mock.Of<Nop.Services.Catalog.ICategoryService>());
-            var categories = cut.GetCategories();
+            var cut = new CategoryApiService(categoryRepo, productCategoryRepo, storeMappingService, storeContext, Mock.Of<Nop.Services.Catalog.ICategoryService>());
+            var categories = await cut.GetCategoriesAsync();
 
             // Assert
             Assert.AreEqual(0, categories.Count);
         }
 
         [Test]
-        public void WhenCalledWithDefaultParameters_GivenSomeNotDeletedCategoriesExist_ShouldReturnThem()
+        public async Task WhenCalledWithDefaultParameters_GivenSomeNotDeletedCategoriesExist_ShouldReturnThem()
         {
             var existingCategories = new List<Category>();
             existingCategories.Add(new Category() { Id = 1 });
@@ -71,10 +79,14 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategories
             var productCategoryRepo = Mock.Of<IRepository<ProductCategory>>();
 
             var storeMappingService = Mock.Of<IStoreMappingService>();
+            Mock.Get(storeMappingService).Setup(x => x.ApplyStoreMapping(It.IsAny<IQueryable<Category>>(), 1))
+                .ReturnsAsync((IQueryable<Category> query, int _) => query);
+            var storeContext = Mock.Of<Nop.Core.IStoreContext>();
+            Mock.Get(storeContext).Setup(x => x.GetCurrentStoreAsync()).ReturnsAsync(new Nop.Core.Domain.Stores.Store { Id = 1 });
 
             // Act
-            var cut = new CategoryApiService(categoryRepo, productCategoryRepo, storeMappingService, Mock.Of<Nop.Services.Catalog.ICategoryService>());
-            var categories = cut.GetCategories();
+            var cut = new CategoryApiService(categoryRepo, productCategoryRepo, storeMappingService, storeContext, Mock.Of<Nop.Services.Catalog.ICategoryService>());
+            var categories = await cut.GetCategoriesAsync();
 
             // Assert
             Assert.AreEqual(2, categories.Count);
@@ -83,7 +95,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategories
         }
 
         [Test]
-        public void WhenCalledWithDefaultParameters_GivenSomeCategoriesExist_ShouldReturnThemSortedById()
+        public async Task WhenCalledWithDefaultParameters_GivenSomeCategoriesExist_ShouldReturnThemSortedById()
         {
             var existingCategories = new List<Category>();
             existingCategories.Add(new Category() { Id = 2 });
@@ -99,10 +111,14 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategories
             var productCategoryRepo = Mock.Of<IRepository<ProductCategory>>();
 
             var storeMappingService = Mock.Of<IStoreMappingService>();
+            Mock.Get(storeMappingService).Setup(x => x.ApplyStoreMapping(It.IsAny<IQueryable<Category>>(), 1))
+                .ReturnsAsync((IQueryable<Category> query, int _) => query);
+            var storeContext = Mock.Of<Nop.Core.IStoreContext>();
+            Mock.Get(storeContext).Setup(x => x.GetCurrentStoreAsync()).ReturnsAsync(new Nop.Core.Domain.Stores.Store { Id = 1 });
 
             // Act
-            var cut = new CategoryApiService(categoryRepo, productCategoryRepo, storeMappingService, Mock.Of<Nop.Services.Catalog.ICategoryService>());
-            var categories = cut.GetCategories();
+            var cut = new CategoryApiService(categoryRepo, productCategoryRepo, storeMappingService, storeContext, Mock.Of<Nop.Services.Catalog.ICategoryService>());
+            var categories = await cut.GetCategoriesAsync();
 
             // Assert
             Assert.AreEqual(sortedIds[0], categories[0].Id);

@@ -14,7 +14,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ProductCategoryMappings.GetMappings
     public class ProductCategoryMappingsApiServiceTests_GetMappings_DefaultParameters
     {
         [Test]
-        public void GivenNonEmptyValidRepositoryWithMoreThanTheMaxItems_ShouldReturnDefaultLimitItems()
+        public async Task GivenNonEmptyValidRepositoryWithMoreThanTheMaxItems_ShouldReturnDefaultLimitItems()
         {
             var repo = new List<ProductCategory>();
 
@@ -38,7 +38,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ProductCategoryMappings.GetMappings
             // Act
             var cut = new ProductCategoryMappingsApiService(mappingRepo);
 
-            var result = cut.GetMappings();
+            var result = await cut.GetMappingsAsync();
 
             // Assert
             Assert.IsNotEmpty(result);
@@ -46,7 +46,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ProductCategoryMappings.GetMappings
         }
 
         [Test]
-        public void GivenEmptyRepository_ShouldReturnEmptyCollection()
+        public async Task GivenEmptyRepository_ShouldReturnEmptyCollection()
         {
             var repo = new List<ProductCategory>();
            
@@ -57,7 +57,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ProductCategoryMappings.GetMappings
             // Act
             var cut = new ProductCategoryMappingsApiService(mappingRepo);
 
-            var result = cut.GetMappings();
+            var result = await cut.GetMappingsAsync();
 
             // Assert
             Assert.IsEmpty(result);

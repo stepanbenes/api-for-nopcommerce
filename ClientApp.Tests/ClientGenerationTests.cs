@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net;
 using System.Text.Json;
 using ApiBindings.NopApi;
@@ -33,6 +34,71 @@ public class ClientGenerationTests
         Assert.That(typeof(INopApiClient).IsAssignableFrom(typeof(NopApiClient)), Is.True);
     }
 
+    [Test]
+    public async Task NullableEnumQuerySendsOnlyTheSuppliedEnum()
+    {
+        string? query = null;
+        using var http = new HttpClient(new CaptureQuery(uri => query = uri.Query))
+        {
+            BaseAddress = new Uri("http://127.0.0.1")
+        };
+        var client = new NopApiClient(http);
+
+        await client.GetOrders(Status: OrderStatus.Pending);
+        Assert.That(query, Is.EqualTo("?Status=Pending"));
+        await client.GetOrders();
+        Assert.That(query, Is.EqualTo(string.Empty));
+    }
+
+    [TestCase("en-US")]
+    [TestCase("cs-CZ")]
+    public async Task DateQueriesUseInvariantRoundTripFormatAndEscapeOnce(string culture)
+    {
+        var previousCulture = CultureInfo.CurrentCulture;
+        CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(culture);
+        try
+        {
+            Uri? request = null;
+            using var http = new HttpClient(new CaptureQuery(uri => request = uri))
+            {
+                BaseAddress = new Uri("http://127.0.0.1")
+            };
+            var client = new NopApiClient(http);
+            var utc = new DateTime(2025, 1, 23, 14, 5, 6, DateTimeKind.Utc).AddTicks(1234567);
+            var withoutOffset = DateTime.SpecifyKind(utc, DateTimeKind.Unspecified);
+            var local = utc.ToLocalTime();
+
+            await client.GetOrders(CreatedAtMin: utc, CreatedAtMax: local);
+            Assert.That(request!.AbsolutePath, Is.EqualTo("/api/orders"));
+            var expectedLocal = Uri.EscapeDataString(local.ToString("O", CultureInfo.InvariantCulture));
+            Assert.That(request.Query, Is.EqualTo($"?CreatedAtMin=2025-01-23T14%3A05%3A06.1234567Z&CreatedAtMax={expectedLocal}"));
+            Assert.That(Uri.UnescapeDataString(request.Query), Does.EndWith(local.ToString("O", CultureInfo.InvariantCulture)));
+
+            await client.GetCustomers(CreatedAtMin: withoutOffset);
+            Assert.That(request!.AbsolutePath, Is.EqualTo("/api/customers"));
+            Assert.That(request.Query, Is.EqualTo("?CreatedAtMin=2025-01-23T14%3A05%3A06.1234567"));
+
+            await client.GetCustomers();
+            Assert.That(request!.Query, Is.Empty);
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = previousCulture;
+        }
+    }
+
+    private sealed class CaptureQuery(Action<Uri> record) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            record(request.RequestUri!);
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""{"orders":[]}""", System.Text.Encoding.UTF8, "application/json")
+            });
+        }
+    }
+
     [TestCase(false)]
     [TestCase(true)]
     public async Task SendsAndReceivesCheckoutOverHttp(bool compactReceipt)
@@ -62,8 +128,8 @@ public class ClientGenerationTests
                 httpResponse.Headers["X-Order-Follow-Up"] = "Order was placed. Confirm payment status.";
 
             var response = compactReceipt
-                ? """{"orders":[{"id":42}]}"""
-                : """{"orders":[{"id":42,"billing_address":{"id":7},"shipping_method":"Ground"}]}""";
+                ? """{"orders":[{"id":42,"shipping_status":null}]}"""
+                : """{"orders":[{"id":42,"billing_address":{"id":7},"shipping_method":"Ground","shipping_status":"NotYetShipped"}]}""";
             return Results.Text(response, "application/json");
         });
         await server.StartAsync();
@@ -99,6 +165,8 @@ public class ClientGenerationTests
             Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
             Assert.That(result.Body?.Orders?.Single().Id, Is.EqualTo(42));
             Assert.That(result.Body?.Orders?.Single().ShippingMethod, Is.EqualTo(compactReceipt ? null : "Ground"));
+            Assert.That(result.Body?.Orders?.Single().ShippingStatus,
+                Is.EqualTo(compactReceipt ? null : (ShippingStatus?)ShippingStatus.NotYetShipped));
             Assert.That(result.Headers.Keys, Is.EqualTo(new[] { compactReceipt ? "Idempotency-Replayed" : "X-Order-Follow-Up" }));
             Assert.That(result.Headers.Values.Single(), Is.EqualTo(new[] { compactReceipt ? "true" : "Order was placed. Confirm payment status." }));
         });

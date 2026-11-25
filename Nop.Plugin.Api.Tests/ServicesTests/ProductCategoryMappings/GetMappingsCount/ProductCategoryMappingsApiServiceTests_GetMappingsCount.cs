@@ -52,7 +52,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ProductCategoryMappings.GetMappings
         }
 
         [Test]
-        public void GivenNonEmptyValidRepository_WhenCalledWithDefaultParameters_ShouldReturnRepositorySize()
+        public async Task GivenNonEmptyValidRepository_WhenCalledWithDefaultParameters_ShouldReturnRepositorySize()
         {
             // Arange
             var mappingRepo = Mock.Of<IRepository<ProductCategory>>();
@@ -61,14 +61,14 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ProductCategoryMappings.GetMappings
             // Act
             var cut = new ProductCategoryMappingsApiService(mappingRepo);
 
-            int result = cut.GetMappingsCount();
+            int result = await cut.GetMappingsCountAsync();
 
             // Assert
             Assert.AreEqual(_repo.Count, result);
         }
 
         [Test]
-        public void GivenEmptyRepository_WhenCalledWithDefaultParameters_ShouldReturnZero()
+        public async Task GivenEmptyRepository_WhenCalledWithDefaultParameters_ShouldReturnZero()
         {
             var repo = new List<ProductCategory>();
 
@@ -79,7 +79,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ProductCategoryMappings.GetMappings
             // Act
             var cut = new ProductCategoryMappingsApiService(mappingRepo);
 
-            int result = cut.GetMappingsCount();
+            int result = await cut.GetMappingsCountAsync();
 
             // Assert
             Assert.AreEqual(0, result);
@@ -90,7 +90,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ProductCategoryMappings.GetMappings
         [TestCase(1, 1)]
         [TestCase(2, 1)]
         [TestCase(2, 2)]
-        public void GivenNonEmptyValidRepository_WhenCalledWithSomeParameters_ShouldReturnCountOfAllItemsAccordingToParameters(int categoryId, int productId)
+        public async Task GivenNonEmptyValidRepository_WhenCalledWithSomeParameters_ShouldReturnCountOfAllItemsAccordingToParameters(int categoryId, int productId)
         {
             var expectedCount = _repo.Count(x => x.CategoryId == categoryId && x.ProductId == productId);
 
@@ -101,7 +101,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ProductCategoryMappings.GetMappings
             // Act
             var cut = new ProductCategoryMappingsApiService(mappingRepo);
 
-            int result = cut.GetMappingsCount(productId, categoryId);
+            int result = await cut.GetMappingsCountAsync(productId, categoryId);
 
             // Assert
             Assert.AreEqual(expectedCount, result);
@@ -110,7 +110,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ProductCategoryMappings.GetMappings
         [Test]
         [TestCase(1)]
         [TestCase(2)]
-        public void GivenNonEmptyValidRepository_WhenCalledWithCategoryIdParameter_ShouldReturnCountOfAllItemsThatAreMappedToThisCategory(int categoryId)
+        public async Task GivenNonEmptyValidRepository_WhenCalledWithCategoryIdParameter_ShouldReturnCountOfAllItemsThatAreMappedToThisCategory(int categoryId)
         {
             var expectedCount = _repo.Count(x => x.CategoryId == categoryId);
 
@@ -121,7 +121,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ProductCategoryMappings.GetMappings
             // Act
             var cut = new ProductCategoryMappingsApiService(mappingRepo);
 
-            int result = cut.GetMappingsCount(categoryId: categoryId);
+            int result = await cut.GetMappingsCountAsync(categoryId: categoryId);
 
             // Assert
             Assert.AreEqual(expectedCount, result);
@@ -130,7 +130,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ProductCategoryMappings.GetMappings
         [Test]
         [TestCase(1)]
         [TestCase(2)]
-        public void GivenNonEmptyValidRepository_WhenCalledWithProductIdParameter_ShouldReturnCountOfAllItemsThatAreMappedToThisProduct(int productId)
+        public async Task GivenNonEmptyValidRepository_WhenCalledWithProductIdParameter_ShouldReturnCountOfAllItemsThatAreMappedToThisProduct(int productId)
         {
             var expectedCount = _repo.Count(x => x.ProductId == productId);
 
@@ -141,7 +141,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ProductCategoryMappings.GetMappings
             // Act
             var cut = new ProductCategoryMappingsApiService(mappingRepo);
 
-            int result = cut.GetMappingsCount(productId: productId);
+            int result = await cut.GetMappingsCountAsync(productId: productId);
 
             // Assert
             Assert.AreEqual(expectedCount, result);

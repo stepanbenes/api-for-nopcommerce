@@ -16,12 +16,15 @@ using Microsoft.OpenApi.Models;
 using Newtonsoft.Json.Converters;
 using Nop.Core.Configuration;
 using Nop.Core.Infrastructure;
+using Nop.Plugin.Api.Attributes;
 using Nop.Plugin.Api.Authorization.Policies;
 using Nop.Plugin.Api.Authorization.Requirements;
 using Nop.Plugin.Api.Configuration;
 using Nop.Plugin.Api.Delta;
 using Nop.Plugin.Api.DTO.Errors;
 using Nop.Plugin.Api.Helpers;
+using Nop.Plugin.Api.ModelBinders;
+using System.Reflection;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 
@@ -74,6 +77,31 @@ namespace Nop.Plugin.Api.Infrastructure
                     Description = "Follow-up guidance when order placement succeeded and a subsequent step failed.",
                     Schema = new OpenApiSchema { Type = "string" }
                 };
+            }
+
+            if (context.MethodInfo.IsDefined(typeof(UnpagedCollectionAttribute), inherit: true))
+            {
+                operation.Parameters.Add(new OpenApiParameter
+                {
+                    Name = UnpagedCollectionAttribute.ParameterName,
+                    In = ParameterLocation.Query,
+                    Description = "Return all matching results. Administrators only. Omit page and limit.",
+                    Schema = new OpenApiSchema { Type = "boolean" }
+                });
+                if (!operation.Responses.ContainsKey("403"))
+                {
+                    operation.Responses["403"] = new OpenApiResponse
+                    {
+                        Description = "Unpaged collections require an administrator.",
+                        Content =
+                        {
+                            ["application/json"] = new OpenApiMediaType
+                            {
+                                Schema = context.SchemaGenerator.GenerateSchema(typeof(ErrorsRootObject), context.SchemaRepository)
+                            }
+                        }
+                    };
+                }
             }
 
             var delta = context.MethodInfo.GetParameters().FirstOrDefault(parameter =>
@@ -200,9 +228,16 @@ namespace Nop.Plugin.Api.Infrastructure
                 options.InvalidModelStateResponseFactory = context =>
                 {
                     if (context.ActionDescriptor is not ControllerActionDescriptor controller ||
-                        controller.ControllerTypeInfo.Namespace != typeof(Controllers.TokenController).Namespace ||
-                        !controller.MethodInfo.GetParameters().Any(parameter => parameter.ParameterType.IsGenericType &&
-                            parameter.ParameterType.GetGenericTypeDefinition() == typeof(Delta<>)))
+                        controller.ControllerTypeInfo.Namespace != typeof(Controllers.TokenController).Namespace)
+                        return defaultResponse(context);
+
+                    var parameters = controller.MethodInfo.GetParameters();
+                    var usesDelta = parameters.Any(parameter => parameter.ParameterType.IsGenericType &&
+                        parameter.ParameterType.GetGenericTypeDefinition() == typeof(Delta<>));
+                    var usesQueryBinder = parameters.Any(parameter =>
+                        parameter.ParameterType.GetCustomAttribute<ModelBinderAttribute>()?.BinderType is { IsGenericType: true } binder &&
+                        binder.GetGenericTypeDefinition() == typeof(ParametersModelBinder<>));
+                    if (!usesDelta && !usesQueryBinder)
                         return defaultResponse(context);
 
                     var errors = context.ModelState
@@ -210,7 +245,8 @@ namespace Nop.Plugin.Api.Infrastructure
                         .ToDictionary(item => item.Key, item => item.Value.Errors
                             .Select(error => string.IsNullOrEmpty(error.ErrorMessage) ? "Invalid value." : error.ErrorMessage)
                             .ToList());
-                    return new UnprocessableEntityObjectResult(new ErrorsRootObject { Errors = errors });
+                    var response = new ErrorsRootObject { Errors = errors };
+                    return usesDelta ? new UnprocessableEntityObjectResult(response) : new BadRequestObjectResult(response);
                 };
             });
             services.AddSwaggerGen(options =>
@@ -231,6 +267,8 @@ namespace Nop.Plugin.Api.Infrastructure
                 // custom type mappings >>
                 options.MapType<decimal>(() => new OpenApiSchema { Type = "number", Format = "decimal" }); // correct currency typings
                 options.SchemaFilter<DeltaSchemaFilter>();
+                options.SchemaFilter<NullableEnumSchemaFilter>();
+                options.ParameterFilter<NullableEnumSchemaFilter>();
                 options.OperationFilter<ApiOperationFilter>();
                 // TODO: options.UseAllOfToExtendReferenceSchemas(); // https://github.com/stepanbenes/api-for-nopcommerce/issues/16
             });

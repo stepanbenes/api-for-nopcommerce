@@ -69,6 +69,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [GetRequestsErrorInterceptorActionFilter]
+        [UnpagedCollection]
         public async Task<IActionResult> GetTopics([FromQuery] TopicsParametersModel parameters)
         {
             if (parameters.Limit < 1 || parameters.Limit > Constants.Configurations.MaxLimit)
@@ -83,10 +84,11 @@ namespace Nop.Plugin.Api.Controllers
             var matchingTopics = topics.Where(topic =>
                 (parameters.Ids == null || parameters.Ids.Count == 0 || parameters.Ids.Contains(topic.Id)) &&
                 topic.Id > parameters.SinceId);
-            var offset = (long)(parameters.Page - 1) * parameters.Limit;
+            var limit = GetCollectionLimit(parameters.Limit);
+            var offset = (long)(parameters.Page - 1) * limit;
             IList<TopicDto> topicsAsDtos = offset >= topics.Count
                 ? new List<TopicDto>()
-                : matchingTopics.Skip((int)offset).Take(parameters.Limit).Select(_dtoHelper.PrepareTopicDTO).ToList();
+                : matchingTopics.Skip((int)offset).Take(limit).Select(_dtoHelper.PrepareTopicDTO).ToList();
 
             var topicsRootObject = new TopicsRootObject
             {

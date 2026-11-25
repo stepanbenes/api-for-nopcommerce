@@ -35,11 +35,11 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
         }
         
         [Test]
-        public void WhenCalledWithIdsParameter_GivenOrdersWithTheSpecifiedIds_ShouldReturnThemSortedById()
+        public async Task WhenCalledWithIdsParameter_GivenOrdersWithTheSpecifiedIds_ShouldReturnThemSortedById()
         {
             var idsCollection = new List<int>() { 1, 5 };
 
-            var orders = _orderApiService.GetOrders(ids: idsCollection);
+            var orders = await _orderApiService.GetOrdersAsync(ids: idsCollection);
 
             // Assert
             CollectionAssert.IsNotEmpty(orders);
@@ -48,11 +48,11 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
         }
 
         [Test]
-        public void WhenCalledWithIdsParameter_GivenOrdersWithSomeOfTheSpecifiedIds_ShouldReturnThemSortedById()
+        public async Task WhenCalledWithIdsParameter_GivenOrdersWithSomeOfTheSpecifiedIds_ShouldReturnThemSortedById()
         {
             var idsCollection = new List<int>() { 1, 5, 97373, 4 };
 
-            var orders = _orderApiService.GetOrders(ids: idsCollection);
+            var orders = await _orderApiService.GetOrdersAsync(ids: idsCollection);
 
             // Assert
             CollectionAssert.IsNotEmpty(orders);
@@ -62,22 +62,22 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
         }
 
         [Test]
-        public void WhenCalledWithIdsParameter_GivenOrdersThatDoNotMatchTheSpecifiedIds_ShouldReturnEmptyCollection()
+        public async Task WhenCalledWithIdsParameter_GivenOrdersThatDoNotMatchTheSpecifiedIds_ShouldReturnEmptyCollection()
         {
             var idsCollection = new List<int>() { 2123434, 5456456, 97373, -45 };
 
-            var orders = _orderApiService.GetOrders(ids: idsCollection);
+            var orders = await _orderApiService.GetOrdersAsync(ids: idsCollection);
 
             // Assert
             CollectionAssert.IsEmpty(orders);
         }
 
         [Test]
-        public void WhenCalledWithIdsParameter_GivenEmptyIdsCollection_ShouldReturnAllNotDeletedOrders()
+        public async Task WhenCalledWithIdsParameter_GivenEmptyIdsCollection_ShouldReturnAllNotDeletedOrders()
         {
             var idsCollection = new List<int>();
 
-            var orders = _orderApiService.GetOrders(ids: idsCollection);
+            var orders = await _orderApiService.GetOrdersAsync(ids: idsCollection);
 
             // Assert
             CollectionAssert.IsNotEmpty(orders);

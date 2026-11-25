@@ -14,18 +14,18 @@ namespace Nop.Plugin.Api.Services
             _productAttributesRepository = productAttributesRepository;
         }
 
-        public IList<ProductAttribute> GetProductAttributes(
+        public async Task<IList<ProductAttribute>> GetProductAttributesAsync(
             int limit = Constants.Configurations.DefaultLimit,
             int page = Constants.Configurations.DefaultPageValue, int sinceId = Constants.Configurations.DefaultSinceId)
         {
             var query = GetProductAttributesQuery(sinceId);
 
-            return new ApiList<ProductAttribute>(query, page - 1, limit);
+            return await ApiList<ProductAttribute>.CreateAsync(query, page - 1, limit);
         }
 
-        public int GetProductAttributesCount()
+        public async Task<int> GetProductAttributesCountAsync()
         {
-            return GetProductAttributesQuery().Count();
+            return await GetProductAttributesQuery().CountAsync();
         }
 
         Task<ProductAttribute> IProductAttributesApiService.GetByIdAsync(int id)

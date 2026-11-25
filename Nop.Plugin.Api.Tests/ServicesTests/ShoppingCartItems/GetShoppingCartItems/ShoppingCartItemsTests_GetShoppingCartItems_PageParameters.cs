@@ -49,7 +49,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ShoppingCartItems.GetShoppingCartIt
             //Arange
             var limit = 5;
             var page = 6;
-            var expectedCollection = new ApiList<ShoppingCartItem>(_existigShoppingCartItems.AsQueryable(), page - 1, limit);
+            var expectedCollection = ApiList<ShoppingCartItem>.FromPage(_existigShoppingCartItems.AsQueryable(), page - 1, limit);
 
             //Act
             var result = await _shoppingCartItemApiService.GetShoppingCartItemsAsync(limit: limit, page: page);
@@ -67,7 +67,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.ShoppingCartItems.GetShoppingCartIt
         {
             //Arange
             var limit = 5;
-            var expectedCollection = new ApiList<ShoppingCartItem>(_existigShoppingCartItems.AsQueryable(), page - 1, limit);
+            var expectedCollection = ApiList<ShoppingCartItem>.FromPage(_existigShoppingCartItems.AsQueryable(), page - 1, limit);
 
             //Act
             var result = await _shoppingCartItemApiService.GetShoppingCartItemsAsync(limit: limit, page: page);

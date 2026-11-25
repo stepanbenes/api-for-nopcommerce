@@ -14,9 +14,9 @@ namespace Nop.Plugin.Api.Services
         }
         public async Task<IList<OrderItem>> GetOrderItemsForOrderAsync(Order order, int limit, int page, int sinceId)
         {
-            var orderItems = (await _orderService.GetOrderItemsAsync(order.Id)).AsQueryable();
+            var orderItems = await _orderService.GetOrderItemsAsync(order.Id);
 
-            return new ApiList<OrderItem>(orderItems, page - 1, limit);
+            return ApiList<OrderItem>.FromPage(orderItems, page - 1, limit);
         }
 
         public async Task<int> GetOrderItemsCountAsync(Order order)

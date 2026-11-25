@@ -64,7 +64,8 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [GetRequestsErrorInterceptorActionFilter]
-        public IActionResult GetProductAttributes([FromQuery] ProductAttributesParametersModel parameters)
+        [UnpagedCollection]
+        public async Task<IActionResult> GetProductAttributes([FromQuery] ProductAttributesParametersModel parameters)
         {
             if (parameters.Limit < Constants.Configurations.MinLimit || parameters.Limit > Constants.Configurations.MaxLimit)
             {
@@ -76,7 +77,7 @@ namespace Nop.Plugin.Api.Controllers
                 return Error(HttpStatusCode.BadRequest, "page", "invalid page parameter");
             }
 
-            var allProductAttributes = _productAttributesApiService.GetProductAttributes(parameters.Limit, parameters.Page, parameters.SinceId);
+            var allProductAttributes = await _productAttributesApiService.GetProductAttributesAsync(GetCollectionLimit(parameters.Limit), parameters.Page, parameters.SinceId);
 
             IList<ProductAttributeDto> productAttributesAsDtos =
                 allProductAttributes.Select(productAttribute => _dtoHelper.PrepareProductAttributeDTO(productAttribute)).ToList();
@@ -101,9 +102,9 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(ProductAttributesCountRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [GetRequestsErrorInterceptorActionFilter]
-        public IActionResult GetProductAttributesCount()
+        public async Task<IActionResult> GetProductAttributesCount()
         {
-            var allProductAttributesCount = _productAttributesApiService.GetProductAttributesCount();
+            var allProductAttributesCount = await _productAttributesApiService.GetProductAttributesCountAsync();
 
             var productAttributesCountRootObject = new ProductAttributesCountRootObject
             {

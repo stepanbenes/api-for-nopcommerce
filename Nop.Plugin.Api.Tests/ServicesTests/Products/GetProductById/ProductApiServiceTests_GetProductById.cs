@@ -15,7 +15,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProductById
     public class ProductApiServiceTests_GetProductById
     {
         [Test]
-        public void WhenNullIsReturnedByTheRepository_ShouldReturnNull()
+        public async Task WhenNullIsReturnedByTheRepository_ShouldReturnNull()
         {
             int productId = 3;
 
@@ -28,10 +28,14 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProductById
             var vendorRepo = Mock.Of<IRepository<Vendor>>();
 
             var storeMappingService = Mock.Of<IStoreMappingService>();
+            Mock.Get(storeMappingService).Setup(x => x.ApplyStoreMapping(It.IsAny<IQueryable<Product>>(), 1))
+                .ReturnsAsync((IQueryable<Product> query, int _) => query);
+            var storeContext = Mock.Of<Nop.Core.IStoreContext>();
+            Mock.Get(storeContext).Setup(x => x.GetCurrentStoreAsync()).ReturnsAsync(new Nop.Core.Domain.Stores.Store { Id = 1 });
 
             // Act
-            var cut = new ProductApiService(productRepo, productCategoryRepo, vendorRepo, storeMappingService);
-            var result = cut.GetProductById(productId);
+            var cut = new ProductApiService(productRepo, productCategoryRepo, vendorRepo, storeMappingService, storeContext);
+            var result = await cut.GetProductByIdAsync(productId);
 
             // Assert
             Assert.IsNull(result);
@@ -40,7 +44,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProductById
         [Test]
         [TestCase(-2)]
         [TestCase(0)]
-        public void WhenNegativeOrZeroProductIdPassed_ShouldReturnNull(int negativeOrZeroProductId)
+        public async Task WhenNegativeOrZeroProductIdPassed_ShouldReturnNull(int negativeOrZeroProductId)
         {
             // Aranges
             var productRepoStub = Mock.Of<IRepository<Product>>();
@@ -50,17 +54,21 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProductById
             var vendorRepo = Mock.Of<IRepository<Vendor>>();
 
             var storeMappingService = Mock.Of<IStoreMappingService>();
+            Mock.Get(storeMappingService).Setup(x => x.ApplyStoreMapping(It.IsAny<IQueryable<Product>>(), 1))
+                .ReturnsAsync((IQueryable<Product> query, int _) => query);
+            var storeContext = Mock.Of<Nop.Core.IStoreContext>();
+            Mock.Get(storeContext).Setup(x => x.GetCurrentStoreAsync()).ReturnsAsync(new Nop.Core.Domain.Stores.Store { Id = 1 });
 
             // Act
-            var cut = new ProductApiService(productRepoStub, productCategoryRepo, vendorRepo, storeMappingService);
-            var result = cut.GetProductById(negativeOrZeroProductId);
+            var cut = new ProductApiService(productRepoStub, productCategoryRepo, vendorRepo, storeMappingService, storeContext);
+            var result = await cut.GetProductByIdAsync(negativeOrZeroProductId);
 
             // Assert
             Assert.IsNull(result);
         }
 
         [Test]
-        public void WhenProductIsReturnedByTheRepository_ShouldReturnTheSameProduct()
+        public async Task WhenProductIsReturnedByTheRepository_ShouldReturnTheSameProduct()
         {
             int productId = 3;
             var product = new Product() { Id = 3, Name = "some name" };
@@ -77,10 +85,14 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProductById
             var vendorRepo = Mock.Of<IRepository<Vendor>>();
 
             var storeMappingService = Mock.Of<IStoreMappingService>();
+            Mock.Get(storeMappingService).Setup(x => x.ApplyStoreMapping(It.IsAny<IQueryable<Product>>(), 1))
+                .ReturnsAsync((IQueryable<Product> query, int _) => query);
+            var storeContext = Mock.Of<Nop.Core.IStoreContext>();
+            Mock.Get(storeContext).Setup(x => x.GetCurrentStoreAsync()).ReturnsAsync(new Nop.Core.Domain.Stores.Store { Id = 1 });
 
             // Act
-            var cut = new ProductApiService(productRepo, productCategoryRepo, vendorRepo, storeMappingService);
-            var result = cut.GetProductById(productId);
+            var cut = new ProductApiService(productRepo, productCategoryRepo, vendorRepo, storeMappingService, storeContext);
+            var result = await cut.GetProductByIdAsync(productId);
 
             // Assert
             Assert.AreSame(product, result);

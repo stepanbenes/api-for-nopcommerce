@@ -92,6 +92,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [GetRequestsErrorInterceptorActionFilter]
+        [UnpagedCollection]
         public async Task<IActionResult> GetShoppingCartItems([FromQuery] ShoppingCartItemsParametersModel parameters)
         {
             if (parameters.Limit.HasValue && (parameters.Limit < Constants.Configurations.MinLimit || parameters.Limit > Constants.Configurations.MaxLimit))
@@ -121,7 +122,7 @@ namespace Nop.Plugin.Api.Controllers
                                                            parameters.CreatedAtMax,
                                                            parameters.UpdatedAtMin,
                                                            parameters.UpdatedAtMax,
-                                                           parameters.Limit,
+                                                           GetCollectionLimit(parameters.Limit),
                                                            parameters.Page,
                                                            shoppingCartType);
 

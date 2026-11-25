@@ -25,10 +25,13 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProductsCount
             var vendorRepo = Mock.Of<IRepository<Vendor>>();
 
             var storeMappingService = Mock.Of<IStoreMappingService>();
-            Mock.Get(storeMappingService).Setup(x => x.AuthorizeAsync(It.IsAny<Product>())).ReturnsAsync(true);
+            Mock.Get(storeMappingService).Setup(x => x.ApplyStoreMapping(It.IsAny<IQueryable<Product>>(), 1))
+                .ReturnsAsync((IQueryable<Product> query, int _) => query);
+            var storeContext = Mock.Of<Nop.Core.IStoreContext>();
+            Mock.Get(storeContext).Setup(x => x.GetCurrentStoreAsync()).ReturnsAsync(new Nop.Core.Domain.Stores.Store { Id = 1 });
 
             // Act
-            var cut = new ProductApiService(productsRepo, productCategoryRepo, vendorRepo, storeMappingService);
+            var cut = new ProductApiService(productsRepo, productCategoryRepo, vendorRepo, storeMappingService, storeContext);
             var productsCount = await cut.GetProductsCountAsync();
 
             // Assert
@@ -50,10 +53,13 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProductsCount
             var vendorRepo = Mock.Of<IRepository<Vendor>>();
 
             var storeMappingService = Mock.Of<IStoreMappingService>();
-            Mock.Get(storeMappingService).Setup(x => x.AuthorizeAsync(It.IsAny<Product>())).ReturnsAsync(true);
+            Mock.Get(storeMappingService).Setup(x => x.ApplyStoreMapping(It.IsAny<IQueryable<Product>>(), 1))
+                .ReturnsAsync((IQueryable<Product> query, int _) => query);
+            var storeContext = Mock.Of<Nop.Core.IStoreContext>();
+            Mock.Get(storeContext).Setup(x => x.GetCurrentStoreAsync()).ReturnsAsync(new Nop.Core.Domain.Stores.Store { Id = 1 });
 
             // Act
-            var cut = new ProductApiService(productRepo, productCategoryRepo, vendorRepo, storeMappingService);
+            var cut = new ProductApiService(productRepo, productCategoryRepo, vendorRepo, storeMappingService, storeContext);
             var countResult = await cut.GetProductsCountAsync();
 
             // Assert
@@ -76,10 +82,13 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProductsCount
             var vendorRepo = Mock.Of<IRepository<Vendor>>();
 
             var storeMappingService = Mock.Of<IStoreMappingService>();
-            Mock.Get(storeMappingService).Setup(x => x.AuthorizeAsync(It.IsAny<Product>())).ReturnsAsync(true);
+            Mock.Get(storeMappingService).Setup(x => x.ApplyStoreMapping(It.IsAny<IQueryable<Product>>(), 1))
+                .ReturnsAsync((IQueryable<Product> query, int _) => query);
+            var storeContext = Mock.Of<Nop.Core.IStoreContext>();
+            Mock.Get(storeContext).Setup(x => x.GetCurrentStoreAsync()).ReturnsAsync(new Nop.Core.Domain.Stores.Store { Id = 1 });
 
             // Act
-            var cut = new ProductApiService(productRepo, productCategoryRepo, vendorRepo, storeMappingService);
+            var cut = new ProductApiService(productRepo, productCategoryRepo, vendorRepo, storeMappingService, storeContext);
             var countResult = await cut.GetProductsCountAsync();
 
             // Assert
@@ -102,10 +111,13 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProductsCount
             var vendorRepo = Mock.Of<IRepository<Vendor>>();
 
             var storeMappingService = Mock.Of<IStoreMappingService>();
-            Mock.Get(storeMappingService).Setup(x => x.AuthorizeAsync(It.IsAny<Product>())).ReturnsAsync(true);
+            Mock.Get(storeMappingService).Setup(x => x.ApplyStoreMapping(It.IsAny<IQueryable<Product>>(), 1))
+                .ReturnsAsync((IQueryable<Product> query, int _) => query);
+            var storeContext = Mock.Of<Nop.Core.IStoreContext>();
+            Mock.Get(storeContext).Setup(x => x.GetCurrentStoreAsync()).ReturnsAsync(new Nop.Core.Domain.Stores.Store { Id = 1 });
 
             // Act
-            var cut = new ProductApiService(productRepo, productCategoryRepo, vendorRepo, storeMappingService);
+            var cut = new ProductApiService(productRepo, productCategoryRepo, vendorRepo, storeMappingService, storeContext);
             var countResult = await cut.GetProductsCountAsync();
 
             // Assert

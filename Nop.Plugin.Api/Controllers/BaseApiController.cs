@@ -4,7 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 using Nop.Core;
 using Nop.Core.Domain.Security;
 using Nop.Core.Domain.Stores;
+using Nop.Plugin.Api.Attributes;
 using Nop.Plugin.Api.DTO.Errors;
+using Nop.Plugin.Api.Infrastructure;
 using Nop.Plugin.Api.JSON.ActionResults;
 using Nop.Plugin.Api.JSON.Serializers;
 using Nop.Services.Customers;
@@ -53,6 +55,9 @@ namespace Nop.Plugin.Api.Controllers
             LocalizationService = localizationService;
             PictureService = pictureService;
         }
+
+        protected int GetCollectionLimit(int? limit) =>
+            UnpagedCollectionAttribute.IsEnabled(HttpContext) ? int.MaxValue : limit ?? Constants.Configurations.DefaultLimit;
 
         protected IActionResult Error(HttpStatusCode statusCode = (HttpStatusCode)422, string propertyKey = "", string errorMessage = "")
         {

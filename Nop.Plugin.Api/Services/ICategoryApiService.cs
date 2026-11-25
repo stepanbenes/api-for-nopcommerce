@@ -5,9 +5,9 @@ namespace Nop.Plugin.Api.Services
 {
     public interface ICategoryApiService
     {
-        Category GetCategoryById(int categoryId);
+        Task<Category> GetCategoryByIdAsync(int categoryId);
 
-        IList<Category> GetCategories(
+        Task<IList<Category>> GetCategoriesAsync(
             IList<int> ids = null,
             DateTime? createdAtMin = null, DateTime? createdAtMax = null, DateTime? updatedAtMin = null, DateTime? updatedAtMax = null,
             int limit = Constants.Configurations.DefaultLimit, int page = Constants.Configurations.DefaultPageValue,

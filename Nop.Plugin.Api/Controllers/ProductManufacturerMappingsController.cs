@@ -68,7 +68,8 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [GetRequestsErrorInterceptorActionFilter]
-        public IActionResult GetMappings([FromQuery] ProductManufacturerMappingsParametersModel parameters)
+        [UnpagedCollection]
+        public async Task<IActionResult> GetMappings([FromQuery] ProductManufacturerMappingsParametersModel parameters)
         {
             if (parameters.Limit < Constants.Configurations.MinLimit || parameters.Limit > Constants.Configurations.MaxLimit)
             {
@@ -81,11 +82,11 @@ namespace Nop.Plugin.Api.Controllers
             }
 
             IList<ProductManufacturerMappingsDto> mappingsAsDtos =
-                _productManufacturerMappingsService.GetMappings(parameters.ProductId,
+                (await _productManufacturerMappingsService.GetMappingsAsync(parameters.ProductId,
                                                                 parameters.ManufacturerId,
-                                                                parameters.Limit,
+                                                                GetCollectionLimit(parameters.Limit),
                                                                 parameters.Page,
-                                                                parameters.SinceId).Select(x => x.ToDto()).ToList();
+                                                                parameters.SinceId)).Select(x => x.ToDto()).ToList();
 
             var productManufacturerMappingRootObject = new ProductManufacturerMappingsRootObject
             {
@@ -108,7 +109,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [GetRequestsErrorInterceptorActionFilter]
-        public IActionResult GetMappingsCount([FromQuery] ProductManufacturerMappingsCountParametersModel parameters)
+        public async Task<IActionResult> GetMappingsCount([FromQuery] ProductManufacturerMappingsCountParametersModel parameters)
         {
             if (parameters.ProductId < 0)
             {
@@ -120,7 +121,7 @@ namespace Nop.Plugin.Api.Controllers
                 return Error(HttpStatusCode.BadRequest, "manufacturer_id", "invalid manufacturer_id");
             }
 
-            var mappingsCount = _productManufacturerMappingsService.GetMappingsCount(parameters.ProductId,
+            var mappingsCount = await _productManufacturerMappingsService.GetMappingsCountAsync(parameters.ProductId,
                                                                                      parameters.ManufacturerId);
 
             var productManufacturerMappingsCountRootObject = new ProductManufacturerMappingsCountRootObject
@@ -187,19 +188,19 @@ namespace Nop.Plugin.Api.Controllers
                 return Error();
             }
 
-            var manufacturer = _manufacturerApiService.GetManufacturerById(productManufacturerDelta.Dto.ManufacturerId.Value);
+            var manufacturer = await _manufacturerApiService.GetManufacturerByIdAsync(productManufacturerDelta.Dto.ManufacturerId.Value);
             if (manufacturer == null)
             {
                 return Error(HttpStatusCode.NotFound, "manufacturer_id", "not found");
             }
 
-            var product = _productApiService.GetProductById(productManufacturerDelta.Dto.ProductId.Value);
+            var product = await _productApiService.GetProductByIdAsync(productManufacturerDelta.Dto.ProductId.Value);
             if (product == null)
             {
                 return Error(HttpStatusCode.NotFound, "product_id", "not found");
             }
 
-            var mappingsCount = _productManufacturerMappingsService.GetMappingsCount(product.Id, manufacturer.Id);
+            var mappingsCount = await _productManufacturerMappingsService.GetMappingsCountAsync(product.Id, manufacturer.Id);
 
             if (mappingsCount > 0)
             {
@@ -247,7 +248,7 @@ namespace Nop.Plugin.Api.Controllers
 
             if (productManufacturerDelta.Dto.ManufacturerId.HasValue)
             {
-                var manufacturer = _manufacturerApiService.GetManufacturerById(productManufacturerDelta.Dto.ManufacturerId.Value);
+                var manufacturer = await _manufacturerApiService.GetManufacturerByIdAsync(productManufacturerDelta.Dto.ManufacturerId.Value);
                 if (manufacturer == null)
                 {
                     return Error(HttpStatusCode.NotFound, "manufacturer_id", "not found");
@@ -256,7 +257,7 @@ namespace Nop.Plugin.Api.Controllers
 
             if (productManufacturerDelta.Dto.ProductId.HasValue)
             {
-                var product = _productApiService.GetProductById(productManufacturerDelta.Dto.ProductId.Value);
+                var product = await _productApiService.GetProductByIdAsync(productManufacturerDelta.Dto.ProductId.Value);
                 if (product == null)
                 {
                     return Error(HttpStatusCode.NotFound, "product_id", "not found");

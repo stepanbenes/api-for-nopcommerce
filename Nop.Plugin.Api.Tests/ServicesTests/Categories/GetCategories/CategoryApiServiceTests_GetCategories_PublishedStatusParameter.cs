@@ -36,18 +36,22 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategories
             var productCategoryRepo = Mock.Of<IRepository<ProductCategory>>();
 
             var storeMappingService = Mock.Of<IStoreMappingService>();
+            Mock.Get(storeMappingService).Setup(x => x.ApplyStoreMapping(It.IsAny<IQueryable<Category>>(), 1))
+                .ReturnsAsync((IQueryable<Category> query, int _) => query);
+            var storeContext = Mock.Of<Nop.Core.IStoreContext>();
+            Mock.Get(storeContext).Setup(x => x.GetCurrentStoreAsync()).ReturnsAsync(new Nop.Core.Domain.Stores.Store { Id = 1 });
 
-            _categoryApiService = new CategoryApiService(categoryRepo, productCategoryRepo, storeMappingService, Mock.Of<Nop.Services.Catalog.ICategoryService>());
+            _categoryApiService = new CategoryApiService(categoryRepo, productCategoryRepo, storeMappingService, storeContext, Mock.Of<Nop.Services.Catalog.ICategoryService>());
         }
 
         [Test]
-        public void WhenAskForOnlyThePublishedCategories_ShouldReturnOnlyThePublishedOnesSortedById()
+        public async Task WhenAskForOnlyThePublishedCategories_ShouldReturnOnlyThePublishedOnesSortedById()
         {
             // Arange
             var expectedCollection = _existigCategories.Where(x => x.Published && !x.Deleted).OrderBy(x => x.Id);
 
             // Act
-            var categories = _categoryApiService.GetCategories(publishedStatus: true);
+            var categories = await _categoryApiService.GetCategoriesAsync(publishedStatus: true);
 
             // Assert
             // Not Empty assert is a good practice when you assert something about collection. Because you can get a false positive if the collection is empty.
@@ -56,13 +60,13 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategories
         }
 
         [Test]
-        public void WhenAskForOnlyTheUnpublishedCategories_ShouldReturnOnlyTheUnpublishedOnesSortedById()
+        public async Task WhenAskForOnlyTheUnpublishedCategories_ShouldReturnOnlyTheUnpublishedOnesSortedById()
         {
             // Arange
             var expectedCollection = _existigCategories.Where(x => !x.Published && !x.Deleted).OrderBy(x => x.Id);
 
             // Act
-            var categories = _categoryApiService.GetCategories(publishedStatus: false);
+            var categories = await _categoryApiService.GetCategoriesAsync(publishedStatus: false);
 
             // Assert
             // Not Empty assert is a good practice when you assert something about collection. Because you can get a false positive if the collection is empty.

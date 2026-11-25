@@ -68,7 +68,8 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [GetRequestsErrorInterceptorActionFilter]
-        public IActionResult GetMappings([FromQuery] ProductCategoryMappingsParametersModel parameters)
+        [UnpagedCollection]
+        public async Task<IActionResult> GetMappings([FromQuery] ProductCategoryMappingsParametersModel parameters)
         {
             if (parameters.Limit < Constants.Configurations.MinLimit || parameters.Limit > Constants.Configurations.MaxLimit)
             {
@@ -81,11 +82,11 @@ namespace Nop.Plugin.Api.Controllers
             }
 
             IList<ProductCategoryMappingDto> mappingsAsDtos =
-                _productCategoryMappingsService.GetMappings(parameters.ProductId,
+                (await _productCategoryMappingsService.GetMappingsAsync(parameters.ProductId,
                                                             parameters.CategoryId,
-                                                            parameters.Limit,
+                                                            GetCollectionLimit(parameters.Limit),
                                                             parameters.Page,
-                                                            parameters.SinceId).Select(x => x.ToDto()).ToList();
+                                                            parameters.SinceId)).Select(x => x.ToDto()).ToList();
 
             var productCategoryMappingRootObject = new ProductCategoryMappingsRootObject
             {
@@ -108,7 +109,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [GetRequestsErrorInterceptorActionFilter]
-        public IActionResult GetMappingsCount([FromQuery] ProductCategoryMappingsCountParametersModel parameters)
+        public async Task<IActionResult> GetMappingsCount([FromQuery] ProductCategoryMappingsCountParametersModel parameters)
         {
             if (parameters.ProductId < 0)
             {
@@ -120,7 +121,7 @@ namespace Nop.Plugin.Api.Controllers
                 return Error(HttpStatusCode.BadRequest, "category_id", "invalid category_id");
             }
 
-            var mappingsCount = _productCategoryMappingsService.GetMappingsCount(parameters.ProductId,
+            var mappingsCount = await _productCategoryMappingsService.GetMappingsCountAsync(parameters.ProductId,
                                                                                  parameters.CategoryId);
 
             var productCategoryMappingsCountRootObject = new ProductCategoryMappingsCountRootObject
@@ -187,19 +188,19 @@ namespace Nop.Plugin.Api.Controllers
                 return Error();
             }
 
-            var category = _categoryApiService.GetCategoryById(productCategoryDelta.Dto.CategoryId.Value);
+            var category = await _categoryApiService.GetCategoryByIdAsync(productCategoryDelta.Dto.CategoryId.Value);
             if (category == null)
             {
                 return Error(HttpStatusCode.NotFound, "category_id", "not found");
             }
 
-            var product = _productApiService.GetProductById(productCategoryDelta.Dto.ProductId.Value);
+            var product = await _productApiService.GetProductByIdAsync(productCategoryDelta.Dto.ProductId.Value);
             if (product == null)
             {
                 return Error(HttpStatusCode.NotFound, "product_id", "not found");
             }
 
-            var mappingsCount = _productCategoryMappingsService.GetMappingsCount(product.Id, category.Id);
+            var mappingsCount = await _productCategoryMappingsService.GetMappingsCountAsync(product.Id, category.Id);
 
             if (mappingsCount > 0)
             {
@@ -248,7 +249,7 @@ namespace Nop.Plugin.Api.Controllers
 
             if (productCategoryDelta.Dto.CategoryId.HasValue)
             {
-                var category = _categoryApiService.GetCategoryById(productCategoryDelta.Dto.CategoryId.Value);
+                var category = await _categoryApiService.GetCategoryByIdAsync(productCategoryDelta.Dto.CategoryId.Value);
                 if (category == null)
                 {
                     return Error(HttpStatusCode.NotFound, "category_id", "not found");
@@ -257,7 +258,7 @@ namespace Nop.Plugin.Api.Controllers
 
             if (productCategoryDelta.Dto.ProductId.HasValue)
             {
-                var product = _productApiService.GetProductById(productCategoryDelta.Dto.ProductId.Value);
+                var product = await _productApiService.GetProductByIdAsync(productCategoryDelta.Dto.ProductId.Value);
                 if (product == null)
                 {
                     return Error(HttpStatusCode.NotFound, "product_id", "not found");

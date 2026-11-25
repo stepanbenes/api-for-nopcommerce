@@ -39,13 +39,13 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
         [Test]
         [TestCase(OrderStatus.Complete)]
         [TestCase(OrderStatus.Cancelled)]
-        public void WhenCalledWithSomeOrderStatus_GivenOrdersCollectionContainingOrdersHavingThisStatus_ShouldReturnTheOrdersHavingThisStatusOrderedById(OrderStatus orderStatus)
+        public async Task WhenCalledWithSomeOrderStatus_GivenOrdersCollectionContainingOrdersHavingThisStatus_ShouldReturnTheOrdersHavingThisStatusOrderedById(OrderStatus orderStatus)
         {
             // Arange
             var expectedCollection = _existigOrders.Where(x => x.OrderStatus == orderStatus).OrderBy(x => x.Id);
 
             // Act
-            var orders = _orderApiService.GetOrders(status: orderStatus);
+            var orders = await _orderApiService.GetOrdersAsync(status: orderStatus);
 
             // Assert
             CollectionAssert.IsNotEmpty(orders);
@@ -56,13 +56,13 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
         [Test]
         [TestCase(PaymentStatus.Paid)]
         [TestCase(PaymentStatus.Refunded)]
-        public void WhenCalledWithSomePaymentStatus_GivenOrdersCollectionContainingOrdersHavingThisStatus_ShouldReturnTheOrdersHavingThisStatusOrderedById(PaymentStatus paymentStatus)
+        public async Task WhenCalledWithSomePaymentStatus_GivenOrdersCollectionContainingOrdersHavingThisStatus_ShouldReturnTheOrdersHavingThisStatusOrderedById(PaymentStatus paymentStatus)
         {
             // Arange
             var expectedCollection = _existigOrders.Where(x => x.PaymentStatus == paymentStatus).OrderBy(x => x.Id);
 
             // Act
-            var orders = _orderApiService.GetOrders(paymentStatus: paymentStatus);
+            var orders = await _orderApiService.GetOrdersAsync(paymentStatus: paymentStatus);
 
             // Assert
             CollectionAssert.IsNotEmpty(orders);
@@ -73,13 +73,13 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
         [Test]
         [TestCase(ShippingStatus.Delivered)]
         [TestCase(ShippingStatus.ShippingNotRequired)]
-        public void WhenCalledWithSomeShippingStatus_GivenOrdersCollectionContainingOrdersHavingThisStatus_ShouldReturnTheOrdersHavingThisStatusOrderedById(ShippingStatus shippingStatus)
+        public async Task WhenCalledWithSomeShippingStatus_GivenOrdersCollectionContainingOrdersHavingThisStatus_ShouldReturnTheOrdersHavingThisStatusOrderedById(ShippingStatus shippingStatus)
         {
             // Arange
             var expectedCollection = _existigOrders.Where(x => x.ShippingStatus == shippingStatus).OrderBy(x => x.Id);
 
             // Act
-            var orders = _orderApiService.GetOrders(shippingStatus: shippingStatus);
+            var orders = await _orderApiService.GetOrdersAsync(shippingStatus: shippingStatus);
 
             // Assert
             CollectionAssert.IsNotEmpty(orders);
@@ -88,7 +88,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
         }
 
         [Test]
-        public void WhenCalledWithStatus_GivenOrdersCollectionThatDoNotHaveThisStatus_ShouldReturnEmptyCollection()
+        public async Task WhenCalledWithStatus_GivenOrdersCollectionThatDoNotHaveThisStatus_ShouldReturnEmptyCollection()
         {
             // Arange
             var orderStatus = OrderStatus.Processing;
@@ -98,9 +98,9 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
             // Act
             var orders = new List<Order>();
 
-            List<Order> ordersByOrderStatus = _orderApiService.GetOrders(status: orderStatus).ToList();
-            List<Order> ordersByPaymentStatus = _orderApiService.GetOrders(paymentStatus: paymentStatus).ToList();
-            List<Order> ordersByShippingStatus = _orderApiService.GetOrders(shippingStatus: shippingStatus).ToList();
+            List<Order> ordersByOrderStatus = (await _orderApiService.GetOrdersAsync(status: orderStatus)).ToList();
+            List<Order> ordersByPaymentStatus = (await _orderApiService.GetOrdersAsync(paymentStatus: paymentStatus)).ToList();
+            List<Order> ordersByShippingStatus = (await _orderApiService.GetOrdersAsync(shippingStatus: shippingStatus)).ToList();
 
             orders.AddRange(ordersByOrderStatus);
             orders.AddRange(ordersByPaymentStatus);

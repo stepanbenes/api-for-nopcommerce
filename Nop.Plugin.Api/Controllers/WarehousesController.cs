@@ -74,7 +74,7 @@ namespace Nop.Plugin.Api.Controllers
         public async Task<IActionResult> GetWarehouses([FromQuery] WarehousesParametersModel parameters)
         {
 
-            var allWarehouses = _warehouseApiService.GetWarehouses(parameters.Ids, parameters.ProductId);
+            var allWarehouses = await _warehouseApiService.GetWarehousesAsync(parameters.Ids, parameters.ProductId);
 
             IList<WarehouseDto> warehousesAsDtos = await allWarehouses
                 .SelectAwait(async warehouse => await _dtoHelper.PrepareWarehouseDtoAsync(warehouse)).ToListAsync();
@@ -112,7 +112,7 @@ namespace Nop.Plugin.Api.Controllers
                 return Error(HttpStatusCode.BadRequest, "id", "invalid id");
             }
 
-            var warehouse = _warehouseApiService.GetWarehouseById(id);
+            var warehouse = await _warehouseApiService.GetWarehouseByIdAsync(id);
 
             if (warehouse == null)
             {
@@ -200,7 +200,7 @@ namespace Nop.Plugin.Api.Controllers
                 return Error();
             }
 
-            var warehouse = _warehouseApiService.GetWarehouseById(warehouseDelta.Dto.Id);
+            var warehouse = await _warehouseApiService.GetWarehouseByIdAsync(warehouseDelta.Dto.Id);
 
             if (warehouse == null)
             {
@@ -251,7 +251,7 @@ namespace Nop.Plugin.Api.Controllers
                 return Error(HttpStatusCode.BadRequest, "id", "invalid id");
             }
 
-            var warehouseToDelete = _warehouseApiService.GetWarehouseById(id);
+            var warehouseToDelete = await _warehouseApiService.GetWarehouseByIdAsync(id);
 
             if (warehouseToDelete == null)
             {

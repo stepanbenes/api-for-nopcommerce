@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿#nullable enable
+
+using Newtonsoft.Json;
 using Nop.Core.Domain.Catalog;
 using Nop.Plugin.Api.DTO.Base;
 
@@ -30,7 +32,7 @@ namespace Nop.Plugin.Api.DTO.SpecificationAttributes
         ///     Gets or sets the custom value
         /// </summary>
         [JsonProperty("custom_value")]
-        public string CustomValue { get; set; }
+        public string? CustomValue { get; set; }
 
         /// <summary>
         ///     Gets or sets whether the attribute can be filtered by
@@ -64,6 +66,6 @@ namespace Nop.Plugin.Api.DTO.SpecificationAttributes
         ///     Gets or sets the specification attribute
         /// </summary>
         [JsonProperty("specification_attribute_option")]
-        public virtual SpecificationAttributeOptionDto SpecificationAttributeOption { get; set; }
+        public virtual SpecificationAttributeOptionDto? SpecificationAttributeOption { get; set; }
     }
 }

@@ -31,7 +31,7 @@ namespace Nop.Plugin.Api.Services
                 query = query.Where(c => c.Id > sinceId);
             }
 
-            return new ApiList<NewsLetterSubscription>(query, page - 1, limit);
+            return await ApiList<NewsLetterSubscription>.CreateAsync(query, page - 1, limit);
         }
 
         private IQueryable<NewsLetterSubscription> GetNewsLetterSubscriptionsQuery(

@@ -13,19 +13,19 @@ namespace Nop.Plugin.Api.Services
             _productWarehouseRepository = productWarehouseRepository;
         }
 
-        public IList<ProductWarehouseInventory> GetMappings(
+        public async Task<IList<ProductWarehouseInventory>> GetMappingsAsync(
             int? productId = null,
             int? categoryId = null, int limit = Constants.Configurations.DefaultLimit,
             int page = Constants.Configurations.DefaultPageValue, int sinceId = Constants.Configurations.DefaultSinceId)
         {
             var query = GetInventoriesQuery(productId, categoryId, sinceId);
 
-            return new ApiList<ProductWarehouseInventory>(query, page - 1, limit);
+            return await ApiList<ProductWarehouseInventory>.CreateAsync(query, page - 1, limit);
         }
 
-        public int GetIvnentoriesCount(int? productId = null, int? warehouseId = null)
+        public async Task<int> GetIvnentoriesCountAsync(int? productId = null, int? warehouseId = null)
         {
-            return GetInventoriesQuery(productId, warehouseId).Count();
+            return await GetInventoriesQuery(productId, warehouseId).CountAsync();
         }
 
         public Task<ProductWarehouseInventory> GetByIdAsync(int id)

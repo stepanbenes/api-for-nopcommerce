@@ -64,7 +64,8 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [GetRequestsErrorInterceptorActionFilter]
-        public IActionResult GetProductSpecificationAttributes([FromQuery] ProductSpecificationAttributesParametersModel parameters)
+        [UnpagedCollection]
+        public async Task<IActionResult> GetProductSpecificationAttributes([FromQuery] ProductSpecificationAttributesParametersModel parameters)
         {
             if (parameters.Limit < Constants.Configurations.MinLimit || parameters.Limit > Constants.Configurations.MaxLimit)
             {
@@ -77,8 +78,8 @@ namespace Nop.Plugin.Api.Controllers
             }
 
             var productSpecificationAttribtues =
-                _specificationAttributeApiService.GetProductSpecificationAttributes(parameters.ProductId, parameters.SpecificationAttributeOptionId,
-                                                                                    parameters.AllowFiltering, parameters.ShowOnProductPage, parameters.Limit,
+                await _specificationAttributeApiService.GetProductSpecificationAttributesAsync(parameters.ProductId, parameters.SpecificationAttributeOptionId,
+                                                                                    parameters.AllowFiltering, parameters.ShowOnProductPage, GetCollectionLimit(parameters.Limit),
                                                                                     parameters.Page, parameters.SinceId);
 
             var productSpecificationAttributeDtos = productSpecificationAttribtues.Select(x => _dtoHelper.PrepareProductSpecificationAttributeDto(x)).ToList();

@@ -61,6 +61,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(NewsLetterSubscriptionsRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [GetRequestsErrorInterceptorActionFilter]
+        [UnpagedCollection]
         public async Task<IActionResult> GetNewsLetterSubscriptions([FromQuery] NewsLetterSubscriptionsParametersModel parameters)
         {
             if (parameters.Limit < Constants.Configurations.MinLimit || parameters.Limit > Constants.Configurations.MaxLimit)
@@ -74,7 +75,7 @@ namespace Nop.Plugin.Api.Controllers
             }
 
             var newsLetterSubscriptions = await _newsLetterSubscriptionApiService.GetNewsLetterSubscriptionsAsync(parameters.CreatedAtMin, parameters.CreatedAtMax,
-                                                                                                       parameters.Limit, parameters.Page, parameters.SinceId,
+                                                                                                       GetCollectionLimit(parameters.Limit), parameters.Page, parameters.SinceId,
                                                                                                        parameters.OnlyActive);
 
             var newsLetterSubscriptionsDtos = newsLetterSubscriptions.Select(nls => nls.ToDto()).ToList();

@@ -1,3 +1,5 @@
+#nullable enable
+
 using System.ComponentModel.DataAnnotations;
 using Newtonsoft.Json;
 using Nop.Core.Domain.Menus;
@@ -18,8 +20,8 @@ public record MenuItemDto(
     [property: JsonProperty("parent_id")] int ParentId,
     [property: JsonProperty("item_type")] MenuItemType ItemType,
     [property: JsonProperty("entity_id")] int? EntityId,
-    [property: JsonProperty("title")] string Title,
-    [property: JsonProperty("url")] string Url,
+    [property: JsonProperty("title")] string? Title,
+    [property: JsonProperty("url")] string? Url,
     [property: JsonProperty("published")] bool Published,
     [property: JsonProperty("display_order")] int DisplayOrder);
 
@@ -31,7 +33,7 @@ public class AddMenuItemRequest
     [Required]
     [RegularExpression("^(category|topic)$")]
     [JsonProperty("link_type")]
-    public string LinkType { get; set; }
+    public string LinkType { get; set; } = null!;
 
     [Range(1, int.MaxValue)]
     [JsonProperty("entity_id")]

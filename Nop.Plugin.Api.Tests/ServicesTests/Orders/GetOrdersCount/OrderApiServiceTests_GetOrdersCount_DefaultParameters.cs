@@ -12,7 +12,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrdersCount
     public class OrderApiServiceTests_GetOrdersCount_DefaultParameters
     {
         [Test]
-        public void WhenCalledWithDefaultParameters_GivenNoOrdersExist_ShouldReturnZero()
+        public async Task WhenCalledWithDefaultParameters_GivenNoOrdersExist_ShouldReturnZero()
         {
             // Arange
             var orderRepo = Mock.Of<IRepository<Order>>();
@@ -20,14 +20,14 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrdersCount
             
             // Act
             var cut = new OrderApiService(orderRepo);
-            var ordersCount = cut.GetOrdersCount();
+            var ordersCount = await cut.GetOrdersCountAsync();
 
             // Assert
             Assert.AreEqual(0, ordersCount);
         }
 
         [Test]
-        public void WhenCalledWithDefaultParameters_GivenOnlyDeletedOrdersExist_ShouldReturnZero()
+        public async Task WhenCalledWithDefaultParameters_GivenOnlyDeletedOrdersExist_ShouldReturnZero()
         {
             var existingOrders = new List<Order>();
             existingOrders.Add(new Order() { Id = 1, Deleted = true });
@@ -39,14 +39,14 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrdersCount
             
             // Act
             var cut = new OrderApiService(orderRepo);
-            var countResult = cut.GetOrdersCount();
+            var countResult = await cut.GetOrdersCountAsync();
 
             // Assert
             Assert.AreEqual(0, countResult);
         }
 
         [Test]
-        public void WhenCalledWithDefaultParameters_GivenSomeNotDeletedOrderExist_ShouldReturnTheirCount()
+        public async Task WhenCalledWithDefaultParameters_GivenSomeNotDeletedOrderExist_ShouldReturnTheirCount()
         {
             var existingOrders = new List<Order>();
             existingOrders.Add(new Order() { Id = 1 });
@@ -59,14 +59,14 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrdersCount
             
             // Act
             var cut = new OrderApiService(ordersRepo);
-            var countResult = cut.GetOrdersCount();
+            var countResult = await cut.GetOrdersCountAsync();
 
             // Assert
             Assert.AreEqual(2, countResult);
         }
 
         [Test]
-        public void WhenCalledWithDefaultParameters_GivenSomeOrdersExist_ShouldReturnTheirCount()
+        public async Task WhenCalledWithDefaultParameters_GivenSomeOrdersExist_ShouldReturnTheirCount()
         {
             var existingOrders = new List<Order>();
             existingOrders.Add(new Order() { Id = 2 });
@@ -79,7 +79,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrdersCount
 
             // Act
             var cut = new OrderApiService(ordersRepo);
-            var countResult = cut.GetOrdersCount();
+            var countResult = await cut.GetOrdersCountAsync();
 
             // Assert
             Assert.AreEqual(existingOrders.Count, countResult);

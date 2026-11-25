@@ -1,4 +1,6 @@
-﻿namespace Nop.Plugin.Api.DTO
+﻿#nullable enable
+
+namespace Nop.Plugin.Api.DTO
 {
     public interface ISerializableObject
     {

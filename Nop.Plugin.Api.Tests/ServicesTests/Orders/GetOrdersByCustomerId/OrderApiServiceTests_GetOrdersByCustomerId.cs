@@ -37,10 +37,10 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrdersByCustomerId
         [Test]
         [TestCase(0)]
         [TestCase(-30)]
-        public void WhenZeroOrNegativeCustomerIdPassed_ShouldReturnEmptyCollection(int negativeOrZeroCustomerId)
+        public async Task WhenZeroOrNegativeCustomerIdPassed_ShouldReturnEmptyCollection(int negativeOrZeroCustomerId)
         {
             // Act  
-            var result = _orderApiService.GetOrdersByCustomerId(negativeOrZeroCustomerId);
+            var result = await _orderApiService.GetOrdersByCustomerIdAsync(negativeOrZeroCustomerId);
 
             // Assert
             CollectionAssert.IsEmpty(result);
@@ -49,10 +49,10 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrdersByCustomerId
         [Test]
         [TestCase(34988934)]
         [TestCase(98472)]
-        public void WhenNonExistingCustomerIdPassed_ShouldReturnEmptyCollection(int nonExistingCustomerId)
+        public async Task WhenNonExistingCustomerIdPassed_ShouldReturnEmptyCollection(int nonExistingCustomerId)
         {
             // Act  
-            var result = _orderApiService.GetOrdersByCustomerId(nonExistingCustomerId);
+            var result = await _orderApiService.GetOrdersByCustomerIdAsync(nonExistingCustomerId);
 
             // Assert
             CollectionAssert.IsEmpty(result);
@@ -61,13 +61,13 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrdersByCustomerId
         [Test]
         [TestCase(1)]
         [TestCase(2)]
-        public void WhenExistingCustomerIdPassed_ShouldReturnTheNonDeletedOrdersOrderedById(int existingCustomerId)
+        public async Task WhenExistingCustomerIdPassed_ShouldReturnTheNonDeletedOrdersOrderedById(int existingCustomerId)
         {
             // Arange
             var expectedCollection = _existigOrders.Where(x => x.CustomerId == existingCustomerId && !x.Deleted).OrderBy(x => x.Id);
 
             // Act  
-            var result = _orderApiService.GetOrdersByCustomerId(existingCustomerId);
+            var result = await _orderApiService.GetOrdersByCustomerIdAsync(existingCustomerId);
 
             // Assert
             CollectionAssert.IsNotEmpty(result);

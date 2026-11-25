@@ -42,9 +42,12 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProductsCount
             var vendorRepo = Mock.Of<IRepository<Vendor>>();
 
             var storeMappingService = Mock.Of<IStoreMappingService>();
-            Mock.Get(storeMappingService).Setup(x => x.AuthorizeAsync(It.IsAny<Product>())).ReturnsAsync(true);
+            Mock.Get(storeMappingService).Setup(x => x.ApplyStoreMapping(It.IsAny<IQueryable<Product>>(), 1))
+                .ReturnsAsync((IQueryable<Product> query, int _) => query);
+            var storeContext = Mock.Of<Nop.Core.IStoreContext>();
+            Mock.Get(storeContext).Setup(x => x.GetCurrentStoreAsync()).ReturnsAsync(new Nop.Core.Domain.Stores.Store { Id = 1 });
 
-            _productApiService = new ProductApiService(productRepo, productCategoryRepo, vendorRepo, storeMappingService);
+            _productApiService = new ProductApiService(productRepo, productCategoryRepo, vendorRepo, storeMappingService, storeContext);
         }
 
         [Test]

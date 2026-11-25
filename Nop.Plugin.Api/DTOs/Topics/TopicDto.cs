@@ -12,7 +12,7 @@ namespace Nop.Plugin.Api.DTOs.Topics
         /// Gets or sets the name
         /// </summary>
         [JsonProperty("system_name")]
-        public string SystemName { get; set; } = null!;
+        public string? SystemName { get; set; }
 
         /// <summary>
         /// Gets or sets the value indicating whether this topic should be included in sitemap
@@ -72,13 +72,13 @@ namespace Nop.Plugin.Api.DTOs.Topics
         /// Gets or sets the title
         /// </summary>
         [JsonProperty("title")]
-        public string Title { get; set; } = null!;
+        public string? Title { get; set; }
 
         /// <summary>
         /// Gets or sets the body
         /// </summary>
         [JsonProperty("body")]
-        public string Body { get; set; } = null!;
+        public string? Body { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the entity is published

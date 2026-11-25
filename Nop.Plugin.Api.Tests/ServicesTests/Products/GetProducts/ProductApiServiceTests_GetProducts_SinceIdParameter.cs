@@ -38,19 +38,23 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProducts
             var vendorRepo = Mock.Of<IRepository<Vendor>>();
 
             var storeMappingService = Mock.Of<IStoreMappingService>();
+            Mock.Get(storeMappingService).Setup(x => x.ApplyStoreMapping(It.IsAny<IQueryable<Product>>(), 1))
+                .ReturnsAsync((IQueryable<Product> query, int _) => query);
+            var storeContext = Mock.Of<Nop.Core.IStoreContext>();
+            Mock.Get(storeContext).Setup(x => x.GetCurrentStoreAsync()).ReturnsAsync(new Nop.Core.Domain.Stores.Store { Id = 1 });
 
-            _productApiService = new ProductApiService(productRepo, productCategoryRepo, vendorRepo, storeMappingService);
+            _productApiService = new ProductApiService(productRepo, productCategoryRepo, vendorRepo, storeMappingService, storeContext);
         }
 
         [Test]
-        public void WhenCalledWithValidSinceId_ShouldReturnOnlyTheProductsAfterThisIdSortedById()
+        public async Task WhenCalledWithValidSinceId_ShouldReturnOnlyTheProductsAfterThisIdSortedById()
         {
             // Arange
             int sinceId = 3;
             var expectedCollection = _existigProducts.Where(x => x.Id > sinceId && !x.Deleted).OrderBy(x => x.Id);
 
             // Act
-            var products = _productApiService.GetProducts(sinceId: sinceId);
+            var products = await _productApiService.GetProductsAsync(sinceId: sinceId);
 
             // Assert
             CollectionAssert.IsNotEmpty(products);
@@ -60,13 +64,13 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProducts
         [Test]
         [TestCase(0)]
         [TestCase(-10)]
-        public void WhenCalledZeroOrNegativeSinceId_ShouldReturnAllTheProductsSortedById(int sinceId)
+        public async Task WhenCalledZeroOrNegativeSinceId_ShouldReturnAllTheProductsSortedById(int sinceId)
         {
             // Arange
             var expectedCollection = _existigProducts.Where(x => x.Id > sinceId && !x.Deleted).OrderBy(x => x.Id);
 
             // Act
-            var products = _productApiService.GetProducts(sinceId: sinceId);
+            var products = await _productApiService.GetProductsAsync(sinceId: sinceId);
 
             // Assert
             CollectionAssert.IsNotEmpty(products);
@@ -74,13 +78,13 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProducts
         }
 
         [Test]
-        public void WhenCalledSinceIdOutsideOfTheProductsIdsRange_ShouldReturnEmptyCollection()
+        public async Task WhenCalledSinceIdOutsideOfTheProductsIdsRange_ShouldReturnEmptyCollection()
         {
             // Arange
             int sinceId = int.MaxValue;
         
             // Act
-            var products = _productApiService.GetProducts(sinceId: sinceId);
+            var products = await _productApiService.GetProductsAsync(sinceId: sinceId);
 
             // Assert
             CollectionAssert.IsEmpty(products);

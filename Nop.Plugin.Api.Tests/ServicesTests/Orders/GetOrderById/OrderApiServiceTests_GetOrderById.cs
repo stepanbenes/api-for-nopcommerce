@@ -12,7 +12,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrderById
     public class OrderApiServiceTests_GetOrderById
     {
         [Test]
-        public void WhenNullIsReturnedByTheRepository_ShouldReturnNull()
+        public async Task WhenNullIsReturnedByTheRepository_ShouldReturnNull()
         {
             int orderId = 3;
             
@@ -22,7 +22,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrderById
 
             // Act  
             var cut = new OrderApiService(orderRepo);
-            var result = cut.GetOrderById(orderId);
+            var result = await cut.GetOrderByIdAsync(orderId);
 
             // Assert
             Assert.IsNull(result);
@@ -31,21 +31,21 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrderById
         [Test]
         [TestCase(-2)]
         [TestCase(0)]
-        public void WhenNegativeOrZeroOrderIdPassed_ShouldReturnNull(int negativeOrZeroOrderId)
+        public async Task WhenNegativeOrZeroOrderIdPassed_ShouldReturnNull(int negativeOrZeroOrderId)
         {
             // Aranges
             var orderRepoStub = Mock.Of<IRepository<Order>>();
 
             // Act
             var cut = new OrderApiService(orderRepoStub);
-            var result = cut.GetOrderById(negativeOrZeroOrderId);
+            var result = await cut.GetOrderByIdAsync(negativeOrZeroOrderId);
 
             // Assert
             Assert.IsNull(result);
         }
 
         [Test]
-        public void WhenOrderIsReturnedByTheRepository_ShouldReturnTheSameOrder()
+        public async Task WhenOrderIsReturnedByTheRepository_ShouldReturnTheSameOrder()
         {
             int orderId = 3;
             var order = new Order() { Id = 3 };
@@ -60,7 +60,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrderById
             
             // Act
             var cut = new OrderApiService(orderRepo);
-            var result = cut.GetOrderById(orderId);
+            var result = await cut.GetOrderByIdAsync(orderId);
 
             // Assert
             Assert.AreSame(order, result);

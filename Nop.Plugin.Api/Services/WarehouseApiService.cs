@@ -18,22 +18,22 @@ namespace Nop.Plugin.Api.Services
             _productWarehouseInventoryRepository = productWarehouseInventoryRepository;
         }
 
-        public IList<Warehouse> GetWarehouses(IList<int> ids = null,
+        public async Task<IList<Warehouse>> GetWarehousesAsync(IList<int> ids = null,
             int? productId = null)
         {
             var query = GetWarehousesQuery(productId, ids);
 
-            return new ApiList<Warehouse>(query);
+            return await ApiList<Warehouse>.CreateAsync(query);
         }
 
-        public Warehouse GetWarehouseById(int id)
+        public async Task<Warehouse> GetWarehouseByIdAsync(int id)
         {
             if (id <= 0)
             {
                 return null;
             }
 
-            var warehouse = _warehouseRepository.Table.FirstOrDefault(cat => cat.Id == id);
+            var warehouse = await _warehouseRepository.Table.FirstOrDefaultAsync(cat => cat.Id == id);
 
             return warehouse;
         }

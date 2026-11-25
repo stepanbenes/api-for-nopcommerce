@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿#nullable enable
+
+using Newtonsoft.Json;
 using Nop.Plugin.Api.DTO.Base;
 
 namespace Nop.Plugin.Api.DTO
@@ -7,7 +9,7 @@ namespace Nop.Plugin.Api.DTO
     public class CountryDto : BaseDto
     {
         [JsonProperty("name")]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         [JsonProperty("allows_billing")]
         public bool AllowsBilling { get; set; }
@@ -16,10 +18,10 @@ namespace Nop.Plugin.Api.DTO
         public bool AllowsShipping { get; set; }
 
         [JsonProperty("two_letter_iso_code")]
-        public string TwoLetterIsoCode { get; set; }
+        public string? TwoLetterIsoCode { get; set; }
 
         [JsonProperty("ThreeLetterIsoCode")]
-        public string ThreeLetterIsoCode { get; set; }
+        public string? ThreeLetterIsoCode { get; set; }
 
         [JsonProperty("numeric_iso_code")]
         public int NumericIsoCode { get; set; }

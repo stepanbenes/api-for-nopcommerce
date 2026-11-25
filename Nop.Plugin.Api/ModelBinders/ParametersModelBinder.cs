@@ -23,7 +23,7 @@ namespace Nop.Plugin.Api.ModelBinders
             {
                 var queryParameters = bindingContext.HttpContext.Request.Query.ToDictionary(pair => pair.Key, pair => pair.Value.ToString());
 
-                bindingContext.Model = _objectConverter.ToObject<T>(queryParameters);
+                bindingContext.Model = _objectConverter.ToObject<T>(queryParameters, (key, error) => bindingContext.ModelState.AddModelError(key, error));
             }
             else
             {

@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿#nullable enable
+
+using Newtonsoft.Json;
 using Nop.Core.Domain.Catalog;
 using Nop.Plugin.Api.DTO.Base;
 
@@ -15,13 +17,13 @@ namespace Nop.Plugin.Api.DTO.Products
         public int ProductAttributeId { get; set; }
 
         [JsonProperty("product_attribute_name")]
-        public string ProductAttributeName { get; set; }
+        public string? ProductAttributeName { get; set; }
 
         /// <summary>
         ///     Gets or sets a value a text prompt
         /// </summary>
         [JsonProperty("text_prompt")]
-        public string TextPrompt { get; set; }
+        public string? TextPrompt { get; set; }
 
         /// <summary>
         ///     Gets or sets a value indicating whether the entity is required
@@ -45,7 +47,7 @@ namespace Nop.Plugin.Api.DTO.Products
         ///     Gets or sets the default value (for textbox and multiline textbox)
         /// </summary>
         [JsonProperty("default_value")]
-        public string DefaultValue { get; set; }
+        public string? DefaultValue { get; set; }
 
         /// <summary>
         ///     Gets the attribute control type
@@ -68,6 +70,6 @@ namespace Nop.Plugin.Api.DTO.Products
         ///     Gets the product attribute values
         /// </summary>
         [JsonProperty("attribute_values")]
-        public List<ProductAttributeValueDto> ProductAttributeValues { get; set; }
+        public List<ProductAttributeValueDto>? ProductAttributeValues { get; set; }
     }
 }

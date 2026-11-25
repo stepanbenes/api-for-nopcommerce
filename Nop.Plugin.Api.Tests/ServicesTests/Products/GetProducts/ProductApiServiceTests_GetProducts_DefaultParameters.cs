@@ -15,7 +15,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProducts
     public class ProductApiServiceTests_GetProducts_DefaultParameters
     {
         [Test]
-        public void WhenCalledWithDefaultParameters_GivenNoProductsExist_ShouldReturnEmptyCollection()
+        public async Task WhenCalledWithDefaultParameters_GivenNoProductsExist_ShouldReturnEmptyCollection()
         {
             // Arange
             var productsRepo = Mock.Of<IRepository<Product>>();
@@ -25,17 +25,21 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProducts
             var vendorRepo = Mock.Of<IRepository<Vendor>>();
 
             var storeMappingService = Mock.Of<IStoreMappingService>();
+            Mock.Get(storeMappingService).Setup(x => x.ApplyStoreMapping(It.IsAny<IQueryable<Product>>(), 1))
+                .ReturnsAsync((IQueryable<Product> query, int _) => query);
+            var storeContext = Mock.Of<Nop.Core.IStoreContext>();
+            Mock.Get(storeContext).Setup(x => x.GetCurrentStoreAsync()).ReturnsAsync(new Nop.Core.Domain.Stores.Store { Id = 1 });
 
             // Act
-            var cut = new ProductApiService(productsRepo, productCategoryRepo, vendorRepo, storeMappingService);
-            var products = cut.GetProducts();
+            var cut = new ProductApiService(productsRepo, productCategoryRepo, vendorRepo, storeMappingService, storeContext);
+            var products = await cut.GetProductsAsync();
 
             // Assert
             CollectionAssert.IsEmpty(products);
         }
 
         [Test]
-        public void WhenCalledWithDefaultParameters_GivenOnlyDeletedProductsExist_ShouldReturnEmptyCollection()
+        public async Task WhenCalledWithDefaultParameters_GivenOnlyDeletedProductsExist_ShouldReturnEmptyCollection()
         {
             var existingProducts = new List<Product>();
             existingProducts.Add(new Product() { Id = 1, Deleted = true });
@@ -49,17 +53,21 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProducts
             var vendorRepo = Mock.Of<IRepository<Vendor>>();
 
             var storeMappingService = Mock.Of<IStoreMappingService>();
+            Mock.Get(storeMappingService).Setup(x => x.ApplyStoreMapping(It.IsAny<IQueryable<Product>>(), 1))
+                .ReturnsAsync((IQueryable<Product> query, int _) => query);
+            var storeContext = Mock.Of<Nop.Core.IStoreContext>();
+            Mock.Get(storeContext).Setup(x => x.GetCurrentStoreAsync()).ReturnsAsync(new Nop.Core.Domain.Stores.Store { Id = 1 });
 
             // Act
-            var cut = new ProductApiService(productRepo, productCategoryRepo, vendorRepo, storeMappingService);
-            var products = cut.GetProducts();
+            var cut = new ProductApiService(productRepo, productCategoryRepo, vendorRepo, storeMappingService, storeContext);
+            var products = await cut.GetProductsAsync();
 
             // Assert
             CollectionAssert.IsEmpty(products);
         }
 
         [Test]
-        public void WhenCalledWithDefaultParameters_GivenSomeNotDeletedProductsExist_ShouldReturnThemSortedById()
+        public async Task WhenCalledWithDefaultParameters_GivenSomeNotDeletedProductsExist_ShouldReturnThemSortedById()
         {
             var existingProducts = new List<Product>();
             existingProducts.Add(new Product() { Id = 1 });
@@ -76,10 +84,14 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProducts
             var vendorRepo = Mock.Of<IRepository<Vendor>>();
 
             var storeMappingService = Mock.Of<IStoreMappingService>();
+            Mock.Get(storeMappingService).Setup(x => x.ApplyStoreMapping(It.IsAny<IQueryable<Product>>(), 1))
+                .ReturnsAsync((IQueryable<Product> query, int _) => query);
+            var storeContext = Mock.Of<Nop.Core.IStoreContext>();
+            Mock.Get(storeContext).Setup(x => x.GetCurrentStoreAsync()).ReturnsAsync(new Nop.Core.Domain.Stores.Store { Id = 1 });
 
             // Act
-            var cut = new ProductApiService(productRepo, productCategoryRepo, vendorRepo, storeMappingService);
-            var products = cut.GetProducts();
+            var cut = new ProductApiService(productRepo, productCategoryRepo, vendorRepo, storeMappingService, storeContext);
+            var products = await cut.GetProductsAsync();
 
             // Assert
             CollectionAssert.IsNotEmpty(products);
@@ -88,7 +100,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProducts
         }
 
         [Test]
-        public void WhenCalledWithDefaultParameters_GivenSomeProductsExist_ShouldReturnThemSortedById()
+        public async Task WhenCalledWithDefaultParameters_GivenSomeProductsExist_ShouldReturnThemSortedById()
         {
             var existingProducts = new List<Product>();
             existingProducts.Add(new Product() { Id = 2, Published = false });
@@ -105,10 +117,14 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Products.GetProducts
             var vendorRepo = Mock.Of<IRepository<Vendor>>();
 
             var storeMappingService = Mock.Of<IStoreMappingService>();
+            Mock.Get(storeMappingService).Setup(x => x.ApplyStoreMapping(It.IsAny<IQueryable<Product>>(), 1))
+                .ReturnsAsync((IQueryable<Product> query, int _) => query);
+            var storeContext = Mock.Of<Nop.Core.IStoreContext>();
+            Mock.Get(storeContext).Setup(x => x.GetCurrentStoreAsync()).ReturnsAsync(new Nop.Core.Domain.Stores.Store { Id = 1 });
 
             // Act
-            var cut = new ProductApiService(productRepo, productCategoryRepo, vendorRepo, storeMappingService);
-            var products = cut.GetProducts();
+            var cut = new ProductApiService(productRepo, productCategoryRepo, vendorRepo, storeMappingService, storeContext);
+            var products = await cut.GetProductsAsync();
 
             // Assert
             CollectionAssert.IsNotEmpty(products);

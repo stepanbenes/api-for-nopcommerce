@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿#nullable enable
+
+using Newtonsoft.Json;
 using Nop.Plugin.Api.DTO.Base;
 using Nop.Plugin.Api.DTO.Products;
 using Nop.Plugin.Api.DTOs.ShoppingCarts;
@@ -13,7 +15,7 @@ namespace Nop.Plugin.Api.DTO.ShoppingCarts
         ///     Gets or sets the selected attributes
         /// </summary>
         [JsonProperty("product_attributes")]
-        public List<ProductItemAttributeDto> Attributes { get; set; }
+        public List<ProductItemAttributeDto>? Attributes { get; set; }
 
         /// <summary>
         ///     Gets or sets the price enter by a customer
@@ -64,7 +66,7 @@ namespace Nop.Plugin.Api.DTO.ShoppingCarts
         ///     Gets or sets the product
         /// </summary>
         [JsonProperty("product")]
-        public ProductDto ProductDto { get; set; }
+        public ProductDto? ProductDto { get; set; }
 
         [JsonProperty("customer_id")]
         public int? CustomerId { get; set; }

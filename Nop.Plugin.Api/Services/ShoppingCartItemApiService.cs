@@ -28,7 +28,7 @@ namespace Nop.Plugin.Api.Services
             var query = await GetShoppingCartItemsQueryAsync(customerId, createdAtMin, createdAtMax,
                                                   updatedAtMin, updatedAtMax, shoppingCartType);
 
-            return new ApiList<ShoppingCartItem>(query, (page ?? Constants.Configurations.DefaultPageValue) - 1, limit ?? Constants.Configurations.DefaultLimit);
+            return await ApiList<ShoppingCartItem>.CreateAsync(query, (page ?? Constants.Configurations.DefaultPageValue) - 1, limit ?? Constants.Configurations.DefaultLimit);
         }
 
         public async Task<ShoppingCartItem> GetShoppingCartItemAsync(int id, int? customerId = null)

@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿#nullable enable
+
+using Newtonsoft.Json;
 using Nop.Plugin.Api.DTO.Categories;
 
 namespace Nop.Plugin.Api.DTO.Products
@@ -6,7 +8,7 @@ namespace Nop.Plugin.Api.DTO.Products
     public class ProductCategoriesRootObjectDto : ISerializableObject
     {
         [JsonProperty("product_categories")]
-        public List<ProductCategoriesDto> ProductCategories { get; set; }
+        public List<ProductCategoriesDto> ProductCategories { get; set; } = null!;
 
         public string GetPrimaryPropertyName()
         {
@@ -25,6 +27,6 @@ namespace Nop.Plugin.Api.DTO.Products
         public int ProductId { get; set; }
 
         [JsonProperty("categories", Required = Required.Always)]
-        public List<CategoryDto> Categories { get; set; }
+        public List<CategoryDto> Categories { get; set; } = null!;
     }
 }

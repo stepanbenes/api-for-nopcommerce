@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿#nullable enable
+
+using Newtonsoft.Json;
 using Nop.Plugin.Api.DTO.Base;
 
 namespace Nop.Plugin.Api.DTO.Manufacturers
@@ -15,6 +17,6 @@ namespace Nop.Plugin.Api.DTO.Manufacturers
 
 
         [JsonProperty("discount_name")]
-        public string DiscountName { get; set; }
+        public string? DiscountName { get; set; }
     }
 }

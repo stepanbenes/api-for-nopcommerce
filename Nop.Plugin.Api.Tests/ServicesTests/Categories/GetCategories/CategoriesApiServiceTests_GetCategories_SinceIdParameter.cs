@@ -36,19 +36,23 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategories
             var productCategoryRepo = Mock.Of<IRepository<ProductCategory>>();
 
             var storeMappingService = Mock.Of<IStoreMappingService>();
+            Mock.Get(storeMappingService).Setup(x => x.ApplyStoreMapping(It.IsAny<IQueryable<Category>>(), 1))
+                .ReturnsAsync((IQueryable<Category> query, int _) => query);
+            var storeContext = Mock.Of<Nop.Core.IStoreContext>();
+            Mock.Get(storeContext).Setup(x => x.GetCurrentStoreAsync()).ReturnsAsync(new Nop.Core.Domain.Stores.Store { Id = 1 });
 
-            _categoryApiService = new CategoryApiService(categoryRepo, productCategoryRepo, storeMappingService, Mock.Of<Nop.Services.Catalog.ICategoryService>());
+            _categoryApiService = new CategoryApiService(categoryRepo, productCategoryRepo, storeMappingService, storeContext, Mock.Of<Nop.Services.Catalog.ICategoryService>());
         }
 
         [Test]
-        public void WhenCalledWithValidSinceId_ShouldReturnOnlyTheCategoriesAfterThisIdSortedById()
+        public async Task WhenCalledWithValidSinceId_ShouldReturnOnlyTheCategoriesAfterThisIdSortedById()
         {
             // Arange
             int sinceId = 3;
             var expectedCollection = _existigCategories.Where(x => x.Id > sinceId && !x.Deleted).OrderBy(x => x.Id);
 
             // Act
-            var categories = _categoryApiService.GetCategories(sinceId: sinceId);
+            var categories = await _categoryApiService.GetCategoriesAsync(sinceId: sinceId);
 
             // Assert
             // Not Empty assert is a good practice when you assert something about collection. Because you can get a false positive if the collection is empty.
@@ -59,13 +63,13 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategories
         [Test]
         [TestCase(0)]
         [TestCase(-10)]
-        public void WhenCalledZeroOrNegativeSinceId_ShouldReturnAllTheCategoriesSortedById(int sinceId)
+        public async Task WhenCalledZeroOrNegativeSinceId_ShouldReturnAllTheCategoriesSortedById(int sinceId)
         {
             // Arange
             var expectedCollection = _existigCategories.Where(x => x.Id > sinceId && !x.Deleted).OrderBy(x => x.Id);
 
             // Act
-            var categories = _categoryApiService.GetCategories(sinceId: sinceId);
+            var categories = await _categoryApiService.GetCategoriesAsync(sinceId: sinceId);
 
             // Assert
             // Not Empty assert is a good practice when you assert something about collection. Because you can get a false positive if the collection is empty.
@@ -74,13 +78,13 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Categories.GetCategories
         }
 
         [Test]
-        public void WhenCalledSinceIdOutsideOfTheCategoriesIdsRange_ShouldReturnEmptyCollection()
+        public async Task WhenCalledSinceIdOutsideOfTheCategoriesIdsRange_ShouldReturnEmptyCollection()
         {
             // Arange
             int sinceId = int.MaxValue;
         
             // Act
-            var categories = _categoryApiService.GetCategories(sinceId: sinceId);
+            var categories = await _categoryApiService.GetCategoriesAsync(sinceId: sinceId);
 
             // Assert
             CollectionAssert.IsEmpty(categories);

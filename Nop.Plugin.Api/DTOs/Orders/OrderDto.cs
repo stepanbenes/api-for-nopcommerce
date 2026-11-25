@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿#nullable enable
+
+using Newtonsoft.Json;
 using Nop.Plugin.Api.DTO.Base;
 using Nop.Plugin.Api.DTO.OrderItems;
 using Nop.Plugin.Api.DTOs.Orders;
@@ -9,7 +11,7 @@ namespace Nop.Plugin.Api.DTO.Orders
     //[Validator(typeof(OrderDtoValidator))]
     public class OrderDto : BaseDto
     {
-        private ICollection<OrderItemDto> _orderItems;
+        private ICollection<OrderItemDto>? _orderItems;
 
         [JsonProperty("store_id")]
         public int? StoreId { get; set; }
@@ -24,13 +26,13 @@ namespace Nop.Plugin.Api.DTO.Orders
         ///     Gets or sets the payment method system name
         /// </summary>
         [JsonProperty("payment_method_system_name")]
-        public string PaymentMethodSystemName { get; set; }
+        public string? PaymentMethodSystemName { get; set; }
 
         /// <summary>
         ///     Gets or sets the customer currency code (at the moment of order placing)
         /// </summary>
         [JsonProperty("customer_currency_code")]
-        public string CustomerCurrencyCode { get; set; }
+        public string? CustomerCurrencyCode { get; set; }
 
         /// <summary>
         ///     Gets or sets the currency rate
@@ -48,7 +50,7 @@ namespace Nop.Plugin.Api.DTO.Orders
         ///     Gets or sets the VAT number (the European Union Value Added Tax)
         /// </summary>
         [JsonProperty("vat_number")]
-        public string VatNumber { get; set; }
+        public string? VatNumber { get; set; }
 
         /// <summary>
         ///     Gets or sets the order subtotal (incl tax)
@@ -102,7 +104,7 @@ namespace Nop.Plugin.Api.DTO.Orders
         ///     Gets or sets the tax rates
         /// </summary>
         [JsonProperty("tax_rates")]
-        public string TaxRates { get; set; }
+        public string? TaxRates { get; set; }
 
         /// <summary>
         ///     Gets or sets the order tax
@@ -138,13 +140,13 @@ namespace Nop.Plugin.Api.DTO.Orders
         ///     Gets or sets the checkout attribute description
         /// </summary>
         [JsonProperty("checkout_attribute_description")]
-        public string CheckoutAttributeDescription { get; set; }
+        public string? CheckoutAttributeDescription { get; set; }
 
         /// <summary>
         /// Selections for order creation. For choice attributes, use the configured choice IDs as strings.
         /// </summary>
         [JsonProperty("checkout_attributes", NullValueHandling = NullValueHandling.Ignore)]
-        public List<CheckoutAttributeSelectionDto> CheckoutAttributes { get; set; }
+        public List<CheckoutAttributeSelectionDto>? CheckoutAttributes { get; set; }
 
         /// <summary>
         ///     Gets or sets the customer language identifier
@@ -162,43 +164,43 @@ namespace Nop.Plugin.Api.DTO.Orders
         ///     Gets or sets the customer IP address
         /// </summary>
         [JsonProperty("customer_ip")]
-        public string CustomerIp { get; set; }
+        public string? CustomerIp { get; set; }
 
         /// <summary>
         ///     Gets or sets the authorization transaction identifier
         /// </summary>
         [JsonProperty("authorization_transaction_id")]
-        public string AuthorizationTransactionId { get; set; }
+        public string? AuthorizationTransactionId { get; set; }
 
         /// <summary>
         ///     Gets or sets the authorization transaction code
         /// </summary>
         [JsonProperty("authorization_transaction_code")]
-        public string AuthorizationTransactionCode { get; set; }
+        public string? AuthorizationTransactionCode { get; set; }
 
         /// <summary>
         ///     Gets or sets the authorization transaction result
         /// </summary>
         [JsonProperty("authorization_transaction_result")]
-        public string AuthorizationTransactionResult { get; set; }
+        public string? AuthorizationTransactionResult { get; set; }
 
         /// <summary>
         ///     Gets or sets the capture transaction identifier
         /// </summary>
         [JsonProperty("capture_transaction_id")]
-        public string CaptureTransactionId { get; set; }
+        public string? CaptureTransactionId { get; set; }
 
         /// <summary>
         ///     Gets or sets the capture transaction result
         /// </summary>
         [JsonProperty("capture_transaction_result")]
-        public string CaptureTransactionResult { get; set; }
+        public string? CaptureTransactionResult { get; set; }
 
         /// <summary>
         ///     Gets or sets the subscription transaction identifier
         /// </summary>
         [JsonProperty("subscription_transaction_id")]
-        public string SubscriptionTransactionId { get; set; }
+        public string? SubscriptionTransactionId { get; set; }
 
         /// <summary>
         ///     Gets or sets the paid date and time
@@ -210,19 +212,19 @@ namespace Nop.Plugin.Api.DTO.Orders
         ///     Gets or sets the shipping method
         /// </summary>
         [JsonProperty("shipping_method")]
-        public string ShippingMethod { get; set; }
+        public string? ShippingMethod { get; set; }
 
         /// <summary>
         ///     Gets or sets the shipping rate computation method identifier
         /// </summary>
         [JsonProperty("shipping_rate_computation_method_system_name")]
-        public string ShippingRateComputationMethodSystemName { get; set; }
+        public string? ShippingRateComputationMethodSystemName { get; set; }
 
         /// <summary>
         ///     Gets or sets the serialized CustomValues (values from ProcessPaymentRequest)
         /// </summary>
         [JsonProperty("custom_values_xml")]
-        public string CustomValuesXml { get; set; }
+        public string? CustomValuesXml { get; set; }
 
         /// <summary>
         ///     Gets or sets a value indicating whether the entity has been deleted
@@ -243,18 +245,19 @@ namespace Nop.Plugin.Api.DTO.Orders
         ///     Gets or sets the billing address
         /// </summary>
         [JsonProperty("billing_address")]
-        public AddressDto BillingAddress { get; set; }
+        public AddressDto? BillingAddress { get; set; }
 
         /// <summary>
         ///     Gets or sets the shipping address
         /// </summary>
         [JsonProperty("shipping_address")]
-        public AddressDto ShippingAddress { get; set; }
+        public AddressDto? ShippingAddress { get; set; }
 
         /// <summary>
         ///     Gets or sets order items
         /// </summary>
         [JsonProperty("order_items")]
+        [System.Diagnostics.CodeAnalysis.AllowNull]
         public ICollection<OrderItemDto> OrderItems
         {
             get
@@ -291,6 +294,6 @@ namespace Nop.Plugin.Api.DTO.Orders
         ///     Gets or sets the customer tax display type
         /// </summary>
         [JsonProperty("customer_tax_display_type")]
-        public string CustomerTaxDisplayType { get; set; }
+        public string? CustomerTaxDisplayType { get; set; }
     }
 }

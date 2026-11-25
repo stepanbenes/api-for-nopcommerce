@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿#nullable enable
+
+using Newtonsoft.Json;
 using Nop.Plugin.Api.DTO.Base;
 using Nop.Plugin.Api.DTO.Images;
 
@@ -12,13 +14,13 @@ namespace Nop.Plugin.Api.DTO.Manufacturers
         ///     Gets or sets the name
         /// </summary>
         [JsonProperty("name")]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         /// <summary>
         ///     Gets or sets the description
         /// </summary>
         [JsonProperty("description")]
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         /// <summary>
         ///     Gets or sets a value of used manufacturer template identifier
@@ -30,19 +32,19 @@ namespace Nop.Plugin.Api.DTO.Manufacturers
         ///     Gets or sets the meta keywords
         /// </summary>
         [JsonProperty("meta_keywords")]
-        public string MetaKeywords { get; set; }
+        public string? MetaKeywords { get; set; }
 
         /// <summary>
         ///     Gets or sets the meta description
         /// </summary>
         [JsonProperty("meta_description")]
-        public string MetaDescription { get; set; }
+        public string? MetaDescription { get; set; }
 
         /// <summary>
         ///     Gets or sets the meta title
         /// </summary>
         [JsonProperty("meta_title")]
-        public string MetaTitle { get; set; }
+        public string? MetaTitle { get; set; }
 
         /// <summary>
         ///     Gets or sets the parent picture identifier
@@ -66,13 +68,13 @@ namespace Nop.Plugin.Api.DTO.Manufacturers
         ///     Gets or sets the available customer selectable page size options
         /// </summary>
         [JsonProperty("page_size_options")]
-        public string PageSizeOptions { get; set; }
+        public string? PageSizeOptions { get; set; }
 
         /// <summary>
         ///     Gets or sets the available price ranges
         /// </summary>
         [JsonProperty("price_ranges")]
-        public string PriceRanges { get; set; }
+        public string? PriceRanges { get; set; }
 
         /// <summary>
         ///     Gets or sets a value indicating whether the entity is subject to ACL
@@ -117,18 +119,18 @@ namespace Nop.Plugin.Api.DTO.Manufacturers
         public DateTime UpdatedOnUtc { get; set; }
 
         [JsonProperty("role_ids")]
-        public List<int> RoleIds { get; set; }
+        public List<int>? RoleIds { get; set; }
 
         [JsonProperty("discount_ids")]
-        public List<int> DiscountIds { get; set; }
+        public List<int>? DiscountIds { get; set; }
 
         [JsonProperty("store_ids")]
-        public List<int> StoreIds { get; set; }
+        public List<int>? StoreIds { get; set; }
 
         [JsonProperty("image")]
-        public ImageDto Image { get; set; }
+        public ImageDto? Image { get; set; }
 
         [JsonProperty("se_name")]
-        public string SeName { get; set; }
+        public string? SeName { get; set; }
     }
 }

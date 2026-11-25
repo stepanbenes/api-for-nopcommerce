@@ -12,7 +12,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
     public class OrderApiServiceTests_GetOrders_DefaultParameters
     {
         [Test]
-        public void WhenCalledWithDefaultParameters_GivenNoOrdersExist_ShouldReturnEmptyCollection()
+        public async Task WhenCalledWithDefaultParameters_GivenNoOrdersExist_ShouldReturnEmptyCollection()
         {
             // Arange
             var ordersRepo = Mock.Of<IRepository<Order>>();
@@ -20,14 +20,14 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
             
             // Act
             var cut = new OrderApiService(ordersRepo);
-            var orders = cut.GetOrders();
+            var orders = await cut.GetOrdersAsync();
 
             // Assert
             CollectionAssert.IsEmpty(orders);
         }
 
         [Test]
-        public void WhenCalledWithDefaultParameters_GivenOnlyDeletedOrdersExist_ShouldReturnEmptyCollection()
+        public async Task WhenCalledWithDefaultParameters_GivenOnlyDeletedOrdersExist_ShouldReturnEmptyCollection()
         {
             var existingOrders = new List<Order>();
             existingOrders.Add(new Order() { Id = 1, Deleted = true });
@@ -39,14 +39,14 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
             
             // Act
             var cut = new OrderApiService(orderRepo);
-            var orders = cut.GetOrders();
+            var orders = await cut.GetOrdersAsync();
 
             // Assert
             CollectionAssert.IsEmpty(orders);
         }
 
         [Test]
-        public void WhenCalledWithDefaultParameters_GivenSomeNotDeletedOrdersExist_ShouldReturnThemSortedById()
+        public async Task WhenCalledWithDefaultParameters_GivenSomeNotDeletedOrdersExist_ShouldReturnThemSortedById()
         {
             var existingOrders = new List<Order>();
             existingOrders.Add(new Order() { Id = 1 });
@@ -61,7 +61,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
             
             // Act
             var cut = new OrderApiService(orderRepo);
-            var orders = cut.GetOrders();
+            var orders = await cut.GetOrdersAsync();
 
             // Assert
             CollectionAssert.IsNotEmpty(orders);
@@ -70,7 +70,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
         }
 
         [Test]
-        public void WhenCalledWithDefaultParameters_GivenSomeOrdersExist_ShouldReturnThemSortedById()
+        public async Task WhenCalledWithDefaultParameters_GivenSomeOrdersExist_ShouldReturnThemSortedById()
         {
             var existingOrders = new List<Order>();
             existingOrders.Add(new Order() { Id = 2 });
@@ -85,7 +85,7 @@ namespace Nop.Plugin.Api.Tests.ServicesTests.Orders.GetOrders
             
             // Act
             var cut = new OrderApiService(orderRepo);
-            var orders = cut.GetOrders();
+            var orders = await cut.GetOrdersAsync();
 
             // Assert
             CollectionAssert.IsNotEmpty(orders);

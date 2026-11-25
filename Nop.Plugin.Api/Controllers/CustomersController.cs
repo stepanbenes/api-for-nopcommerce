@@ -114,6 +114,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [GetRequestsErrorInterceptorActionFilter]
+        [UnpagedCollection]
         public async Task<IActionResult> GetCustomers([FromQuery] CustomersParametersModel parameters)
         {
             if (parameters.Limit < Constants.Configurations.MinLimit || parameters.Limit > Constants.Configurations.MaxLimit)
@@ -126,7 +127,7 @@ namespace Nop.Plugin.Api.Controllers
                 return Error(HttpStatusCode.BadRequest, "page", "Invalid request parameters");
             }
 
-            var allCustomers = await _customerApiService.GetCustomersDtosAsync(parameters.CreatedAtMin, parameters.CreatedAtMax, parameters.Limit, parameters.Page, parameters.SinceId);
+            var allCustomers = await _customerApiService.GetCustomersDtosAsync(parameters.CreatedAtMin, parameters.CreatedAtMax, GetCollectionLimit(parameters.Limit), parameters.Page, parameters.SinceId);
 
             var customersRootObject = new CustomersRootObject
             {
@@ -249,9 +250,10 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(CustomersRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
+        [UnpagedCollection]
         public async Task<IActionResult> Search([FromQuery] CustomersSearchParametersModel parameters)
         {
-            if (parameters.Limit <= Constants.Configurations.MinLimit || parameters.Limit > Constants.Configurations.MaxLimit)
+            if (parameters.Limit < Constants.Configurations.MinLimit || parameters.Limit > Constants.Configurations.MaxLimit)
             {
                 return Error(HttpStatusCode.BadRequest, "limit", "Invalid limit parameter");
             }
@@ -261,7 +263,15 @@ namespace Nop.Plugin.Api.Controllers
                 return Error(HttpStatusCode.BadRequest, "page", "Invalid page parameter");
             }
 
-            var customersDto = await _customerApiService.SearchAsync(parameters.Query, parameters.Order, parameters.Page, parameters.Limit);
+            IList<CustomerDto> customersDto;
+            try
+            {
+                customersDto = await _customerApiService.SearchAsync(parameters.Query, parameters.Order, parameters.Page, GetCollectionLimit(parameters.Limit));
+            }
+            catch (ArgumentException validationError) when (validationError.ParamName == "order")
+            {
+                return Error(HttpStatusCode.BadRequest, "order", "Use a customer field followed by an optional asc or desc.");
+            }
 
             var customersRootObject = new CustomersRootObject
             {

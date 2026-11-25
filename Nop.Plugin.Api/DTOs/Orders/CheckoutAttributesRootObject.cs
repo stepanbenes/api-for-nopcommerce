@@ -1,3 +1,5 @@
+#nullable enable
+
 using Newtonsoft.Json;
 using Nop.Plugin.Api.DTO.Base;
 
@@ -12,16 +14,16 @@ namespace Nop.Plugin.Api.DTO.Orders
     public class CheckoutAttributeDto : BaseDto
     {
         [JsonProperty("name")]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         [JsonProperty("required")]
         public bool Required { get; set; }
 
         [JsonProperty("control_type")]
-        public string ControlType { get; set; }
+        public string ControlType { get; set; } = null!;
 
         [JsonProperty("condition", NullValueHandling = NullValueHandling.Ignore)]
-        public CheckoutAttributeConditionDto Condition { get; set; }
+        public CheckoutAttributeConditionDto? Condition { get; set; }
 
         [JsonProperty("choices")]
         public List<CheckoutAttributeChoiceDto> Choices { get; set; } = new();
@@ -33,13 +35,13 @@ namespace Nop.Plugin.Api.DTO.Orders
         public int AttributeId { get; set; }
 
         [JsonProperty("values")]
-        public IList<string> Values { get; set; }
+        public IList<string>? Values { get; set; }
     }
 
     public class CheckoutAttributeChoiceDto : BaseDto
     {
         [JsonProperty("name")]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         [JsonProperty("preselected")]
         public bool Preselected { get; set; }

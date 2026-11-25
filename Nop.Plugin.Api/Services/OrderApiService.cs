@@ -16,17 +16,17 @@ namespace Nop.Plugin.Api.Services
             _orderRepository = orderRepository;
         }
 
-        public IList<Order> GetOrdersByCustomerId(int customerId, int? storeId = null)
+        public async Task<IList<Order>> GetOrdersByCustomerIdAsync(int customerId, int? storeId = null)
         {
             var query = from order in _orderRepository.Table
                         where order.CustomerId == customerId && !order.Deleted && (storeId == null || order.StoreId == storeId)
                         orderby order.Id
                         select order;
 
-            return new ApiList<Order>(query, 0, Constants.Configurations.MaxLimit);
+            return await ApiList<Order>.CreateAsync(query, 0, Constants.Configurations.MaxLimit);
         }
 
-        public IList<Order> GetOrders(
+        public async Task<IList<Order>> GetOrdersAsync(
             IList<int> ids = null, DateTime? createdAtMin = null, DateTime? createdAtMax = null,
             int limit = Constants.Configurations.DefaultLimit, int page = Constants.Configurations.DefaultPageValue,
             int sinceId = Constants.Configurations.DefaultSinceId,
@@ -40,27 +40,27 @@ namespace Nop.Plugin.Api.Services
                 query = query.Where(order => order.Id > sinceId);
             }
 
-            return new ApiList<Order>(query, page - 1, limit);
+            return await ApiList<Order>.CreateAsync(query, page - 1, limit);
         }
 
-        public Order GetOrderById(int orderId, int? storeId = null)
+        public async Task<Order> GetOrderByIdAsync(int orderId, int? storeId = null)
         {
             if (orderId <= 0)
             {
                 return null;
             }
 
-            return _orderRepository.Table.FirstOrDefault(order => order.Id == orderId && !order.Deleted && (storeId == null || order.StoreId == storeId));
+            return await _orderRepository.Table.FirstOrDefaultAsync(order => order.Id == orderId && !order.Deleted && (storeId == null || order.StoreId == storeId));
         }
 
-        public int GetOrdersCount(
+        public async Task<int> GetOrdersCountAsync(
             DateTime? createdAtMin = null, DateTime? createdAtMax = null, OrderStatus? status = null,
             PaymentStatus? paymentStatus = null, ShippingStatus? shippingStatus = null,
             int? customerId = null, int? storeId = null)
         {
             var query = GetOrdersQuery(createdAtMin, createdAtMax, status, paymentStatus, shippingStatus, customerId: customerId, storeId: storeId);
 
-            return query.Count();
+            return await query.CountAsync();
         }
 
         private IQueryable<Order> GetOrdersQuery(
