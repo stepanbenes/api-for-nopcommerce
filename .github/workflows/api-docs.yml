@@ -1,0 +1,80 @@
+name: API documentation
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  release:
+    types: [published]
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ (github.ref_name == github.event.repository.default_branch || github.event_name == 'release' || github.ref_type == 'tag') && 'api-docs-pages' || format('api-docs-{0}', github.ref) }}
+
+jobs:
+  build:
+    if: >-
+      github.event_name == 'pull_request' ||
+      (github.ref_type == 'branch' && github.ref_name == github.event.repository.default_branch) ||
+      (github.event_name == 'release' && !github.event.release.prerelease) ||
+      (github.event_name == 'push' && github.ref_type == 'tag')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.ref_type == 'tag' && github.event.repository.default_branch || github.ref }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Fetch the original 5.00.1 release if missing
+        run: |
+          upstream=189a7466ccc86ee593cc2216a346725b17b49bfc
+          git cat-file -e "$upstream:ClientApp/nopapi.swagger.json" ||
+            git fetch --no-tags https://github.com/stepanbenes/api-for-nopcommerce.git "$upstream"
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - run: python3 -m pip install Markdown==3.10.2
+      - name: Build pull request preview
+        if: github.event_name == 'pull_request'
+        run: python3 scripts/build-docs.py --preview site
+      - name: Build published release documentation
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api --paginate "repos/$GITHUB_REPOSITORY/releases?per_page=100" \
+            --jq '.[] | select(.draft == false and .prerelease == false) | .tag_name' > "$RUNNER_TEMP/published-tags"
+          if [[ "$GITHUB_REF_TYPE" == tag ]]; then
+            printf '%s\n' "$GITHUB_REF_NAME" >> "$RUNNER_TEMP/published-tags"
+          fi
+          python3 scripts/build-docs.py --published-tags "$RUNNER_TEMP/published-tags" site
+      - uses: actions/upload-artifact@v7
+        if: github.event_name == 'pull_request'
+        with:
+          name: api-docs-preview
+          path: site/
+          if-no-files-found: error
+      - uses: actions/upload-pages-artifact@v5
+        if: github.event_name != 'pull_request'
+        with:
+          path: site/
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/deploy-pages@v5
+        id: deploy

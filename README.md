@@ -2,11 +2,11 @@
 
 This plugin exposes REST endpoints for nopCommerce. This branch is built and tested against nopCommerce `release-5.00.1` and .NET 10. Use the matching release branch of this plugin for older versions of nopCommerce.
 
-See the [feature coverage and upstream issue audit](docs/api-coverage.md), [date and paging filters](docs/query-filters.md), and [checkout discovery endpoints](docs/checkout-discovery.md).
+The [versioned API documentation](https://stepanbenes.github.io/api-for-nopcommerce/) will be available once GitHub Pages is enabled. In the meantime, browse the released [v5.00.1 API reference in Swagger UI](https://petstore.swagger.io/?url=https%3A%2F%2Fraw.githubusercontent.com%2Fstepanbenes%2Fapi-for-nopcommerce%2Fc9456b59b4a4371b2c584f2f80fc849d222de318%2FClientApp%2Fnopapi.swagger.json&validatorUrl=none). See the [feature coverage and upstream issue audit](docs/api-coverage.md), [date and paging filters](docs/query-filters.md), and [checkout discovery endpoints](docs/checkout-discovery.md) for guidance on this branch.
 
 ## Install a release
 
-1. Download `Nop.Plugin.Api.zip` and `Nop.Plugin.Api.zip.sha256` from [GitHub Releases](https://github.com/syky27/api-for-nopcommerce/releases). Verify the download with `sha256sum -c Nop.Plugin.Api.zip.sha256` or `shasum -a 256 -c Nop.Plugin.Api.zip.sha256` on macOS.
+1. Download `Nop.Plugin.Api.zip` and `Nop.Plugin.Api.zip.sha256` from [GitHub Releases](https://github.com/stepanbenes/api-for-nopcommerce/releases). Verify the download with `sha256sum -c Nop.Plugin.Api.zip.sha256` or `shasum -a 256 -c Nop.Plugin.Api.zip.sha256` on macOS.
 2. Set `ApiConfiguration__SecurityKey` in the nopCommerce environment to a securely generated signing key, for example the output of `openssl rand -hex 32`.
 3. In nopCommerce 5.00, open **Configuration → Local plugins → Upload plugin or theme** and upload `Nop.Plugin.Api.zip`. Follow the restart prompt and install **Api plugin** from **Local plugins**.
 4. Assign the **Api Users** role and the required nopCommerce permissions to the API account.
@@ -127,3 +127,17 @@ curl --fail --silent --show-error "$NOP_API_TEST_URL/api/swagger/v1/swagger.json
 dotnet test ClientApp.Tests/ClientApp.Tests.csproj --configuration Release
 bash scripts/test-python-client.sh
 ```
+
+## Preview or publish the API documentation
+
+The [API documentation workflow](https://github.com/stepanbenes/api-for-nopcommerce/actions/workflows/api-docs.yml?query=event%3Apull_request) uploads an **api-docs-preview** artifact for pull requests. Download and extract it, run `python3 -m http.server --directory extracted-directory 8000` with the path to your extracted directory, and open `http://localhost:8000/unreleased/`. The preview includes its renderer and works offline.
+
+Fetch the full repository history and its tags before building the preview locally.
+
+```sh
+python3 -m pip install Markdown==3.10.2
+python3 scripts/build-docs.py --preview site
+python3 -m http.server --directory site 8000
+```
+
+To host the site, select **GitHub Actions** under **Settings → Pages → Build and deployment → Source**. The workflow deploys the released references on pushes to the default branch and after stable releases are published. If the `github-pages` environment restricts deployments, allow the default branch and release tags (`v*`). Use **Run workflow** from the default branch to rebuild the site manually.

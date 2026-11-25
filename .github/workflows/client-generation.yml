@@ -107,3 +107,12 @@ jobs:
           PY
           gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" \
             --verify-tag --generate-notes Nop.Plugin.Api.zip Nop.Plugin.Api.zip.sha256
+
+  release-docs:
+    name: Publish release documentation
+    needs: release
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/api-docs.yml
