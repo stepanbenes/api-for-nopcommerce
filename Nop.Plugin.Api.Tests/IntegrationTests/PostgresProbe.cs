@@ -20,6 +20,25 @@ internal sealed class PostgresProbe(string container)
 
     public async Task<JsonElement> ReadAsync(string select, int id)
     {
+        var result = await RunAsync($"SELECT COALESCE(({select}), 'null'::jsonb);", id, readOnly: true);
+        using var document = JsonDocument.Parse(result);
+        return document.RootElement.Clone();
+    }
+
+    public static void RequireDisposableStoreForFaultInjection()
+    {
+        if (Environment.GetEnvironmentVariable("NOP_API_TEST_POSTGRES_ALLOW_FAULT_INJECTION") != "1")
+            TestAssert.Ignore("Set NOP_API_TEST_POSTGRES_ALLOW_FAULT_INJECTION=1 only for a disposable local test store.");
+    }
+
+    public async Task ExecuteInDisposableStoreAsync(string sql)
+    {
+        RequireDisposableStoreForFaultInjection();
+        await RunAsync(sql, 0, readOnly: false);
+    }
+
+    private async Task<string> RunAsync(string sql, int id, bool readOnly)
+    {
         var startInfo = new ProcessStartInfo("docker")
         {
             UseShellExecute = false,
@@ -29,7 +48,9 @@ internal sealed class PostgresProbe(string container)
         };
         foreach (var argument in new[]
         {
-            "exec", "-i", "--env", "PGOPTIONS=-c default_transaction_read_only=on",
+            "exec", "-i", "--env", readOnly
+                ? "PGOPTIONS=-c default_transaction_read_only=on"
+                : "PGOPTIONS=-c lock_timeout=5s -c statement_timeout=10s",
             container, "psql", "-XqAtw", "--username=nopcommerce", "--dbname=nopcommerce",
             "--set=ON_ERROR_STOP=1", $"--set=id={id.ToString(CultureInfo.InvariantCulture)}"
         })
@@ -38,14 +59,13 @@ internal sealed class PostgresProbe(string container)
         }
 
         using var process = Process.Start(startInfo)
-            ?? throw new InvalidOperationException("Could not start docker exec for the PostgreSQL read.");
+            ?? throw new InvalidOperationException("Could not start docker exec for PostgreSQL.");
         var output = process.StandardOutput.ReadToEndAsync();
         var errors = process.StandardError.ReadToEndAsync();
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(15));
         try
         {
-            await process.StandardInput.WriteLineAsync(
-                $"SELECT COALESCE(({select}), 'null'::jsonb);".AsMemory(), timeout.Token);
+            await process.StandardInput.WriteLineAsync(sql.AsMemory(), timeout.Token);
             process.StandardInput.Close();
             await process.WaitForExitAsync(timeout.Token);
         }
@@ -53,11 +73,10 @@ internal sealed class PostgresProbe(string container)
         {
             if (!process.HasExited)
                 process.Kill();
-            throw new TimeoutException("The local PostgreSQL read did not finish in 15 seconds.");
+            throw new TimeoutException("The local PostgreSQL command did not finish in 15 seconds.");
         }
 
         TestAssert.That(process.ExitCode, Is.Zero, await errors);
-        using var document = JsonDocument.Parse(await output);
-        return document.RootElement.Clone();
+        return await output;
     }
 }

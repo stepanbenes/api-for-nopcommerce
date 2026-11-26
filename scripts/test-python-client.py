@@ -18,11 +18,13 @@ from nop_api_client.api.customers import set_billing_address
 from nop_api_client.api.menus import add_menu_item, remove_menu_item
 from nop_api_client.api.order_items import create_order_item
 from nop_api_client.api.orders import create_order, get_checkout_attributes, get_orders, get_pdf_invoice, update_order
-from nop_api_client.api.products import get_products, get_products_count
+from nop_api_client.api.products import bulk_update_product_price_stock, get_products, get_products_count
 from nop_api_client.api.token import request_token
 from nop_api_client.models import (
     AddMenuItemRequest,
     AddressDto,
+    BulkPriceStockItem,
+    BulkPriceStockRequest,
     CategoryDto,
     CategoryDtoDelta,
     CheckoutAttributeSelectionDto,
@@ -46,7 +48,7 @@ def check_operations(spec):
     operations = [(method, path, operation) for path, item in spec["paths"].items()
                   for method, operation in item.items()
                   if method in {"get", "post", "put", "delete", "patch", "head", "options", "trace"}]
-    assert len(operations) == 134, f"Expected 134 documented operations, got {len(operations)}"
+    assert len(operations) == 135, f"Expected 135 documented operations, got {len(operations)}"
     modules = set()
     for method, path, operation in operations:
         module = f"nop_api_client.api.{snake_case(operation['tags'][0])}.{snake_case(operation['operationId'])}"
@@ -120,6 +122,18 @@ def mock_api():
         ids=[8, 9], limit=2, published_status=True).parsed.products
     assert type(products[0].id) is int and type(products[0].price) is float
     assert products[0].price == 12.50 and products[0].published is True
+
+    bulk_items = [{"product_id": 14, "price": 31.9512}, {"product_id": 19, "stock_quantity": 0}]
+    bulk = call(auth, bulk_update_product_price_stock, request_to(
+        "POST", "/api/products/bulk-price-stock", {"results": [
+            {"product_id": 14, "status": "updated"}, {"product_id": 19, "status": "unsupported_stock_mode"},
+        ]}, body={"operation_id": str(uuid), "version": 4_294_967_296, "items": bulk_items}),
+        body=BulkPriceStockRequest(operation_id=uuid, version=4_294_967_296, items=[
+            BulkPriceStockItem(product_id=14, price=31.9512),
+            BulkPriceStockItem(product_id=19, stock_quantity=0),
+        ])).parsed
+    assert [(item.product_id, item.status) for item in bulk.results] == [
+        (14, "updated"), (19, "unsupported_stock_mode")]
 
     all_products = call(auth, get_products, request_to(
         "GET", "/api/products", {"products": [{"id": 8}]}, query=(("unpaged", "true"),)),

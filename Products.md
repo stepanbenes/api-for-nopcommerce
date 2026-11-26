@@ -16,6 +16,8 @@ Receive a single Product](#get-apiproductsid)
 + [POST /api/products  
 Create a new Product](#post-apiproducts)
 
++ [POST /api/products/bulk-price-stock](#post-apiproductsbulk-price-stock) sets prices and stock quantities for multiple products.
+
 + [PUT /api/products/{id}  
 Modify an existing Product](#put-apiproductsid)
 
@@ -1703,3 +1705,46 @@ DELETE /api/products/50
 
 
 
+
+## POST /api/products/bulk-price-stock
+
+Set the price or the absolute stock quantity for up to 100 distinct products in one request. Authenticate with a bearer token. The API account needs the **Api Users** role and the `Catalog.ProductsCreateEditDelete` permission.
+
+**Product price and stock are shared across stores.** The API checks visibility in the current store before writing. An eligible product's price and stock then change in every store where that product is available.
+
+```json
+{
+  "operation_id": "3f8d9abf-a418-4811-8382-c1da24ec81f9",
+  "version": 1,
+  "items": [
+    { "product_id": 14, "price": 31.95, "stock_quantity": 20 },
+    { "product_id": 19, "stock_quantity": 0 }
+  ]
+}
+```
+
+Supply a non-empty UUID, a positive integer version, and 1 to 100 items with distinct positive product IDs. Each item needs a price, a stock quantity, or both. An omitted or null field leaves that value unchanged. Price accepts values from 0 through 99999999999999.9999 with up to four decimal places. Stock quantity accepts whole numbers from 0 through 2147483647.
+
+HTTP 200 returns one result per item. An item that cannot be updated leaves both its price and stock quantity unchanged. Other eligible items in the batch still update.
+
+```json
+{
+  "results": [
+    { "product_id": 14, "status": "updated" },
+    { "product_id": 19, "status": "unsupported_stock_mode" }
+  ]
+}
+```
+
+| Status | Meaning |
+| :--- | :--- |
+| `updated` | The supplied values were applied. |
+| `not_found` | The product is missing, deleted, or outside the caller's store, vendor, or ACL scope. |
+| `unsupported_stock_mode` | The item requests stock for a product that does not use single-warehouse, product-level stock management. |
+| `stock_adjustment_out_of_range` | The difference between the legacy quantity and the requested value exceeds the range supported by stock history. |
+
+Stock changes write a stock history entry. The endpoint uses the absolute quantity supplied by the caller. Product updates, stock history, and the operation receipt commit together. nopCommerce publishes product events during the update. External side effects from plugins that handle those events fall outside the database transaction.
+
+Reuse the same operation ID, version, and item values to retry a request. The receipt is scoped to the caller and store. A replay returns the original results in their original order, even if the retry lists the items in a different order. Use a higher version to submit a new payload for the same operation ID. A version controls ordering within one operation ID. Coordinate updates using the same operation ID if their order matters.
+
+HTTP 400 reports an invalid request. HTTP 401 indicates that authentication is required and HTTP 403 indicates insufficient permission. HTTP 409 indicates a changed payload for an already committed version or an uncommitted version below the latest committed version for that operation ID. HTTP 413 indicates that the request exceeded the 64 KiB body limit. If the server returns HTTP 503, retry with the same operation ID, version, and values.

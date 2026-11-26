@@ -41,7 +41,9 @@ public partial class LiveApiTests
     [Test]
     public async Task TokenAndPermissionsAreEnforced()
     {
+        var bulkRequest = BulkRequest(Guid.NewGuid(), 1, BulkItem(int.MaxValue, 12m, 3));
         await Send(HttpMethod.Get, "/api/products", HttpStatusCode.Unauthorized);
+        await Send(HttpMethod.Post, BulkPriceStockPath, HttpStatusCode.Unauthorized, bulkRequest);
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "invalid-test-token");
         await Send(HttpMethod.Get, "/api/products", HttpStatusCode.Unauthorized);
         _client.DefaultRequestHeaders.Authorization = null;
@@ -53,6 +55,7 @@ public partial class LiveApiTests
         {
             await Send(HttpMethod.Get, "/api/products?limit=1", HttpStatusCode.OK);
             await Send(HttpMethod.Get, "/api/taxcategories", HttpStatusCode.Forbidden);
+            await Send(HttpMethod.Post, BulkPriceStockPath, HttpStatusCode.Forbidden, bulkRequest);
         }
         finally
         {

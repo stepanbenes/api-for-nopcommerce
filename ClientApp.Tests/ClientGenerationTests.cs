@@ -84,6 +84,52 @@ public class ClientGenerationTests
         Assert.That(request.Authorization, Is.EqualTo("Bearer mock-token"));
     }
 
+    [Test]
+    public async Task SendsAndReceivesBulkProductPriceStock()
+    {
+        var operationId = Guid.Parse("3f8d9abf-a418-4811-8382-c1da24ec81f9");
+        using var http = new HttpClient(new CaptureBulkPriceStock(operationId)) { BaseAddress = new Uri("http://127.0.0.1") };
+        var client = new NopApiClient(http);
+        client.SetAuthorizationHeader("Bearer", "mock-token");
+
+        var response = await client.BulkUpdateProductPriceStock(new BulkPriceStockRequest(
+            OperationId: operationId,
+            Version: 4_294_967_296,
+            Items: [new BulkPriceStockItem(ProductId: 14) { Price = 31.9512m },
+                    new BulkPriceStockItem(ProductId: 19) { StockQuantity = 0 }]));
+
+        Assert.That(response?.Results.Select(item => (item.ProductId, item.Status)),
+            Is.EqualTo(new[] { (14, "updated"), (19, "unsupported_stock_mode") }));
+    }
+
+    private sealed class CaptureBulkPriceStock(Guid operationId) : HttpMessageHandler
+    {
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            Assert.That(request.Method, Is.EqualTo(HttpMethod.Post));
+            Assert.That(request.RequestUri?.AbsolutePath, Is.EqualTo("/api/products/bulk-price-stock"));
+            Assert.That(request.Headers.Authorization?.ToString(), Is.EqualTo("Bearer mock-token"));
+            Assert.That(request.Content!.Headers.ContentType!.MediaType, Is.EqualTo("application/json"));
+            using var body = JsonDocument.Parse(await request.Content.ReadAsStringAsync(cancellationToken));
+            Assert.That(body.RootElement.GetProperty("operation_id").GetGuid(), Is.EqualTo(operationId));
+            Assert.That(body.RootElement.GetProperty("version").GetInt64(), Is.EqualTo(4_294_967_296));
+            var items = body.RootElement.GetProperty("items");
+            Assert.That(items[0].GetProperty("product_id").GetInt32(), Is.EqualTo(14));
+            Assert.That(items[0].GetProperty("price").GetDecimal(), Is.EqualTo(31.9512m));
+            Assert.That(items[0].TryGetProperty("stock_quantity", out _), Is.False);
+            Assert.That(items[1].GetProperty("product_id").GetInt32(), Is.EqualTo(19));
+            Assert.That(items[1].GetProperty("stock_quantity").GetInt32(), Is.Zero);
+            Assert.That(items[1].TryGetProperty("price", out _), Is.False);
+
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(
+                    """{"results":[{"product_id":14,"status":"updated"},{"product_id":19,"status":"unsupported_stock_mode"}]}""",
+                    System.Text.Encoding.UTF8, "application/json")
+            };
+        }
+    }
+
     [TestCase("en-US")]
     [TestCase("cs-CZ")]
     public async Task DateQueriesUseInvariantRoundTripFormatAndEscapeOnce(string culture)
