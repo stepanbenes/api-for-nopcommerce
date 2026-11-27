@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Nop.Core.Caching;
+using Nop.Plugin.Api.Attributes;
 using Nop.Plugin.Api.Authorization.Attributes;
 using Nop.Plugin.Api.Infrastructure;
 using Nop.Services.Authentication;
@@ -22,6 +23,7 @@ public class CacheMaintenanceController(
     IAuthenticationService authenticationService) : ControllerBase
 {
     [HttpPost("clear", Name = "ClearCache")]
+    [ApiAudience(ApiAudience.BackOffice)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]

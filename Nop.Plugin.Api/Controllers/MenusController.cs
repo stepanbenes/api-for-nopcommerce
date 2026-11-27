@@ -10,6 +10,7 @@ using Nop.Core.Domain.Security;
 using Nop.Core.Domain.Stores;
 using Nop.Core.Domain.Topics;
 using Nop.Data;
+using Nop.Plugin.Api.Attributes;
 using Nop.Plugin.Api.Authorization.Attributes;
 using Nop.Plugin.Api.DTOs.Menus;
 using Nop.Plugin.Api.Services;
@@ -37,6 +38,7 @@ public class MenusController(
     IStoreMappingService storeMappingService) : ControllerBase
 {
     [HttpGet(Name = "GetMenus")]
+    [ApiAudience(ApiAudience.BackOffice)]
     [ProducesResponseType(typeof(MenusResponse), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetMenus()
     {
@@ -53,6 +55,7 @@ public class MenusController(
     }
 
     [HttpGet("{menuId}/items", Name = "GetMenuItems")]
+    [ApiAudience(ApiAudience.BackOffice)]
     [ProducesResponseType(typeof(MenuItemsResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetMenuItems(int menuId)
@@ -72,6 +75,7 @@ public class MenusController(
     }
 
     [HttpPost("{menuId}/items", Name = "AddMenuItem")]
+    [ApiAudience(ApiAudience.BackOffice)]
     [ProducesResponseType(typeof(MenuItemsResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(MenuItemsResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -140,6 +144,7 @@ public class MenusController(
     }
 
     [HttpPut("{menuId}/items/{itemId}", Name = "UpdateMenuItemOrder")]
+    [ApiAudience(ApiAudience.BackOffice)]
     [ProducesResponseType(typeof(MenuItemsResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -169,6 +174,7 @@ public class MenusController(
     }
 
     [HttpDelete("{menuId}/items/{itemId}", Name = "RemoveMenuItem")]
+    [ApiAudience(ApiAudience.BackOffice)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]

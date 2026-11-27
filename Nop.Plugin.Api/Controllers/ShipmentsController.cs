@@ -10,6 +10,7 @@ using Nop.Core.Domain.Orders;
 using Nop.Core.Domain.Shipping;
 using Nop.Core.Events;
 using Nop.Data;
+using Nop.Plugin.Api.Attributes;
 using Nop.Plugin.Api.Authorization.Attributes;
 using Nop.Plugin.Api.DTO.Errors;
 using Nop.Plugin.Api.DTOs.Shipments;
@@ -40,6 +41,7 @@ public class ShipmentsController(
     ILogger<ShipmentsController> logger) : ControllerBase
 {
     [HttpGet(Name = "GetOrderShipments")]
+    [ApiAudience(ApiAudience.BackOffice)]
     [AuthorizePermission(StandardPermission.Orders.SHIPMENTS_VIEW)]
     [ProducesResponseType(typeof(ShipmentsRootObject), 200)]
     [ProducesResponseType(401)]
@@ -62,6 +64,7 @@ public class ShipmentsController(
     }
 
     [HttpGet("{shipmentId:int}", Name = "GetOrderShipment")]
+    [ApiAudience(ApiAudience.BackOffice)]
     [AuthorizePermission(StandardPermission.Orders.SHIPMENTS_VIEW)]
     [ProducesResponseType(typeof(ShipmentDto), 200)]
     [ProducesResponseType(401)]
@@ -79,6 +82,7 @@ public class ShipmentsController(
     }
 
     [HttpPost(Name = "CreateOrderShipment")]
+    [ApiAudience(ApiAudience.BackOffice)]
     [AuthorizePermission(StandardPermission.Orders.SHIPMENTS_CREATE_EDIT_DELETE)]
     [ProducesResponseType(typeof(ShipmentDto), 201)]
     [ProducesResponseType(typeof(ErrorsRootObject), 400)]
@@ -160,6 +164,7 @@ public class ShipmentsController(
     }
 
     [HttpPut("{shipmentId:int}", Name = "UpdateOrderShipment")]
+    [ApiAudience(ApiAudience.BackOffice)]
     [AuthorizePermission(StandardPermission.Orders.SHIPMENTS_CREATE_EDIT_DELETE)]
     [ProducesResponseType(typeof(ShipmentDto), 200)]
     [ProducesResponseType(typeof(ErrorsRootObject), 400)]
@@ -192,6 +197,7 @@ public class ShipmentsController(
     }
 
     [HttpPost("{shipmentId:int}/ship", Name = "ShipOrderShipment")]
+    [ApiAudience(ApiAudience.BackOffice)]
     [AuthorizePermission(StandardPermission.Orders.SHIPMENTS_CREATE_EDIT_DELETE)]
     [ProducesResponseType(typeof(ShipmentDto), 200)]
     [ProducesResponseType(401)]
@@ -207,6 +213,7 @@ public class ShipmentsController(
     }
 
     [HttpPost("{shipmentId:int}/ready-for-pickup", Name = "MarkOrderShipmentReadyForPickup")]
+    [ApiAudience(ApiAudience.BackOffice)]
     [AuthorizePermission(StandardPermission.Orders.SHIPMENTS_CREATE_EDIT_DELETE)]
     [ProducesResponseType(typeof(ShipmentDto), 200)]
     [ProducesResponseType(401)]
@@ -222,6 +229,7 @@ public class ShipmentsController(
     }
 
     [HttpPost("{shipmentId:int}/deliver", Name = "DeliverOrderShipment")]
+    [ApiAudience(ApiAudience.BackOffice)]
     [AuthorizePermission(StandardPermission.Orders.SHIPMENTS_CREATE_EDIT_DELETE)]
     [ProducesResponseType(typeof(ShipmentDto), 200)]
     [ProducesResponseType(401)]

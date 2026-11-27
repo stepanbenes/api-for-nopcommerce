@@ -49,6 +49,7 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="401">Unauthorized</response>
         [HttpGet]
         [Route("/api/customer_roles", Name = "GetAllCustomerRoles")]
+        [ApiAudience(ApiAudience.BackOffice)]
         [AuthorizePermission(StandardPermission.Customers.CUSTOMERS_CREATE_EDIT_DELETE)]
         [ProducesResponseType(typeof(CustomerRolesRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]

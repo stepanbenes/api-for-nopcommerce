@@ -63,6 +63,7 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="401">Unauthorized</response>
         [HttpGet]
         [Route("/api/languages", Name = "GetAllLanguages")]
+        [ApiAudience(ApiAudience.Both)]
         [ProducesResponseType(typeof(LanguagesRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -87,6 +88,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpGet]
         [Route("/api/languages/current", Name = "GetCurrentLanguage")]
+        [ApiAudience(ApiAudience.Storefront)]
         [ProducesResponseType(typeof(LanguageDto), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(void), (int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.Unauthorized)]
@@ -105,6 +107,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpPost]
         [Route("/api/languages/current", Name = "SetCurrentLanguage")]
+        [ApiAudience(ApiAudience.Storefront)]
         [ProducesResponseType(typeof(void), (int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.Unauthorized)]

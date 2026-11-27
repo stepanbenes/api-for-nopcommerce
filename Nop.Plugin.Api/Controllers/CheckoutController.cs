@@ -8,6 +8,7 @@ using Nop.Core.Domain.Customers;
 using Nop.Core.Domain.Directory;
 using Nop.Core.Domain.Orders;
 using Nop.Core.Domain.Payments;
+using Nop.Plugin.Api.Attributes;
 using Nop.Plugin.Api.DTO.Errors;
 using Nop.Plugin.Api.DTOs.Checkout;
 using Nop.Services.Attributes;
@@ -47,6 +48,7 @@ public class CheckoutController(
     OrderSettings orderSettings) : ControllerBase
 {
     [HttpGet("shipping-options", Name = "GetCheckoutShippingOptions")]
+    [ApiAudience(ApiAudience.Both)]
     [ProducesResponseType(typeof(ShippingOptionsDto), 200)]
     [ProducesResponseType(typeof(ErrorsRootObject), 400)]
     public async Task<IActionResult> GetShippingOptions(
@@ -80,6 +82,7 @@ public class CheckoutController(
     }
 
     [HttpGet("payment-methods", Name = "GetCheckoutPaymentMethods")]
+    [ApiAudience(ApiAudience.Both)]
     [ProducesResponseType(typeof(PaymentMethodsDto), 200)]
     [ProducesResponseType(typeof(ErrorsRootObject), 400)]
     public async Task<IActionResult> GetPaymentMethods(

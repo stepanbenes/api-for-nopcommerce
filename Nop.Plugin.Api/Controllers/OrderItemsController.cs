@@ -85,6 +85,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpGet]
         [Route("/api/orders/{orderId}/items", Name = "GetOrderItems")]
+        [ApiAudience(ApiAudience.BackOffice)]
         [ProducesResponseType(typeof(OrderItemsRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
@@ -128,6 +129,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpGet]
         [Route("/api/orders/{orderId}/items/count", Name = "GetOrderItemsCount")]
+        [ApiAudience(ApiAudience.Both)]
         [ProducesResponseType(typeof(OrderItemsCountRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
@@ -157,6 +159,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpGet]
         [Route("/api/orders/{orderId}/items/{orderItemId}", Name = "GetOrderItemByIdForOrder")]
+        [ApiAudience(ApiAudience.BackOffice)]
         [ProducesResponseType(typeof(OrderItemsRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
@@ -198,6 +201,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpPost]
         [Route("/api/orders/{orderId}/items", Name = "CreateOrderItem")]
+        [ApiAudience(ApiAudience.BackOffice)]
         [AuthorizePermission(StandardPermission.Orders.ORDERS_CREATE_EDIT_DELETE)]
         [ProducesResponseType(typeof(OrderItemsRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), 422)]
@@ -276,6 +280,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpPut]
         [Route("/api/orders/{orderId}/items/{orderItemId}", Name = "UpdateOrderItem")]
+        [ApiAudience(ApiAudience.BackOffice)]
         [AuthorizePermission(StandardPermission.Orders.ORDERS_CREATE_EDIT_DELETE)]
         [ProducesResponseType(typeof(OrderItemsRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), 422)]
@@ -336,6 +341,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpDelete]
         [Route("/api/orders/{orderId}/items/{orderItemId}", Name = "DeleteOrderItemById")]
+        [ApiAudience(ApiAudience.BackOffice)]
         [AuthorizePermission(StandardPermission.Orders.ORDERS_CREATE_EDIT_DELETE)]
         [ProducesResponseType(typeof(void), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
@@ -362,6 +368,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpDelete]
         [Route("/api/orders/{orderId}/items", Name = "DeleteAllOrderItemsForOrder")]
+        [ApiAudience(ApiAudience.BackOffice)]
         [AuthorizePermission(StandardPermission.Orders.ORDERS_CREATE_EDIT_DELETE)]
         [ProducesResponseType(typeof(void), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]

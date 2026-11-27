@@ -142,6 +142,8 @@ bash scripts/test-python-client.sh
 
 The [API documentation workflow](https://github.com/stepanbenes/api-for-nopcommerce/actions/workflows/api-docs.yml?query=event%3Apull_request) uploads an **api-docs-preview** artifact for pull requests. Download and extract it, run `python3 -m http.server --directory extracted-directory 8000` with the path to your extracted directory, and open `http://localhost:8000/unreleased/`. The preview includes its renderer and works offline.
 
+Versions with audience metadata offer **Storefront** and **Back-office** views alongside the full reference. Each view has a matching OpenAPI download. Earlier versions keep their full reference. The [audience audit](docs/api-audiences.md) describes the caller permissions and resource scope behind these views.
+
 Fetch the full repository history and its tags before building the preview locally.
 
 ```sh

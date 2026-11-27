@@ -63,6 +63,7 @@ namespace Nop.Plugin.Api.Controllers
         /// <param name="fields">Fields from the language you want your json to contain</param>
         [HttpGet]
         [Route("/api/currencies", Name = "GetAllCurrencies")]
+        [ApiAudience(ApiAudience.Both)]
         [ProducesResponseType(typeof(CurrenciesRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -87,6 +88,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpGet]
         [Route("/api/currencies/primary", Name = "GetPrimaryCurrency")]
+        [ApiAudience(ApiAudience.Both)]
         [ProducesResponseType(typeof(CurrencyDto), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(void), (int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.Unauthorized)]
@@ -101,6 +103,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpGet]
         [Route("/api/currencies/current", Name = "GetCurrentCurrency")]
+        [ApiAudience(ApiAudience.Storefront)]
         [ProducesResponseType(typeof(CurrencyDto), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(void), (int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.Unauthorized)]
@@ -119,6 +122,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpPost]
         [Route("/api/currencies/current", Name = "SetCurrentCurrency")]
+        [ApiAudience(ApiAudience.Storefront)]
         [ProducesResponseType(typeof(void), (int)HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.Unauthorized)]

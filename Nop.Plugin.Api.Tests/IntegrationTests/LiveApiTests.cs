@@ -53,6 +53,10 @@ public partial class LiveApiTests
         var guestId = _customerId;
         try
         {
+            await Send(HttpMethod.Get, "/token/check", HttpStatusCode.OK);
+            await Send(HttpMethod.Get, $"/api/orders/count?CustomerId={guestId}", HttpStatusCode.OK);
+            await Send(HttpMethod.Get, "/api/orders/count?CustomerId=2147483647", HttpStatusCode.Forbidden);
+            await Send(HttpMethod.Get, "/api/checkout/payment-methods?customer_id=2147483647", HttpStatusCode.Forbidden);
             await Send(HttpMethod.Get, "/api/products?limit=1", HttpStatusCode.OK);
             await Send(HttpMethod.Get, "/api/taxcategories", HttpStatusCode.Forbidden);
             await Send(HttpMethod.Post, BulkPriceStockPath, HttpStatusCode.Forbidden, bulkRequest);

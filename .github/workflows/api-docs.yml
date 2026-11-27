@@ -39,6 +39,8 @@ jobs:
         with:
           python-version: '3.12'
       - run: python3 -m pip install Markdown==3.10.2
+      - name: Verify audience references
+        run: python3 scripts/test-docs.py
       - name: Build pull request preview
         if: github.event_name == 'pull_request'
         run: python3 scripts/build-docs.py --preview site
