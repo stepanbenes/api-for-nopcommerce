@@ -12,24 +12,23 @@ using Nop.Data;
 using Nop.Plugin.Api.Domain;
 using Nop.Plugin.Api.DTO.Products;
 using Nop.Services.Catalog;
-using Nop.Services.Security;
-using Nop.Services.Stores;
 using Npgsql;
 
 namespace Nop.Plugin.Api.Services;
 
 internal sealed class BulkPriceStockService(
     INopDataProvider dataProvider,
+    BulkPriceStockAvailability availability,
     IRepository<BulkPriceStockReceipt> receiptRepository,
-    IRepository<Product> productRepository,
     IProductService productService,
-    IStoreMappingService storeMappingService,
-    IAclService aclService) : IBulkPriceStockService
+    ProductSyncScope productScope) : IBulkPriceStockService
 {
     public async Task<BulkPriceStockResponse> ExecuteAsync(Customer actor, int storeId, BulkPriceStockRequest request,
         CancellationToken cancellationToken)
     {
         EnsureTransactionalSettings();
+        if (!await availability.IsAvailableAsync())
+            throw new BulkPriceStockBusyException("This installation does not have the legacy bulk receipt schema.");
 
         var orderedItems = request.Items.OrderBy(item => item.ProductId).ToArray();
         var canonicalPayload = string.Join('\n', orderedItems.Select(item => FormattableString.Invariant(
@@ -86,12 +85,9 @@ internal sealed class BulkPriceStockService(
         await receiptRepository.InsertAsync(receipt, publishEvent: false);
 
         var productIds = orderedItems.Select(item => item.ProductId).ToArray();
-        var query = productRepository.Table.Where(product => productIds.Contains(product.Id) && !product.Deleted);
-        if (actor.VendorId != 0)
-            query = query.Where(product => product.VendorId == actor.VendorId);
-        query = await storeMappingService.ApplyStoreMapping(query, storeId);
-        query = await aclService.ApplyAcl(query, actor);
-        var products = (await query.ToListAsync(cancellationToken)).ToDictionary(product => product.Id);
+        var query = await productScope.GetProductsAsync(actor, storeId);
+        var products = (await query.Where(product => productIds.Contains(product.Id)).ToListAsync(cancellationToken))
+            .ToDictionary(product => product.Id);
 
         var statuses = new Dictionary<int, string>();
         foreach (var item in orderedItems)
@@ -128,31 +124,33 @@ internal sealed class BulkPriceStockService(
             return "updated";
 
         product.Price = price;
-        product.StockQuantity = stockQuantity;
         product.UpdatedOnUtc = DateTime.UtcNow;
-        await productService.UpdateProductAsync(product);
         if (adjustment != 0)
-            await productService.AddStockQuantityHistoryEntryAsync(product, (int)adjustment, stockQuantity,
-                product.WarehouseId, "API bulk stock update");
+            await productService.AdjustInventoryAsync(product, (int)adjustment, message: "API bulk stock update");
+        else
+            await productService.UpdateProductAsync(product);
         return "updated";
     }
 
-    private static void EnsureTransactionalSettings()
+    internal static void EnsureTransactionalSettings()
+    {
+        if (!SupportsTransactionalWrites())
+            throw new BulkPriceStockBusyException("Bulk writes require database transaction enlistment and SQL Server NoLock disabled.");
+    }
+
+    internal static bool SupportsTransactionalWrites()
     {
         var settings = DataSettingsManager.LoadSettings();
-        var supportsTransaction = settings.DataProvider switch
+        return settings.DataProvider switch
         {
             DataProviderType.SqlServer => !settings.WithNoLock && new SqlConnectionStringBuilder(settings.ConnectionString).Enlist,
             DataProviderType.MySql => new MySqlConnectionStringBuilder(settings.ConnectionString).AutoEnlist,
             DataProviderType.PostgreSQL => new NpgsqlConnectionStringBuilder(settings.ConnectionString).Enlist,
             _ => false
         };
-
-        if (!supportsTransaction)
-            throw new BulkPriceStockBusyException("Bulk writes require database transaction enlistment and SQL Server NoLock disabled.");
     }
 
-    private static bool IsConcurrentWrite(Exception exception)
+    internal static bool IsConcurrentWrite(Exception exception)
     {
         for (var cause = exception; cause != null; cause = cause.InnerException)
         {

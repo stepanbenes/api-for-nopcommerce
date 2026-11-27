@@ -16,7 +16,9 @@ Receive a single Product](#get-apiproductsid)
 + [POST /api/products  
 Create a new Product](#post-apiproducts)
 
-+ [POST /api/products/bulk-price-stock](#post-apiproductsbulk-price-stock) sets prices and stock quantities for multiple products.
++ [Catalog write capabilities](#catalog-write-capabilities) reports the synchronization modes available for this store.
++ [POST /api/products/desired-price-stock](#post-apiproductsdesired-price-stock) applies expected and desired product values.
++ [POST /api/products/bulk-price-stock](#post-apiproductsbulk-price-stock) sets versioned prices and stock quantities on installations with legacy receipts.
 
 + [PUT /api/products/{id}  
 Modify an existing Product](#put-apiproductsid)
@@ -1706,7 +1708,64 @@ DELETE /api/products/50
 
 
 
+## Catalog write capabilities
+
+Call `GET /api/sync/capabilities` with the catalog product edit permission. A store without the legacy receipt schema can return this response.
+
+```json
+{
+  "versioned_bulk_price_stock": false,
+  "desired_price_stock": true,
+  "warehouse_stock_compare_and_set": true
+}
+```
+
+The plugin enables versioned bulk only when the existing receipt table has the required active unique index. Capability discovery reads database metadata. The plugin installation and upgrade paths do not add receipt schema or record a receipt migration. All three write modes require transaction enlistment, with NoLock disabled on SQL Server.
+
+## POST /api/products/desired-price-stock
+
+Supply one to 100 distinct products and at least one expected/desired pair per product. Omit pairs the caller does not own. Read current values from `GET /api/products/{id}`, using `products[0].price` and `products[0].stock_quantity`. The product response also exposes `published`, `manage_inventory_method_id`, and `use_multiple_warehouses`. Product and warehouse readback use the same store, customer ACL, and vendor scope as compare-and-set writes.
+
+```json
+{
+  "items": [
+    { "product_id": 14, "expected_price": 31.95, "price": 32.50 },
+    { "product_id": 19, "expected_stock_quantity": 4, "stock_quantity": 2 }
+  ]
+}
+```
+
+The response reports a status for each item in request order. The endpoint validates the whole request before writes. It checks products against the current store, customer ACL, and vendor, and applies each eligible item's owned fields together.
+
+| Status | Meaning |
+| --- | --- |
+| `updated` | The expected values matched and the requested fields changed. |
+| `unchanged` | All owned fields already held the desired values. This includes a retry after a successful write whose response was lost. |
+| `conflict` | At least one expected value differed. Read the current state before reconciling. |
+| `not_found` | The product was deleted, missing, or outside the caller's scope. |
+| `unsupported_stock_mode` | The product uses attribute stock, unmanaged stock, or multiple warehouses. Send a price-only item when appropriate. |
+| `stock_adjustment_out_of_range` | The stock change exceeds the range supported by nopCommerce stock history. |
+
+A no-op leaves timestamps, events, and history untouched. A changed stock quantity records a history entry in the same transaction. Single-warehouse stock uses the native nopCommerce inventory adjustment and its configured low-stock actions. Price-only changes leave publication alone. Price and single-warehouse product stock are shared across stores that offer the product. The caller supplies the expected values on every attempt. Compare-and-set checks current values, so an intervening change back to an earlier expected value can permit an older request.
+
+### Warehouse stock
+
+Use `GET /api/product_warehouse_inventories/{id}` to read `stock_quantity` and `reserved_quantity` from `product_warehouse_inventories[0]`. Use `PUT` on the same resource for an existing row of a product using multiple warehouses.
+
+```json
+{
+  "product_warehouse_inventory": {
+    "expected_stock_quantity": 6,
+    "stock_quantity": 8
+  }
+}
+```
+
+The API compares the warehouse row's absolute stock quantity, preserves reservations, and records one warehouse stock history entry on a change. A successful update or replay returns HTTP 200 and the existing inventory response. The endpoint returns HTTP 409 if the expected quantity differs from the current quantity and the current quantity also differs from the desired quantity. It returns HTTP 422 for a requested quantity below the reserved quantity or an unsupported stock mode. Product ID, warehouse ID, and reserved quantity are read-only for this request. Changes apply the configured low-stock publication or button behavior using total stock less reservations across the product’s warehouses. A synchronization job with its own publication or availability rules must route those writes separately.
+
 ## POST /api/products/bulk-price-stock
+
+Use this mode when `GET /api/sync/capabilities` reports `versioned_bulk_price_stock: true`. When the receipt schema or transaction support is unavailable, the endpoint returns HTTP 503 before any product or stock mutation.
 
 Set the price or the absolute stock quantity for up to 100 distinct products in one request. Authenticate with a bearer token. The API account needs the **Api Users** role and the `Catalog.ProductsCreateEditDelete` permission.
 

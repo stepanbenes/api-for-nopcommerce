@@ -53,7 +53,8 @@ namespace Nop.Plugin.Api.MappingExtensions
             CreateMap<ProductCategory, ProductCategoryMappingDto>();
 
             CreateMap<ProductManufacturer, ProductManufacturerMappingsDto>();
-            CreateMap<ProductWarehouseInventory, ProductWarehouseInventoryDto>();
+            CreateMap<ProductWarehouseInventory, ProductWarehouseInventoryDto>()
+                .ForMember(dto => dto.ExpectedStockQuantity, map => map.Ignore());
 
             CreateMap<Warehouse, WarehouseDto>();
             CreateMap<WarehouseDto, Warehouse>();

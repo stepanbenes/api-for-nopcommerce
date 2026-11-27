@@ -54,61 +54,7 @@ else
     "${compose[@]}" up --build -d
 fi
 
-python3 - <<'PY'
-import http.cookiejar
-import os
-from html.parser import HTMLParser
-import time
-import urllib.parse
-import urllib.request
-
-
-class InstallForm(HTMLParser):
-    token = None
-
-    def handle_starttag(self, tag, attrs):
-        attrs = dict(attrs)
-        if tag == "input" and attrs.get("name") == "__RequestVerificationToken":
-            self.token = attrs.get("value")
-
-
-base = f"http://127.0.0.1:{os.environ['NOP_PORT']}"
-opener = urllib.request.build_opener(
-    urllib.request.ProxyHandler({}),
-    urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()),
-)
-for attempt in range(60):
-    try:
-        with opener.open(base + "/install", timeout=5) as response:
-            form = InstallForm()
-            form.feed(response.read().decode())
-        if form.token:
-            break
-    except OSError:
-        pass
-    time.sleep(2)
-else:
-    raise SystemExit("The isolated nopCommerce installer did not become ready.")
-
-password = os.environ["NOP_OPENAPI_ADMIN_PASSWORD"]
-payload = urllib.parse.urlencode({
-    "__RequestVerificationToken": form.token,
-    "AdminEmail": "openapi-ci@example.test",
-    "AdminPassword": password,
-    "ConfirmPassword": password,
-    "DataProvider": "3",
-    "ConnectionStringRaw": "true",
-    "ConnectionString": (
-        "Host=db;Database=nopcommerce;Username=nopcommerce;"
-        f"Password={os.environ['NOP_DB_PASSWORD']}"
-    ),
-    "InstallSampleData": os.environ["NOP_OPENAPI_RUN_TESTS"],
-    "SubscribeNewsletters": "false",
-}).encode()
-with opener.open(base + "/install", payload, timeout=240) as response:
-    if "window.location.replace(" not in response.read().decode():
-        raise SystemExit("nopCommerce did not complete installation.")
-PY
+python3 "$repository/scripts/install-test-store.py"
 
 "${compose[@]}" restart web
 
@@ -166,7 +112,11 @@ SQL
         exit 1
     fi
     # This project owns a fresh database that cleanup removes on exit.
-    export NOP_API_TEST_POSTGRES_ALLOW_FAULT_INJECTION=1
+    "${compose[@]}" exec -T db psql -XqAtw -U nopcommerce -d nopcommerce -v ON_ERROR_STOP=1 <<'SQL'
+UPDATE "Setting" SET "Value" = 'False' WHERE lower("Name") = 'catalogsettings.ignoreacl';
+SQL
+    export NOP_API_TEST_CATALOG_ACL=1
+    export NOP_API_TEST_EXPECT_NO_RECEIPTS=1
     export NOP_API_TEST_URL="http://127.0.0.1:$NOP_PORT"
     export NOP_API_TEST_USER="openapi-ci@example.test"
     export NOP_API_TEST_PASSWORD="$NOP_OPENAPI_ADMIN_PASSWORD"
@@ -177,6 +127,7 @@ SQL
     (
         cd "$NOP_ROOT"
         dotnet test "$repository/api-for-nopcommerce.sln" -c Release -p:NopRoot="$NOP_ROOT" \
+            --filter 'TestCategory!=ExistingReceiptSchema' \
             --results-directory "$scratch" --logger 'trx;LogFileName=api-release.trx'
     )
 
@@ -191,11 +142,12 @@ if total < 573 or any(int(counters.get(key, "0")) != total for key in ("executed
     raise SystemExit("Expected at least 573 API tests with every case executed and passed.")
 
 expected_database_tests = {
-    "BulkPriceStockReplaysAnUnreadResponseAfterANewerUpdate",
-    "BulkPriceStockValidatesTheBatchBeforeWritingAndReportsUnavailableItems",
-    "ConcurrentBulkPriceStockRetriesWriteOneHistoryEntry",
-    "ConcurrentBulkPriceStockVersionsLeaveTheNewerUpdateInPlace",
-    "BulkPriceStockRollsBackProductAndHistoryWhenReceiptWriteFails",
+    "FreshSyncCapabilitiesRequireNoReceiptSchema",
+    "DesiredPriceStockRetriesAnUnreadResultAndRejectsStaleValues",
+    "DesiredPriceStockValidatesTheEntireBatchBeforeWriting",
+    "ConcurrentDesiredStockRetriesWriteOneHistoryEntry",
+    "WarehouseDesiredStockPreservesReservationsAndWritesHistoryOnce",
+    "WarehouseAndProductReadbackExcludeAclRestrictedOwnerBeforePaging",
     "CacheClearRequiresMaintenancePermissionAndAuditsTheCaller(True)",
     "CheckoutAcceptsAnItemWithoutAttributesAndPartialUpdatePreservesShipping(True)",
     "ProductAndCartItemCanBeCreatedUpdatedAndDeleted(True)",

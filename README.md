@@ -45,7 +45,7 @@ The plugin build places its files in `src/Presentation/Nop.Web/Plugins/Nop.Plugi
 
 ## Navigation menus in 5.00
 
-Use `GET /api/menus` to discover menus for the current store and `GET /api/menus/{menuId}/items` to list their links. Add a category or topic link with `POST /api/menus/{menuId}/items`. The body accepts `link_type` of `category` or `topic`, an `entity_id`, and an optional `display_order`. For example, send `{"link_type":"category","entity_id":42,"display_order":20}`. The add request returns HTTP 201 for a new link and 200 if the link already exists. Delete a link with `DELETE /api/menus/{menuId}/items/{itemId}`.
+Use `GET /api/menus` to discover menus for the current store and `GET /api/menus/{menuId}/items` to list their links. Add a category or topic link with `POST /api/menus/{menuId}/items`. The body accepts `link_type` of `category` or `topic`, an `entity_id`, and an optional `display_order`. For example, send `{"link_type":"category","entity_id":42,"display_order":20}`. The add request returns HTTP 201 for a new link and 200 for a compatible retry. A conflicting order returns 409. Reorder an individual link with `PUT /api/menus/{menuId}/items/{itemId}` and `{"expected_display_order":20,"display_order":25}`, or remove it with `DELETE /api/menus/{menuId}/items/{itemId}`. See [product and menu relationship writes](docs/sync-product-relationships.md) for the request contracts.
 
 The API account needs the **Api Users** role and the nopCommerce permission to manage menus. You can also configure menus under **Admin → Content management → Menus**.
 
@@ -69,7 +69,7 @@ Store operators can list and create shipments, update tracking, and mark shipmen
 
 ## Bulk product price and stock updates
 
-Send `POST /api/products/bulk-price-stock` with a bearer token and up to 100 product updates. An operation ID supports safe retries, and its version orders submissions for that operation. Product price and stock changes apply to every store where the product is available. See the [bulk product update contract and examples](Products.md#post-apiproductsbulk-price-stock).
+Discover the available catalog writes with `GET /api/sync/capabilities`. Use `POST /api/products/desired-price-stock` for compare-and-set product prices and stock, and the warehouse inventory resource for warehouse stock. Installations that already have the receipt table and its unique index also support legacy versioned bulk. See the [synchronization contracts and examples](Products.md#catalog-write-capabilities).
 
 ## Clear the nopCommerce cache
 
@@ -92,13 +92,13 @@ dotnet test Nop.Plugin.Api.Tests -p:NopRoot="$(cd ../nopCommerce && pwd)" --filt
 dotnet run --project ClientApp -- "$NOP_API_TEST_URL"
 ```
 
-With a disposable [Docker stack](DOCKER.md) running and those API variables set, run the API-to-PostgreSQL cases from the same Compose project. The tests exercise tax category, product, cart item, checkout, cache-clear, and bulk price and stock operations against the loopback API. The bulk suite checks replay after an unread response, overlapping retries, validation, and rollback. The rollback test temporarily installs a deferred trigger scoped to its own operation ID. The tests run `psql` inside the database container over its local socket. They use the Compose database and user `nopcommerce` and need no published PostgreSQL port or database password.
+With a disposable [Docker stack](DOCKER.md) running and those API variables set, run the API-to-PostgreSQL cases from the same Compose project. The tests exercise tax category, product, cart item, checkout, cache-clear, and bulk price and stock operations against the loopback API. The synchronization suite checks capability discovery, overlapping and lost-response retries, validation, stock history, and reservation preservation. The tests use read-only `psql` queries inside the database container over its local socket. They use the Compose database and user `nopcommerce` and need no published PostgreSQL port or database password.
 
 ```sh
-NOP_API_TEST_POSTGRES_ALLOW_FAULT_INJECTION=1 ./docker/test-postgres.sh
+./docker/test-postgres.sh
 ```
 
-The script requires Python 3 and succeeds only when all nine cases run and pass. The cases clean up test entities through the API. nopCommerce retains soft-deleted product and order rows, the cache-clear audit entry, and bulk operation receipts.
+The script requires Python 3 and succeeds only when all nine cases run and pass. The cases clean up test entities through the API. nopCommerce retains soft-deleted product and order rows and the cache-clear audit entry. The separate `ExistingReceiptSchema` category exercises legacy versioned replay on a test store that already has the receipt schema.
 
 ### Place an order with the generated C# client
 
@@ -151,3 +151,5 @@ python3 -m http.server --directory site 8000
 ```
 
 To host the site, select **GitHub Actions** under **Settings → Pages → Build and deployment → Source**. The workflow deploys the released references on pushes to the default branch and after stable releases are published. If the `github-pages` environment restricts deployments, allow the default branch and release tags (`v*`). Use **Run workflow** from the default branch to rebuild the site manually.
+
+The [catalog synchronization contract](docs/catalog-sync/README.md) covers write selection, concurrency, permission requirements, and timeout recovery.

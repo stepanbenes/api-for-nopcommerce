@@ -69,10 +69,30 @@ jobs:
           compression-level: 0
           overwrite: true
 
+  sqlserver:
+    name: SQL Server catalog synchronization
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v6
+        with:
+          repository: nopSolutions/nopCommerce
+          # release-5.00.0
+          ref: fbdbe18d43b42b7e269f7118cfc9533349ed2dc0
+          path: upstream-nopcommerce
+          persist-credentials: false
+      - name: Exercise concurrent and retried writes against SQL Server 2022
+        env:
+          NOP_ROOT: ${{ github.workspace }}/upstream-nopcommerce
+        run: bash docker/test-sqlserver.sh
+
   release:
     name: Publish the verified plugin
     if: github.event_name == 'push' && github.ref_type == 'tag' && startsWith(github.ref_name, 'v')
-    needs: [dotnet, python, runtime-openapi]
+    needs: [dotnet, python, runtime-openapi, sqlserver]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:

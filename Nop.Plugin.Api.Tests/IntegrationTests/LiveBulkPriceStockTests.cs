@@ -10,18 +10,23 @@ public partial class LiveApiTests
 {
     private const string BulkPriceStockPath = "/api/products/bulk-price-stock";
 
-    [Test, Category("DatabaseIntegration")]
-    public async Task BulkPriceStockReplaysAnUnreadResponseAfterANewerUpdate()
+    [Test, Category("ExistingReceiptSchema")]
+    public async Task BulkPriceStockReplaysAfterTheClientLosesTheCommittedResponse()
     {
         var database = PostgresProbe.ForConfiguredContainer(_client.BaseAddress);
         await AuthenticateAdministrator();
+        await RequireExistingReceiptSchema();
         var product = await CreateBulkProduct();
         try
         {
             var first = BulkRequest(Guid.NewGuid(), 10, BulkItem(product, 21m, 8));
-            using (var request = new HttpRequestMessage(HttpMethod.Post, BulkPriceStockPath) { Content = JsonContent.Create(first) })
-            using (var response = await _client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead))
-                TestAssert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            using var droppingClient = new HttpClient(new DropSuccessfulBulkResponse())
+            {
+                BaseAddress = _client.BaseAddress
+            };
+            droppingClient.DefaultRequestHeaders.Authorization = _client.DefaultRequestHeaders.Authorization;
+            TestAssert.ThrowsAsync<LostBulkResponseException>(async () =>
+                await droppingClient.PostAsJsonAsync(BulkPriceStockPath, first));
 
             await AssertBulkState(database, product, 21m, 8, (5, 8));
             await Send(HttpMethod.Post, BulkPriceStockPath, HttpStatusCode.OK,
@@ -41,11 +46,12 @@ public partial class LiveApiTests
         }
     }
 
-    [Test, Category("DatabaseIntegration")]
+    [Test, Category("ExistingReceiptSchema")]
     public async Task BulkPriceStockValidatesTheBatchBeforeWritingAndReportsUnavailableItems()
     {
         var database = PostgresProbe.ForConfiguredContainer(_client.BaseAddress);
         await AuthenticateAdministrator();
+        await RequireExistingReceiptSchema();
         var product = await CreateBulkProduct();
         var unsupported = 0;
         try
@@ -83,11 +89,12 @@ public partial class LiveApiTests
         }
     }
 
-    [Test, Category("DatabaseIntegration")]
+    [Test, Category("ExistingReceiptSchema")]
     public async Task ConcurrentBulkPriceStockRetriesWriteOneHistoryEntry()
     {
         var database = PostgresProbe.ForConfiguredContainer(_client.BaseAddress);
         await AuthenticateAdministrator();
+        await RequireExistingReceiptSchema();
         var product = await CreateBulkProduct();
         try
         {
@@ -104,11 +111,12 @@ public partial class LiveApiTests
         }
     }
 
-    [Test, Category("DatabaseIntegration")]
+    [Test, Category("ExistingReceiptSchema")]
     public async Task ConcurrentBulkPriceStockVersionsLeaveTheNewerUpdateInPlace()
     {
         var database = PostgresProbe.ForConfiguredContainer(_client.BaseAddress);
         await AuthenticateAdministrator();
+        await RequireExistingReceiptSchema();
         var product = await CreateBulkProduct();
         try
         {
@@ -142,59 +150,22 @@ public partial class LiveApiTests
         }
     }
 
-    [Test, Category("DatabaseIntegration")]
-    public async Task BulkPriceStockRollsBackProductAndHistoryWhenReceiptWriteFails()
+    private sealed class LostBulkResponseException : HttpRequestException
     {
-        var database = PostgresProbe.ForConfiguredContainer(_client.BaseAddress);
-        PostgresProbe.RequireDisposableStoreForFaultInjection();
-        await AuthenticateAdministrator();
-        var firstProduct = await CreateBulkProduct();
-        var secondProduct = 0;
-        try
-        {
-            secondProduct = await CreateBulkProduct();
-            var operationId = Guid.NewGuid();
-            var request = BulkRequest(operationId, 1, BulkItem(firstProduct, 21m, 8), BulkItem(secondProduct, 22m, 9));
-            var faultName = $"bulk_test_{operationId:N}";
-            await database.ExecuteInDisposableStoreAsync($"""
-                BEGIN;
-                CREATE FUNCTION "{faultName}"() RETURNS trigger LANGUAGE plpgsql AS $$
-                BEGIN
-                    RAISE EXCEPTION 'Injected bulk operation commit failure';
-                END;
-                $$;
-                CREATE CONSTRAINT TRIGGER "{faultName}"
-                    AFTER INSERT ON "BulkPriceStockReceipt"
-                    DEFERRABLE INITIALLY DEFERRED FOR EACH ROW
-                    WHEN (NEW."OperationId" = '{operationId:D}')
-                    EXECUTE FUNCTION "{faultName}"();
-                COMMIT;
-                """);
-            try
-            {
-                using var response = await _client.PostAsJsonAsync(BulkPriceStockPath, request);
-                TestAssert.That((int)response.StatusCode, Is.InRange(500, 599));
-                await AssertBulkState(database, firstProduct, 12m, 3);
-                await AssertBulkState(database, secondProduct, 12m, 3);
-            }
-            finally
-            {
-                await database.ExecuteInDisposableStoreAsync($"""
-                    BEGIN;
-                    DROP TRIGGER "{faultName}" ON "BulkPriceStockReceipt";
-                    DROP FUNCTION "{faultName}"();
-                    COMMIT;
-                    """);
-            }
+    }
 
-            var retried = await Send(HttpMethod.Post, BulkPriceStockPath, HttpStatusCode.OK, request);
-            AssertBulkResults(retried, (firstProduct, "updated"), (secondProduct, "updated"));
-            await AssertBulkState(database, firstProduct, 21m, 8, (5, 8));
-            await AssertBulkState(database, secondProduct, 22m, 9, (6, 9));
-        }
-        finally
+    private sealed class DropSuccessfulBulkResponse() : DelegatingHandler(new HttpClientHandler
+    {
+        UseCookies = false,
+        AllowAutoRedirect = false
+    })
+    {
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
+            CancellationToken cancellationToken)
         {
-            await DeleteBulkProducts(secondProduct, firstProduct);
+            using var response = await base.SendAsync(request, cancellationToken);
+            TestAssert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            throw new LostBulkResponseException();
         }
     }
 
@@ -206,7 +177,7 @@ public partial class LiveApiTests
     private static object BulkItem(int id, decimal price, int stock) =>
         new { product_id = id, price, stock_quantity = stock };
 
-    private async Task<int> CreateBulkProduct(int inventoryMode = 1)
+    private async Task<int> CreateBulkProduct(int inventoryMode = 1, bool useMultipleWarehouses = false, int lowStockActivity = 0)
     {
         var created = await Send(HttpMethod.Post, "/api/products", HttpStatusCode.OK, new
         {
@@ -216,6 +187,9 @@ public partial class LiveApiTests
                 price = 12m,
                 stock_quantity = 3,
                 manage_inventory_method_id = inventoryMode,
+                use_multiple_warehouses = useMultipleWarehouses,
+                low_stock_activity_id = lowStockActivity,
+                notify_admin_for_quantity_below = 0,
                 published = true
             }
         });

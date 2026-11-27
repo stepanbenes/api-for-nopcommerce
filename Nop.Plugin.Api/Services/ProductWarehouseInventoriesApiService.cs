@@ -1,4 +1,5 @@
 ﻿using Nop.Core.Domain.Catalog;
+using Nop.Core.Domain.Customers;
 using Nop.Data;
 using Nop.Plugin.Api.DataStructures;
 using Nop.Plugin.Api.Infrastructure;
@@ -8,17 +9,24 @@ namespace Nop.Plugin.Api.Services
     public class ProductWarehouseInventoriesApiService : IProductWarehouseInventoriesApiService
     {
         private readonly IRepository<ProductWarehouseInventory> _productWarehouseRepository;
-        public ProductWarehouseInventoriesApiService(IRepository<ProductWarehouseInventory> productWarehouseRepository)
+        private readonly ProductSyncScope _productScope;
+
+        public ProductWarehouseInventoriesApiService(IRepository<ProductWarehouseInventory> productWarehouseRepository,
+            ProductSyncScope productScope)
         {
             _productWarehouseRepository = productWarehouseRepository;
+            _productScope = productScope;
         }
 
         public async Task<IList<ProductWarehouseInventory>> GetMappingsAsync(
-            int? productId = null,
-            int? categoryId = null, int limit = Constants.Configurations.DefaultLimit,
+            Customer actor, int storeId, int? productId = null,
+            int? warehouseId = null, int limit = Constants.Configurations.DefaultLimit,
             int page = Constants.Configurations.DefaultPageValue, int sinceId = Constants.Configurations.DefaultSinceId)
         {
-            var query = GetInventoriesQuery(productId, categoryId, sinceId);
+            var products = await _productScope.GetProductsAsync(actor, storeId);
+            var query = GetInventoriesQuery(productId, warehouseId, sinceId)
+                .Where(inventory => products.Any(product => product.Id == inventory.ProductId))
+                .OrderBy(inventory => inventory.Id);
 
             return await ApiList<ProductWarehouseInventory>.CreateAsync(query, page - 1, limit);
         }
@@ -36,6 +44,13 @@ namespace Nop.Plugin.Api.Services
             }
 
             return _productWarehouseRepository.GetByIdAsync(id);
+        }
+
+        public async Task<ProductWarehouseInventory> GetScopedByIdAsync(int id, Customer actor, int storeId)
+        {
+            var products = await _productScope.GetProductsAsync(actor, storeId);
+            return await _productWarehouseRepository.Table.FirstOrDefaultAsync(inventory => inventory.Id == id &&
+                products.Any(product => product.Id == inventory.ProductId));
         }
 
         private IQueryable<ProductWarehouseInventory> GetInventoriesQuery(
@@ -58,8 +73,6 @@ namespace Nop.Plugin.Api.Services
             {
                 query = query.Where(mapping => mapping.Id > sinceId);
             }
-
-            query = query.OrderBy(mapping => mapping.Id);
 
             return query;
         }

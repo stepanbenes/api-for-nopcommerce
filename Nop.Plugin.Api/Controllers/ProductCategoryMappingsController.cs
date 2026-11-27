@@ -28,9 +28,10 @@ namespace Nop.Plugin.Api.Controllers
     [AuthorizePermission(StandardPermission.Catalog.CATEGORIES_CREATE_EDIT_DELETE)]
     public class ProductCategoryMappingsController : BaseApiController
     {
-        private readonly ICategoryApiService _categoryApiService;
+        private readonly RelationshipWrites<ProductCategory> _writes;
+        private readonly RelationshipWriteScope _scope;
         private readonly ICategoryService _categoryService;
-        private readonly IProductApiService _productApiService;
+        private readonly ICategoryApiService _categoryApiService;
         private readonly IProductCategoryMappingsApiService _productCategoryMappingsService;
 
         public ProductCategoryMappingsController(
@@ -45,15 +46,17 @@ namespace Nop.Plugin.Api.Controllers
             ICustomerActivityService customerActivityService,
             ILocalizationService localizationService,
             ICategoryApiService categoryApiService,
-            IProductApiService productApiService,
-            IPictureService pictureService)
+            IPictureService pictureService,
+            RelationshipWrites<ProductCategory> writes,
+            RelationshipWriteScope scope)
             : base(jsonFieldsSerializer, aclService, customerService, storeMappingService, storeService, discountService, customerActivityService,
                    localizationService, pictureService)
         {
             _productCategoryMappingsService = productCategoryMappingsService;
-            _categoryService = categoryService;
             _categoryApiService = categoryApiService;
-            _productApiService = productApiService;
+            _categoryService = categoryService;
+            _writes = writes;
+            _scope = scope;
         }
 
         /// <summary>
@@ -175,122 +178,102 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(ProductCategoryMappingsRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.Conflict)]
         [ProducesResponseType(typeof(ErrorsRootObject), 422)]
+        [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.ServiceUnavailable)]
         public async Task<IActionResult> CreateProductCategoryMapping(
             [FromBody]
             [ModelBinder(typeof(JsonModelBinder<ProductCategoryMappingDto>))]
-            Delta<ProductCategoryMappingDto> productCategoryDelta)
+            Delta<ProductCategoryMappingDto> delta)
         {
-            // Here we display the errors if the validation has failed at some point.
             if (!ModelState.IsValid)
-            {
                 return Error();
-            }
 
-            var category = await _categoryApiService.GetCategoryByIdAsync(productCategoryDelta.Dto.CategoryId.Value);
-            if (category == null)
+            var dto = delta.Dto;
+            if (dto.ProductId is not > 0 || dto.CategoryId is not > 0)
+                return Error(HttpStatusCode.BadRequest, "product_category_mapping", "positive product_id and category_id are required");
+
+            return await _writes.ExecuteAsync(async onCommit =>
             {
-                return Error(HttpStatusCode.NotFound, "category_id", "not found");
-            }
+                var scopeError = await CheckMappingScopeAsync(dto.ProductId.Value, dto.CategoryId.Value);
+                if (scopeError != null)
+                    return scopeError;
 
-            var product = await _productApiService.GetProductByIdAsync(productCategoryDelta.Dto.ProductId.Value);
-            if (product == null)
-            {
-                return Error(HttpStatusCode.NotFound, "product_id", "not found");
-            }
+                var existing = await FindMappingsAsync(dto.ProductId.Value, dto.CategoryId.Value);
+                if (existing.Count != 0)
+                {
+                    var mapping = existing[0];
+                    if (existing.Count > 1 ||
+                        dto.IsFeaturedProduct.HasValue && dto.IsFeaturedProduct.Value != mapping.IsFeaturedProduct ||
+                        dto.DisplayOrder.HasValue && dto.DisplayOrder.Value != mapping.DisplayOrder)
+                        return Error(HttpStatusCode.Conflict, "product_category_mapping", "existing mapping conflicts with the request");
 
-            var mappingsCount = await _productCategoryMappingsService.GetMappingsCountAsync(product.Id, category.Id);
+                    return MappingResponse(mapping);
+                }
 
-            if (mappingsCount > 0)
-            {
-                return Error(HttpStatusCode.BadRequest, "product_category_mapping", "already exist");
-            }
-
-            var newProductCategory = new ProductCategory();
-            productCategoryDelta.Merge(newProductCategory);
-
-            //inserting new category
-            await _categoryService.InsertProductCategoryAsync(newProductCategory);
-
-            // Preparing the result dto of the new product category mapping
-            var newProductCategoryMappingDto = newProductCategory.ToDto();
-
-            var productCategoryMappingsRootObject = new ProductCategoryMappingsRootObject();
-
-            productCategoryMappingsRootObject.ProductCategoryMappingDtos.Add(newProductCategoryMappingDto);
-
-            var json = JsonFieldsSerializer.Serialize(productCategoryMappingsRootObject, string.Empty);
-
-            //activity log 
-            await CustomerActivityService.InsertActivityAsync("AddNewProductCategoryMapping", await LocalizationService.GetResourceAsync("ActivityLog.AddNewProductCategoryMapping"),
-                                                   newProductCategory);
-
-            return new RawJsonActionResult(json);
+                var created = new ProductCategory();
+                delta.Merge(created);
+                created.Id = 0;
+                await _categoryService.InsertProductCategoryAsync(created);
+                onCommit.Add(async () => await CustomerActivityService.InsertActivityAsync("AddNewProductCategoryMapping",
+                    await LocalizationService.GetResourceAsync("ActivityLog.AddNewProductCategoryMapping"), created));
+                return MappingResponse(created);
+            }, HttpContext.RequestAborted);
         }
 
         [HttpPut]
         [Route("/api/product_category_mappings/{id}", Name = "UpdateProductCategoryMapping")]
         [ProducesResponseType(typeof(ProductCategoryMappingsRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.Conflict)]
         [ProducesResponseType(typeof(ErrorsRootObject), 422)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.ServiceUnavailable)]
         public async Task<IActionResult> UpdateProductCategoryMapping(
             [FromBody]
             [ModelBinder(typeof(JsonModelBinder<ProductCategoryMappingDto>))]
-            Delta<ProductCategoryMappingDto> productCategoryDelta)
+            Delta<ProductCategoryMappingDto> delta)
         {
-            // Here we display the errors if the validation has failed at some point.
             if (!ModelState.IsValid)
-            {
                 return Error();
-            }
 
-            if (productCategoryDelta.Dto.CategoryId.HasValue)
+            if ((delta.HasProperty(nameof(ProductCategoryMappingDto.ProductId)) && delta.Dto.ProductId is not > 0) ||
+                (delta.HasProperty(nameof(ProductCategoryMappingDto.CategoryId)) && delta.Dto.CategoryId is not > 0))
+                return Error(HttpStatusCode.BadRequest, "product_category_mapping", "mapping IDs must be positive");
+
+            return await _writes.ExecuteAsync(async onCommit =>
             {
-                var category = await _categoryApiService.GetCategoryByIdAsync(productCategoryDelta.Dto.CategoryId.Value);
-                if (category == null)
+                var mapping = await _writes.GetByIdAsync(delta.Dto.Id);
+                if (mapping == null)
+                    return Error(HttpStatusCode.NotFound, "product_category_mapping", "not found");
+
+                var scopeError = await CheckMappingScopeAsync(mapping.ProductId, mapping.CategoryId);
+                if (scopeError != null)
+                    return scopeError;
+
+                var productId = delta.Dto.ProductId ?? mapping.ProductId;
+                var categoryId = delta.Dto.CategoryId ?? mapping.CategoryId;
+                if (productId != mapping.ProductId || categoryId != mapping.CategoryId)
                 {
-                    return Error(HttpStatusCode.NotFound, "category_id", "not found");
-                }
-            }
+                    scopeError = await CheckMappingScopeAsync(productId, categoryId);
+                    if (scopeError != null)
+                        return scopeError;
 
-            if (productCategoryDelta.Dto.ProductId.HasValue)
-            {
-                var product = await _productApiService.GetProductByIdAsync(productCategoryDelta.Dto.ProductId.Value);
-                if (product == null)
+                    if ((await FindMappingsAsync(productId, categoryId)).Count != 0)
+                        return Error(HttpStatusCode.Conflict, "product_category_mapping", "destination mapping already exists");
+                }
+
+                if (delta.MergeScalarChanges(mapping))
                 {
-                    return Error(HttpStatusCode.NotFound, "product_id", "not found");
+                    await _categoryService.UpdateProductCategoryAsync(mapping);
+                    onCommit.Add(async () => await CustomerActivityService.InsertActivityAsync("UpdateProdutCategoryMapping",
+                        await LocalizationService.GetResourceAsync("ActivityLog.UpdateProdutCategoryMapping"), mapping));
                 }
-            }
 
-            // We do not need to validate the category id, because this will happen in the model binder using the dto validator.
-            var updateProductCategoryId = productCategoryDelta.Dto.Id;
-
-            var productCategoryEntityToUpdate = await _categoryService.GetProductCategoryByIdAsync(updateProductCategoryId);
-
-            if (productCategoryEntityToUpdate == null)
-            {
-                return Error(HttpStatusCode.NotFound, "product_category_mapping", "not found");
-            }
-
-            productCategoryDelta.Merge(productCategoryEntityToUpdate);
-
-            await _categoryService.UpdateProductCategoryAsync(productCategoryEntityToUpdate);
-
-            //activity log
-            await CustomerActivityService.InsertActivityAsync("UpdateProdutCategoryMapping", await LocalizationService.GetResourceAsync("ActivityLog.UpdateProdutCategoryMapping"), productCategoryEntityToUpdate);
-
-            var updatedProductCategoryDto = productCategoryEntityToUpdate.ToDto();
-
-            var productCategoriesRootObject = new ProductCategoryMappingsRootObject();
-
-            productCategoriesRootObject.ProductCategoryMappingDtos.Add(updatedProductCategoryDto);
-
-            var json = JsonFieldsSerializer.Serialize(productCategoriesRootObject, string.Empty);
-
-            return new RawJsonActionResult(json);
+                return MappingResponse(mapping);
+            }, HttpContext.RequestAborted);
         }
 
         [HttpDelete]
@@ -300,6 +283,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
         [GetRequestsErrorInterceptorActionFilter]
+        [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.ServiceUnavailable)]
         public async Task<IActionResult> DeleteProductCategoryMapping([FromRoute] int id)
         {
             if (id <= 0)
@@ -307,19 +291,42 @@ namespace Nop.Plugin.Api.Controllers
                 return Error(HttpStatusCode.BadRequest, "id", "invalid id");
             }
 
-            var productCategory = await _categoryService.GetProductCategoryByIdAsync(id);
-
-            if (productCategory == null)
+            return await _writes.ExecuteAsync(async onCommit =>
             {
-                return Error(HttpStatusCode.NotFound, "product_category_mapping", "not found");
-            }
+                var mapping = await _writes.GetByIdAsync(id);
+                if (mapping == null)
+                    return Error(HttpStatusCode.NotFound, "product_category_mapping", "not found");
 
-            await _categoryService.DeleteProductCategoryAsync(productCategory);
+                var scopeError = await CheckMappingScopeAsync(mapping.ProductId, mapping.CategoryId);
+                if (scopeError != null)
+                    return scopeError;
 
-            //activity log 
-            await CustomerActivityService.InsertActivityAsync("DeleteProductCategoryMapping", await LocalizationService.GetResourceAsync("ActivityLog.DeleteProductCategoryMapping"), productCategory);
+                await _categoryService.DeleteProductCategoryAsync(mapping);
+                onCommit.Add(async () => await CustomerActivityService.InsertActivityAsync("DeleteProductCategoryMapping",
+                    await LocalizationService.GetResourceAsync("ActivityLog.DeleteProductCategoryMapping"), mapping));
+                return new RawJsonActionResult("{}");
+            }, HttpContext.RequestAborted);
+        }
 
-            return new RawJsonActionResult("{}");
+        private async Task<IActionResult> CheckMappingScopeAsync(int productId, int categoryId)
+        {
+            if (!await _scope.IsInScopeAsync(await _categoryApiService.GetCategoryByIdAsync(categoryId)))
+                return Error(HttpStatusCode.NotFound, "category_id", "not found");
+
+            if (!await _scope.CanWriteProductAsync(productId))
+                return Error(HttpStatusCode.NotFound, "product_id", "not found");
+
+            return null;
+        }
+
+        private Task<IList<ProductCategory>> FindMappingsAsync(int productId, int categoryId) =>
+            _productCategoryMappingsService.GetMappingsAsync(productId, categoryId, limit: 2);
+
+        private IActionResult MappingResponse(ProductCategory mapping)
+        {
+            var result = new ProductCategoryMappingsRootObject();
+            result.ProductCategoryMappingDtos.Add(mapping.ToDto());
+            return new RawJsonActionResult(JsonFieldsSerializer.Serialize(result, string.Empty));
         }
     }
 }

@@ -37,6 +37,11 @@ namespace Nop.Plugin.Api.Infrastructure
             services.AddScoped<ICategoryApiService, CategoryApiService>();
             services.AddScoped<IProductApiService, ProductApiService>();
             services.AddScoped<IBulkPriceStockService, BulkPriceStockService>();
+            services.AddScoped<BulkPriceStockAvailability>();
+            services.AddScoped<DesiredPriceStockService>();
+            services.AddScoped<ProductSyncScope>();
+            services.AddScoped(typeof(RelationshipWrites<>));
+            services.AddScoped<RelationshipWriteScope>();
             services.AddScoped<IProductCategoryMappingsApiService, ProductCategoryMappingsApiService>();
             services.AddScoped<IProductManufacturerMappingsApiService, ProductManufacturerMappingsApiService>();
             services.AddScoped<IOrderApiService, OrderApiService>();
@@ -44,6 +49,7 @@ namespace Nop.Plugin.Api.Infrastructure
             services.AddScoped<IOrderItemApiService, OrderItemApiService>();
             services.AddScoped<IProductAttributesApiService, ProductAttributesApiService>();
             services.AddScoped<IProductPictureService, ProductPictureService>();
+            services.AddScoped<ProductPictureSyncService>();
             services.AddScoped<IProductAttributeConverter, ProductAttributeConverter>();
             services.AddScoped<ISpecificationAttributeApiService, SpecificationAttributesApiService>();
             services.AddScoped<INewsLetterSubscriptionApiService, NewsLetterSubscriptionApiService>();

@@ -42,3 +42,14 @@ public class AddMenuItemRequest
     [JsonProperty("display_order")]
     public int? DisplayOrder { get; set; }
 }
+
+public class UpdateMenuItemOrderRequest
+{
+    [Required]
+    [JsonProperty("expected_display_order")]
+    public int? ExpectedDisplayOrder { get; set; }
+
+    [Required]
+    [JsonProperty("display_order")]
+    public int? DisplayOrder { get; set; }
+}

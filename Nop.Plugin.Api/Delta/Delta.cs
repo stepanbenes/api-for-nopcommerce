@@ -2,6 +2,7 @@
 using Nop.Plugin.Api.Helpers;
 using Nop.Plugin.Api.Maps;
 using System.Collections;
+using System.Reflection;
 
 namespace Nop.Plugin.Api.Delta
 {
@@ -36,6 +37,18 @@ namespace Nop.Plugin.Api.Delta
         public void Merge<TEntity>(TEntity entity, bool mergeComplexTypeCollections = true)
         {
             _mappingHelper.SetValues(PropertyValuePairs, entity, entity.GetType(), null, mergeComplexTypeCollections);
+        }
+
+        public bool MergeScalarChanges<TEntity>(TEntity entity)
+        {
+            var properties = PropertyValuePairs.Keys
+                .Select(name => entity.GetType().GetProperty(name, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance))
+                .Where(property => property != null)
+                .Select(property => (Property: property, PreviousValue: property.GetValue(entity)))
+                .ToArray();
+
+            Merge(entity);
+            return properties.Any(entry => !Equals(entry.PreviousValue, entry.Property.GetValue(entity)));
         }
 
         public void Merge<TEntity>(object dto, TEntity entity, bool mergeComplexTypeCollections = true)
