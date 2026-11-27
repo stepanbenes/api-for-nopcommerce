@@ -1,0 +1,37 @@
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04
+    platform: linux/amd64
+    environment:
+      ACCEPT_EULA: 'Y'
+      MSSQL_PID: Developer
+      MSSQL_SA_PASSWORD: ${NOP_DB_PASSWORD:?}
+    healthcheck:
+      test: ["CMD-SHELL", "SQLCMDPASSWORD=\"$$MSSQL_SA_PASSWORD\" /opt/mssql-tools18/bin/sqlcmd -S tcp:127.0.0.1,1433 -C -U sa -b -Q 'SELECT 1' >/dev/null"]
+      interval: 4s
+      timeout: 8s
+      retries: 45
+    volumes:
+      - database:/var/opt/mssql
+  web:
+    build:
+      context: ..
+      additional_contexts:
+        nopcommerce: ${NOP_ROOT:?}
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_HTTP_PORTS: ${NOP_PORT:?}
+      ApiConfiguration__SecurityKey: ${NOP_API_SIGNING_KEY:?}
+      NOP_API_PICTURE_SYNC_LOCAL_THUMBS: '1'
+      InstallationConfig__InstallRegionalResources: 'false'
+    ports:
+      - "127.0.0.1:${NOP_PORT}:${NOP_PORT}"
+    volumes:
+      - app-data:/app/App_Data
+      - images:/app/wwwroot/images
+volumes:
+  database:
+  app-data:
+  images:
