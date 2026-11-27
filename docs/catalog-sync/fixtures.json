@@ -1,0 +1,101 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/sync/capabilities",
+    "http": 200,
+    "response": {
+      "versioned_bulk_price_stock": false,
+      "desired_price_stock": true,
+      "warehouse_stock_compare_and_set": true
+    }
+  },
+  {
+    "method": "POST",
+    "path": "/api/products/desired-price-stock",
+    "request": {
+      "items": [
+        {
+          "product_id": 14,
+          "expected_price": 31.95,
+          "price": 32.5
+        },
+        {
+          "product_id": 19,
+          "expected_stock_quantity": 4,
+          "stock_quantity": 2
+        }
+      ]
+    },
+    "http": 200,
+    "response": {
+      "results": [
+        {
+          "product_id": 14,
+          "status": "updated"
+        },
+        {
+          "product_id": 19,
+          "status": "conflict"
+        }
+      ]
+    },
+    "same_request_after_lost_response": {
+      "results": [
+        {
+          "product_id": 14,
+          "status": "unchanged"
+        },
+        {
+          "product_id": 19,
+          "status": "conflict"
+        }
+      ]
+    }
+  },
+  {
+    "method": "PUT",
+    "path": "/api/product_warehouse_inventories/73",
+    "request": {
+      "product_warehouse_inventory": {
+        "expected_stock_quantity": 6,
+        "stock_quantity": 8
+      }
+    },
+    "http": 200,
+    "assert": {
+      "product_warehouse_inventories[0].stock_quantity": 8
+    }
+  },
+  {
+    "method": "PUT",
+    "path": "/api/menus/1/items/23",
+    "request": {
+      "expected_display_order": 10,
+      "display_order": 25
+    },
+    "http": 200,
+    "assert": {
+      "menu_items[0].display_order": 25
+    }
+  },
+  {
+    "method": "PUT",
+    "path": "/api/products/17/pictures/201/302/sync",
+    "request": {
+      "expected_sha256": "b1ff9c8ea3a780bad09b346c423d2d0e46815926879b18e841d928376a946640",
+      "sha256": "b1ff9c8ea3a780bad09b346c423d2d0e46815926879b18e841d928376a946640"
+    },
+    "http": 200,
+    "assert": {
+      "status": "unchanged",
+      "picture_id": 302,
+      "mapping_id": 201,
+      "sha256": "b1ff9c8ea3a780bad09b346c423d2d0e46815926879b18e841d928376a946640"
+    }
+  },
+  {
+    "method": "POST",
+    "path": "/api/admin/cache/clear",
+    "http": 204
+  }
+]

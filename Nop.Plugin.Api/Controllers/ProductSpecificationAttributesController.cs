@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using LinqToDB.Async;
+using Microsoft.AspNetCore.Mvc;
 using Nop.Core.Domain.Catalog;
+using Nop.Data;
 using Nop.Plugin.Api.Attributes;
 using Nop.Plugin.Api.Authorization.Attributes;
 using Nop.Plugin.Api.Delta;
@@ -28,6 +30,9 @@ namespace Nop.Plugin.Api.Controllers
     [AuthorizePermission(StandardPermission.Catalog.SPECIFICATION_ATTRIBUTES_CREATE_EDIT_DELETE)]
     public class ProductSpecificationAttributesController : BaseApiController
     {
+        private readonly RelationshipWrites<ProductSpecificationAttribute> _writes;
+        private readonly RelationshipWriteScope _scope;
+        private readonly IRepository<SpecificationAttributeOption> _optionRepository;
         private readonly IDTOHelper _dtoHelper;
         private readonly ISpecificationAttributeApiService _specificationAttributeApiService;
         private readonly ISpecificationAttributeService _specificationAttributeService;
@@ -44,12 +49,18 @@ namespace Nop.Plugin.Api.Controllers
             IPictureService pictureService,
             ISpecificationAttributeService specificationAttributeService,
             ISpecificationAttributeApiService specificationAttributesApiService,
-            IDTOHelper dtoHelper) : base(jsonFieldsSerializer, aclService, customerService, storeMappingService, storeService, discountService,
+            IDTOHelper dtoHelper,
+            RelationshipWrites<ProductSpecificationAttribute> writes,
+            RelationshipWriteScope scope,
+            IRepository<SpecificationAttributeOption> optionRepository) : base(jsonFieldsSerializer, aclService, customerService, storeMappingService, storeService, discountService,
                                          customerActivityService, localizationService, pictureService)
         {
             _specificationAttributeService = specificationAttributeService;
             _specificationAttributeApiService = specificationAttributesApiService;
             _dtoHelper = dtoHelper;
+            _writes = writes;
+            _scope = scope;
+            _optionRepository = optionRepository;
         }
 
         /// <summary>
@@ -161,36 +172,45 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(ProductSpecificationAttributesRootObjectDto), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.Conflict)]
         [ProducesResponseType(typeof(ErrorsRootObject), 422)]
+        [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.ServiceUnavailable)]
         public async Task<IActionResult> CreateProductSpecificationAttribute(
             [FromBody]
             [ModelBinder(typeof(JsonModelBinder<ProductSpecificationAttributeDto>))]
-            Delta<ProductSpecificationAttributeDto> productSpecificaitonAttributeDelta)
+            Delta<ProductSpecificationAttributeDto> delta)
         {
-            // Here we display the errors if the validation has failed at some point.
             if (!ModelState.IsValid)
-            {
                 return Error();
-            }
 
-            // Inserting the new product
-            var productSpecificationAttribute = new ProductSpecificationAttribute();
-            productSpecificaitonAttributeDelta.Merge(productSpecificationAttribute);
+            return await _writes.ExecuteAsync(async onCommit =>
+            {
+                var requested = new ProductSpecificationAttribute();
+                delta.Merge(requested);
+                requested.Id = 0;
+                var error = await ValidateMappingAsync(requested);
+                if (error != null)
+                    return error;
 
-            await _specificationAttributeService.InsertProductSpecificationAttributeAsync(productSpecificationAttribute);
+                var existing = await FindMappingsAsync(requested);
+                if (existing.Count != 0)
+                {
+                    var mapping = existing[0];
+                    if (existing.Count > 1 ||
+                        delta.HasProperty(nameof(ProductSpecificationAttributeDto.CustomValue)) && mapping.CustomValue != requested.CustomValue ||
+                        delta.HasProperty(nameof(ProductSpecificationAttributeDto.AllowFiltering)) && mapping.AllowFiltering != requested.AllowFiltering ||
+                        delta.HasProperty(nameof(ProductSpecificationAttributeDto.ShowOnProductPage)) && mapping.ShowOnProductPage != requested.ShowOnProductPage ||
+                        delta.HasProperty(nameof(ProductSpecificationAttributeDto.DisplayOrder)) && mapping.DisplayOrder != requested.DisplayOrder)
+                        return Error(HttpStatusCode.Conflict, "product_specification_attribute", "existing mapping conflicts with the request");
 
-            await CustomerActivityService.InsertActivityAsync("AddNewProductSpecificationAttribute", productSpecificationAttribute.Id.ToString());
+                    return MappingResponse(mapping);
+                }
 
-            // Preparing the result dto of the new product
-            var productSpecificationAttributeDto = _dtoHelper.PrepareProductSpecificationAttributeDto(productSpecificationAttribute);
-
-            var productSpecificationAttributesRootObjectDto = new ProductSpecificationAttributesRootObjectDto();
-            productSpecificationAttributesRootObjectDto.ProductSpecificationAttributes.Add(productSpecificationAttributeDto);
-
-            var json = JsonFieldsSerializer.Serialize(productSpecificationAttributesRootObjectDto, string.Empty);
-
-            return new RawJsonActionResult(json);
+                await _specificationAttributeService.InsertProductSpecificationAttributeAsync(requested);
+                onCommit.Add(() => CustomerActivityService.InsertActivityAsync("AddNewProductSpecificationAttribute", requested.Id.ToString()));
+                return MappingResponse(requested);
+            }, HttpContext.RequestAborted);
         }
 
         [HttpPut]
@@ -198,43 +218,38 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(ProductSpecificationAttributesRootObjectDto), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
-        [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.Conflict)]
         [ProducesResponseType(typeof(ErrorsRootObject), 422)]
+        [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.ServiceUnavailable)]
         public async Task<IActionResult> UpdateProductSpecificationAttribute(
             [FromBody]
             [ModelBinder(typeof(JsonModelBinder<ProductSpecificationAttributeDto>))]
-            Delta<ProductSpecificationAttributeDto> productSpecificationAttributeDelta)
+            Delta<ProductSpecificationAttributeDto> delta)
         {
-            // Here we display the errors if the validation has failed at some point.
             if (!ModelState.IsValid)
-            {
                 return Error();
-            }
 
-            // We do not need to validate the product attribute id, because this will happen in the model binder using the dto validator.
-            var productSpecificationAttributeId = productSpecificationAttributeDelta.Dto.Id;
-
-            var productSpecificationAttribute = await _specificationAttributeService.GetProductSpecificationAttributeByIdAsync(productSpecificationAttributeId);
-            if (productSpecificationAttribute == null)
+            return await _writes.ExecuteAsync(async onCommit =>
             {
-                return Error(HttpStatusCode.NotFound, "product specification attribute", "not found");
-            }
+                var mapping = await _writes.GetByIdAsync(delta.Dto.Id);
+                if (mapping == null || !await _scope.CanWriteProductAsync(mapping.ProductId))
+                    return Error(HttpStatusCode.NotFound, "product_specification_attribute", "not found");
 
-            productSpecificationAttributeDelta.Merge(productSpecificationAttribute);
+                if (!delta.MergeScalarChanges(mapping))
+                    return MappingResponse(mapping);
 
-            await _specificationAttributeService.UpdateProductSpecificationAttributeAsync(productSpecificationAttribute);
+                var error = await ValidateMappingAsync(mapping);
+                if (error != null)
+                    return error;
 
-            await CustomerActivityService.InsertActivityAsync("EditProductSpecificationAttribute", productSpecificationAttribute.Id.ToString());
+                if ((await FindMappingsAsync(mapping)).Any(existing => existing.Id != mapping.Id))
+                    return Error(HttpStatusCode.Conflict, "product_specification_attribute", "destination mapping already exists");
 
-            // Preparing the result dto of the new product attribute
-            var productSpecificationAttributeDto = _dtoHelper.PrepareProductSpecificationAttributeDto(productSpecificationAttribute);
-
-            var productSpecificatoinAttributesRootObjectDto = new ProductSpecificationAttributesRootObjectDto();
-            productSpecificatoinAttributesRootObjectDto.ProductSpecificationAttributes.Add(productSpecificationAttributeDto);
-
-            var json = JsonFieldsSerializer.Serialize(productSpecificatoinAttributesRootObjectDto, string.Empty);
-
-            return new RawJsonActionResult(json);
+                await _specificationAttributeService.UpdateProductSpecificationAttributeAsync(mapping);
+                onCommit.Add(() => CustomerActivityService.InsertActivityAsync("EditProductSpecificationAttribute", mapping.Id.ToString()));
+                return MappingResponse(mapping);
+            }, HttpContext.RequestAborted);
         }
 
         [HttpDelete]
@@ -244,6 +259,7 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ErrorsRootObject), 422)]
+        [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.ServiceUnavailable)]
         public async Task<IActionResult> DeleteProductSpecificationAttribute([FromRoute] int id)
         {
             if (id <= 0)
@@ -251,20 +267,50 @@ namespace Nop.Plugin.Api.Controllers
                 return Error(HttpStatusCode.BadRequest, "id", "invalid id");
             }
 
-            var productSpecificationAttribute = await _specificationAttributeService.GetProductSpecificationAttributeByIdAsync(id);
-            if (productSpecificationAttribute == null)
+            return await _writes.ExecuteAsync(async onCommit =>
             {
-                return Error(HttpStatusCode.NotFound, "product specification attribute", "not found");
-            }
+                var mapping = await _writes.GetByIdAsync(id);
+                if (mapping == null || !await _scope.CanWriteProductAsync(mapping.ProductId))
+                    return Error(HttpStatusCode.NotFound, "product_specification_attribute", "not found");
 
-            await _specificationAttributeService.DeleteProductSpecificationAttributeAsync(productSpecificationAttribute);
+                await _specificationAttributeService.DeleteProductSpecificationAttributeAsync(mapping);
+                onCommit.Add(async () => await CustomerActivityService.InsertActivityAsync("DeleteProductSpecificationAttribute",
+                    await LocalizationService.GetResourceAsync("ActivityLog.DeleteProductSpecificationAttribute"), mapping));
+                return new RawJsonActionResult("{}");
+            }, HttpContext.RequestAborted);
+        }
 
-            //activity log
-            await CustomerActivityService.InsertActivityAsync("DeleteProductSpecificationAttribute",
-                                                   await LocalizationService.GetResourceAsync("ActivityLog.DeleteProductSpecificationAttribute"),
-                                                   productSpecificationAttribute);
+        private async Task<IActionResult> ValidateMappingAsync(ProductSpecificationAttribute mapping)
+        {
+            if (mapping.ProductId <= 0 || mapping.SpecificationAttributeOptionId <= 0 ||
+                !Enum.IsDefined(mapping.AttributeType))
+                return Error(HttpStatusCode.BadRequest, "product_specification_attribute", "invalid product, option, or attribute type");
 
-            return new RawJsonActionResult("{}");
+            if (!await _scope.CanWriteProductAsync(mapping.ProductId))
+                return Error(HttpStatusCode.NotFound, "product_id", "not found");
+
+            if (await _optionRepository.GetByIdAsync(mapping.SpecificationAttributeOptionId) == null)
+                return Error(HttpStatusCode.NotFound, "specification_attribute_option_id", "not found");
+
+            return null;
+        }
+
+        private Task<List<ProductSpecificationAttribute>> FindMappingsAsync(ProductSpecificationAttribute requested)
+        {
+            var query = _writes.Table.Where(mapping => mapping.ProductId == requested.ProductId &&
+                mapping.SpecificationAttributeOptionId == requested.SpecificationAttributeOptionId &&
+                mapping.AttributeTypeId == requested.AttributeTypeId);
+            if (requested.AttributeType != SpecificationAttributeType.Option)
+                query = query.Where(mapping => mapping.CustomValue == requested.CustomValue);
+
+            return query.Take(2).ToListAsync();
+        }
+
+        private IActionResult MappingResponse(ProductSpecificationAttribute mapping)
+        {
+            var result = new ProductSpecificationAttributesRootObjectDto();
+            result.ProductSpecificationAttributes.Add(_dtoHelper.PrepareProductSpecificationAttributeDto(mapping));
+            return new RawJsonActionResult(JsonFieldsSerializer.Serialize(result, string.Empty));
         }
     }
 }

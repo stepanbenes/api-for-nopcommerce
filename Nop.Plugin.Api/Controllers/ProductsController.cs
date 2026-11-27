@@ -110,6 +110,37 @@ namespace Nop.Plugin.Api.Controllers
             }
         }
 
+        [HttpPost("/api/products/desired-price-stock", Name = "SetDesiredProductPriceStock")]
+        [AuthorizePermission(StandardPermission.Catalog.PRODUCTS_CREATE_EDIT_DELETE)]
+        [RequestSizeLimit(64 * 1024)]
+        [ProducesResponseType(typeof(BulkPriceStockResponse), 200)]
+        [ProducesResponseType(typeof(ValidationProblemDetails), 400)]
+        [ProducesResponseType(typeof(void), 401)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(typeof(void), 413)]
+        [ProducesResponseType(typeof(ProblemDetails), 503)]
+        public async Task<IActionResult> SetDesiredProductPriceStock(
+            [FromBody, Required] DesiredPriceStockRequest request,
+            [FromServices] IAuthenticationService authenticationService,
+            [FromServices] IStoreContext storeContext,
+            [FromServices] DesiredPriceStockService desiredService,
+            CancellationToken cancellationToken)
+        {
+            var actor = await authenticationService.GetAuthenticatedCustomerAsync();
+            if (actor == null)
+                return AccessDenied();
+
+            var store = await storeContext.GetCurrentStoreAsync();
+            try
+            {
+                return Ok(await desiredService.ExecuteAsync(actor, store.Id, request, cancellationToken));
+            }
+            catch (BulkPriceStockBusyException)
+            {
+                return Problem(statusCode: (int)HttpStatusCode.ServiceUnavailable);
+            }
+        }
+
         /// <summary>
         ///     Receive a list of all products
         /// </summary>
@@ -194,14 +225,21 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
         [GetRequestsErrorInterceptorActionFilter]
-        public async Task<IActionResult> GetProductById([FromRoute] int id, [FromQuery] string fields = "")
+        public async Task<IActionResult> GetProductById([FromRoute] int id,
+            [FromServices] IAuthenticationService authenticationService, [FromServices] IStoreContext storeContext,
+            [FromServices] ProductSyncScope productScope, [FromQuery] string fields = "")
         {
             if (id <= 0)
             {
                 return Error(HttpStatusCode.BadRequest, "id", "invalid id");
             }
 
-            var product = await _productApiService.GetProductByIdAsync(id);
+            var actor = await authenticationService.GetAuthenticatedCustomerAsync();
+            if (actor == null)
+                return AccessDenied();
+
+            var store = await storeContext.GetCurrentStoreAsync();
+            var product = await productScope.GetProductByIdAsync(id, actor, store.Id);
 
             if (product == null)
             {
@@ -322,7 +360,9 @@ namespace Nop.Plugin.Api.Controllers
         public async Task<IActionResult> UpdateProduct(
             [FromBody]
             [ModelBinder(typeof(JsonModelBinder<ProductDto>))]
-            Delta<ProductDto> productDelta)
+            Delta<ProductDto> productDelta,
+            [FromServices] IAuthenticationService authenticationService, [FromServices] IStoreContext storeContext,
+            [FromServices] ProductSyncScope productScope)
         {
             // Here we display the errors if the validation has failed at some point.
             if (!ModelState.IsValid)
@@ -330,46 +370,52 @@ namespace Nop.Plugin.Api.Controllers
                 return Error();
             }
 
-            var product = await _productApiService.GetProductByIdAsync(productDelta.Dto.Id);
+            var actor = await authenticationService.GetAuthenticatedCustomerAsync();
+            if (actor == null)
+                return AccessDenied();
+
+            var store = await storeContext.GetCurrentStoreAsync();
+            var product = await productScope.GetProductByIdAsync(productDelta.Dto.Id, actor, store.Id);
 
             if (product == null)
             {
                 return Error(HttpStatusCode.NotFound, "product", "not found");
             }
 
-            productDelta.Merge(product);
+            var changed = productDelta.MergeScalarChanges(product);
+            var dto = productDelta.Dto;
 
-            product.UpdatedOnUtc = DateTime.UtcNow;
-            await _productService.UpdateProductAsync(product);
+            changed |= await UpdateProductPicturesAsync(product, dto.Images);
+            changed |= await UpdateProductTagsAsync(product, dto.Tags);
+            changed |= await UpdateDiscountMappingsAsync(product, dto.DiscountIds);
 
             await UpdateProductAttributesAsync(product, productDelta);
-
             await UpdateProductAttributeCombinationsAsync(product, productDelta);
+            await UpdateProductManufacturersAsync(product, dto.ManufacturerIds);
+            await UpdateAssociatedProductsAsync(product, dto.AssociatedProductIds);
+            await UpdateStoreMappingsAsync(product, dto.StoreIds);
+            await UpdateAclRolesAsync(product, dto.RoleIds);
+            changed |= dto.ProductAttributeMappings != null || dto.ProductAttributeCombinations != null ||
+                       dto.ManufacturerIds != null || dto.AssociatedProductIds != null ||
+                       dto.StoreIds != null || dto.RoleIds != null;
 
-            await UpdateProductPicturesAsync(product, productDelta.Dto.Images);
-
-            await _productTagService.UpdateProductTagsAsync(product, productDelta.Dto.Tags != null ? productDelta.Dto.Tags.ToArray() : Array.Empty<string>());
-
-            await UpdateProductManufacturersAsync(product, productDelta.Dto.ManufacturerIds);
-
-            await UpdateAssociatedProductsAsync(product, productDelta.Dto.AssociatedProductIds);
-
-            // Update the SeName if specified
-            if (productDelta.Dto.SeName != null)
+            if (dto.SeName != null)
             {
-                var seName = await _urlRecordService.ValidateSeNameAsync(product, productDelta.Dto.SeName, product.Name, true);
-                await _urlRecordService.SaveSlugAsync(product, seName, 0);
+                var seName = await _urlRecordService.ValidateSeNameAsync(product, dto.SeName, product.Name, true);
+                var currentSeName = await _urlRecordService.GetSeNameAsync(product, languageId: 0);
+                if (!string.Equals(seName, currentSeName, StringComparison.Ordinal))
+                {
+                    await _urlRecordService.SaveSlugAsync(product, seName, 0);
+                    changed = true;
+                }
             }
 
-            await UpdateDiscountMappingsAsync(product, productDelta.Dto.DiscountIds);
-
-            await UpdateStoreMappingsAsync(product, productDelta.Dto.StoreIds);
-
-            await UpdateAclRolesAsync(product, productDelta.Dto.RoleIds);
-
-            await _productService.UpdateProductAsync(product);
-
-            await CustomerActivityService.InsertActivityAsync("UpdateProduct", await LocalizationService.GetResourceAsync("ActivityLog.UpdateProduct"), product);
+            if (changed)
+            {
+                product.UpdatedOnUtc = DateTime.UtcNow;
+                await _productService.UpdateProductAsync(product);
+                await CustomerActivityService.InsertActivityAsync("UpdateProduct", await LocalizationService.GetResourceAsync("ActivityLog.UpdateProduct"), product);
+            }
 
             // Preparing the result dto of the new product
             var productDto = await _dtoHelper.PrepareProductDTOAsync(product);
@@ -415,13 +461,15 @@ namespace Nop.Plugin.Api.Controllers
 
         #region Private methods
 
-        private async Task UpdateProductPicturesAsync(Product entityToUpdate, List<ImageMappingDto> setPictures)
+        private async Task<bool> UpdateProductPicturesAsync(Product entityToUpdate, List<ImageMappingDto> setPictures)
         {
             // If no pictures are specified means we don't have to update anything
             if (setPictures == null)
             {
-                return;
+                return false;
             }
+
+            var changed = false;
 
             // delete unused product pictures
             var productPictures = await _productService.GetProductPicturesByProductIdAsync(entityToUpdate.Id);
@@ -434,6 +482,7 @@ namespace Nop.Plugin.Api.Controllers
                     throw new ArgumentException("No picture found with the specified id");
                 }
                 await PictureService.DeletePictureAsync(picture);
+                changed = true;
             }
 
             foreach (var imageDto in setPictures)
@@ -442,10 +491,11 @@ namespace Nop.Plugin.Api.Controllers
                 {
                     // update existing product picture
                     var productPictureToUpdate = productPictures.FirstOrDefault(x => x.Id == imageDto.Id);
-                    if (productPictureToUpdate != null && imageDto.Position > 0)
+                    if (productPictureToUpdate != null && imageDto.Position > 0 && productPictureToUpdate.DisplayOrder != imageDto.Position)
                     {
                         productPictureToUpdate.DisplayOrder = imageDto.Position;
                         await _productService.UpdateProductPictureAsync(productPictureToUpdate);
+                        changed = true;
                     }
                 }
                 else
@@ -458,8 +508,23 @@ namespace Nop.Plugin.Api.Controllers
                         ProductId = entityToUpdate.Id,
                         DisplayOrder = imageDto.Position
                     });
+                    changed = true;
                 }
             }
+            return changed;
+        }
+
+        private async Task<bool> UpdateProductTagsAsync(Product product, List<string> tags)
+        {
+            if (tags == null)
+                return false;
+
+            var current = await _productTagService.GetAllProductTagsByProductIdAsync(product.Id);
+            if (tags.ToHashSet(StringComparer.InvariantCultureIgnoreCase).SetEquals(current.Select(tag => tag.Name)))
+                return false;
+
+            await _productTagService.UpdateProductTagsAsync(product, tags.ToArray());
+            return true;
         }
 
         private async Task UpdateProductAttributesAsync(Product entityToUpdate, Delta<ProductDto> productDtoDelta)
@@ -635,38 +700,36 @@ namespace Nop.Plugin.Api.Controllers
             }
         }
 
-        private async Task UpdateDiscountMappingsAsync(Product product, List<int> passedDiscountIds)
+        private async Task<bool> UpdateDiscountMappingsAsync(Product product, List<int> passedDiscountIds)
         {
             if (passedDiscountIds == null)
+                return false;
+
+            var requestedIds = passedDiscountIds.ToHashSet();
+            var current = await _productService.GetAllDiscountsAppliedToProductAsync(product.Id);
+            var changed = false;
+
+            foreach (var discountId in requestedIds.Except(current.Select(mapping => mapping.DiscountId)))
             {
-                return;
+                var discount = await DiscountService.GetDiscountByIdAsync(discountId);
+                if (discount?.DiscountType != DiscountType.AssignedToSkus)
+                    continue;
+
+                await _productService.InsertDiscountProductMappingAsync(new DiscountProductMapping
+                {
+                    EntityId = product.Id,
+                    DiscountId = discountId
+                });
+                changed = true;
             }
 
-            var allDiscounts = await DiscountService.GetAllDiscountsAsync(DiscountType.AssignedToSkus, showHidden: true);
-            var appliedProductDiscount = await DiscountService.GetAppliedDiscountsAsync(product);
-            foreach (var discount in allDiscounts)
+            foreach (var mapping in current.Where(mapping => !requestedIds.Contains(mapping.DiscountId)))
             {
-                if (passedDiscountIds.Contains(discount.Id))
-                {
-                    //new discount
-                    if (appliedProductDiscount.Count(d => d.Id == discount.Id) == 0)
-                    {
-                        appliedProductDiscount.Add(discount);
-                    }
-                }
-                else
-                {
-                    //remove discount
-                    if (appliedProductDiscount.Count(d => d.Id == discount.Id) > 0)
-                    {
-                        appliedProductDiscount.Remove(discount);
-                    }
-                }
+                await _productService.DeleteDiscountProductMappingAsync(mapping);
+                changed = true;
             }
 
-            await _productService.UpdateProductAsync(product);
-            // await _productService.UpdateHasDiscountsAppliedAsync(product);
-
+            return changed;
         }
 
         private async Task UpdateProductManufacturersAsync(Product product, List<int> passedManufacturerIds)

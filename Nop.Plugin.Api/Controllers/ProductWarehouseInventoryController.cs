@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Nop.Core;
 using Nop.Core.Domain.Catalog;
 using Nop.Plugin.Api.Attributes;
 using Nop.Plugin.Api.Authorization.Attributes;
@@ -13,6 +14,7 @@ using Nop.Plugin.Api.ModelBinders;
 using Nop.Plugin.Api.Models.ProductWarehouseInventoryParameters;
 using Nop.Plugin.Api.Services;
 using Nop.Services.Catalog;
+using Nop.Services.Authentication;
 using Nop.Services.Customers;
 using Nop.Services.Discounts;
 using Nop.Services.Localization;
@@ -68,7 +70,8 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [GetRequestsErrorInterceptorActionFilter]
         [UnpagedCollection]
-        public async Task<IActionResult> GetInventories([FromQuery] ProductWarehouseInventoryParametersModel parameters)
+        public async Task<IActionResult> GetInventories([FromQuery] ProductWarehouseInventoryParametersModel parameters,
+            [FromServices] IAuthenticationService authenticationService, [FromServices] IStoreContext storeContext)
         {
             if (parameters.Limit < Constants.Configurations.MinLimit || parameters.Limit > Constants.Configurations.MaxLimit)
             {
@@ -80,8 +83,13 @@ namespace Nop.Plugin.Api.Controllers
                 return Error(HttpStatusCode.BadRequest, "page", "invalid page parameter");
             }
 
+            var actor = await authenticationService.GetAuthenticatedCustomerAsync();
+            if (actor == null)
+                return AccessDenied();
+
+            var store = await storeContext.GetCurrentStoreAsync();
             IList<ProductWarehouseInventoryDto> inventoryDtos =
-                (await _productWarehouseInventoriesService.GetMappingsAsync(parameters.ProductId,
+                (await _productWarehouseInventoriesService.GetMappingsAsync(actor, store.Id, parameters.ProductId,
                     parameters.WarehouseId,
                     GetCollectionLimit(parameters.Limit),
                     parameters.Page,
@@ -113,14 +121,21 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
         [GetRequestsErrorInterceptorActionFilter]
-        public async Task<IActionResult> GetInventoryById([FromRoute] int id, [FromQuery] string fields = "")
+        public async Task<IActionResult> GetInventoryById([FromRoute] int id,
+            [FromServices] IAuthenticationService authenticationService, [FromServices] IStoreContext storeContext,
+            [FromQuery] string fields = "")
         {
             if (id <= 0)
             {
                 return Error(HttpStatusCode.BadRequest, "id", "invalid id");
             }
 
-            var mapping = await _productWarehouseInventoriesService.GetByIdAsync(id);
+            var actor = await authenticationService.GetAuthenticatedCustomerAsync();
+            if (actor == null)
+                return AccessDenied();
+
+            var store = await storeContext.GetCurrentStoreAsync();
+            var mapping = await _productWarehouseInventoriesService.GetScopedByIdAsync(id, actor, store.Id);
 
             if (mapping == null)
             {
@@ -201,15 +216,55 @@ namespace Nop.Plugin.Api.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(ErrorsRootObject), 422)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.Conflict)]
+        [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.ServiceUnavailable)]
         public async Task<IActionResult> UpdateProductWarehouseInventory(
             [FromBody]
             [ModelBinder(typeof(JsonModelBinder<ProductWarehouseInventoryDto>))]
-            Delta<ProductWarehouseInventoryDto> productWarehouseInventoryDelta)
+            Delta<ProductWarehouseInventoryDto> productWarehouseInventoryDelta,
+            [FromServices] IAuthenticationService authenticationService,
+            [FromServices] IStoreContext storeContext,
+            [FromServices] DesiredPriceStockService desiredService,
+            CancellationToken cancellationToken)
         {
             // Here we display the errors if the validation has failed at some point.
             if (!ModelState.IsValid)
             {
                 return Error();
+            }
+
+            var dto = productWarehouseInventoryDelta.Dto;
+            if (productWarehouseInventoryDelta.HasProperty(nameof(dto.ExpectedStockQuantity)))
+            {
+                if (dto.ExpectedStockQuantity is not { } expectedStock || dto.StockQuantity is not >= 0 ||
+                    productWarehouseInventoryDelta.HasProperty(nameof(dto.ProductId)) ||
+                    productWarehouseInventoryDelta.HasProperty(nameof(dto.WarehouseId)) ||
+                    productWarehouseInventoryDelta.HasProperty(nameof(dto.ReservedQuantity)))
+                    return Error(HttpStatusCode.BadRequest, "stock_quantity",
+                        "Supply stock_quantity with expected_stock_quantity. Product, warehouse and reserved quantity cannot be set in this request.");
+
+                var actor = await authenticationService.GetAuthenticatedCustomerAsync();
+                if (actor == null)
+                    return AccessDenied();
+
+                var store = await storeContext.GetCurrentStoreAsync();
+                try
+                {
+                    var (status, inventory) = await desiredService.UpdateWarehouseAsync(actor, store.Id, dto.Id,
+                        expectedStock, dto.StockQuantity.Value, cancellationToken);
+                    return status switch
+                    {
+                        "not_found" => Error(HttpStatusCode.NotFound, "product_warehouse_inventory", "not found"),
+                        "conflict" => Error(HttpStatusCode.Conflict, "expected_stock_quantity", "Stock no longer matches the expected quantity."),
+                        "unsupported_stock_mode" or "below_reserved_quantity" or "stock_adjustment_out_of_range"
+                            => Error(HttpStatusCode.UnprocessableEntity, "stock_quantity", status),
+                        _ => SerializeInventory(inventory)
+                    };
+                }
+                catch (BulkPriceStockBusyException)
+                {
+                    return Problem(statusCode: (int)HttpStatusCode.ServiceUnavailable);
+                }
             }
 
             if (productWarehouseInventoryDelta.Dto.WarehouseId.HasValue)
@@ -248,15 +303,14 @@ namespace Nop.Plugin.Api.Controllers
             //activity log
             await CustomerActivityService.InsertActivityAsync("UpdateProductWarehouseInventory", await LocalizationService.GetResourceAsync("ActivityLog.UpdateProductWarehouseInventory"), productWarehouseInventoryEntityToUpdate);
 
-            var updateProductWarehouseInventoryDto = productWarehouseInventoryEntityToUpdate.ToDto();
+            return SerializeInventory(productWarehouseInventoryEntityToUpdate);
+        }
 
-            var productWarehouseInventoryRootObject = new ProductWarehouseInventoryRootObject();
-
-            productWarehouseInventoryRootObject.ProductWarehouseInventoryDtos.Add(updateProductWarehouseInventoryDto);
-
-            var json = JsonFieldsSerializer.Serialize(productWarehouseInventoryRootObject, string.Empty);
-
-            return new RawJsonActionResult(json);
+        private IActionResult SerializeInventory(ProductWarehouseInventory inventory)
+        {
+            var root = new ProductWarehouseInventoryRootObject();
+            root.ProductWarehouseInventoryDtos.Add(inventory.ToDto());
+            return new RawJsonActionResult(JsonFieldsSerializer.Serialize(root, string.Empty));
         }
 
         [HttpDelete]

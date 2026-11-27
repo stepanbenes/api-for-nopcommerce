@@ -26,6 +26,12 @@ namespace Nop.Plugin.Api.DTO.ProductWarehouseIventories
         public int? StockQuantity { get; set; }
 
         /// <summary>
+        /// When supplied on PUT, compare this quantity before setting stock_quantity.
+        /// </summary>
+        [JsonProperty("expected_stock_quantity", NullValueHandling = NullValueHandling.Ignore)]
+        public int? ExpectedStockQuantity { get; set; }
+
+        /// <summary>
         /// Gets or sets the reserved quantity (ordered but not shipped yet)
         /// </summary>
         [JsonProperty("reserved_quantity")]

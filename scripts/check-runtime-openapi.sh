@@ -166,7 +166,11 @@ SQL
         exit 1
     fi
     # This project owns a fresh database that cleanup removes on exit.
-    export NOP_API_TEST_POSTGRES_ALLOW_FAULT_INJECTION=1
+    "${compose[@]}" exec -T db psql -XqAtw -U nopcommerce -d nopcommerce -v ON_ERROR_STOP=1 <<'SQL'
+UPDATE "Setting" SET "Value" = 'False' WHERE lower("Name") = 'catalogsettings.ignoreacl';
+SQL
+    export NOP_API_TEST_CATALOG_ACL=1
+    export NOP_API_TEST_EXPECT_NO_RECEIPTS=1
     export NOP_API_TEST_URL="http://127.0.0.1:$NOP_PORT"
     export NOP_API_TEST_USER="openapi-ci@example.test"
     export NOP_API_TEST_PASSWORD="$NOP_OPENAPI_ADMIN_PASSWORD"
@@ -177,6 +181,7 @@ SQL
     (
         cd "$NOP_ROOT"
         dotnet test "$repository/api-for-nopcommerce.sln" -c Release -p:NopRoot="$NOP_ROOT" \
+            --filter 'TestCategory!=ExistingReceiptSchema' \
             --results-directory "$scratch" --logger 'trx;LogFileName=api-release.trx'
     )
 
@@ -191,11 +196,12 @@ if total < 573 or any(int(counters.get(key, "0")) != total for key in ("executed
     raise SystemExit("Expected at least 573 API tests with every case executed and passed.")
 
 expected_database_tests = {
-    "BulkPriceStockReplaysAnUnreadResponseAfterANewerUpdate",
-    "BulkPriceStockValidatesTheBatchBeforeWritingAndReportsUnavailableItems",
-    "ConcurrentBulkPriceStockRetriesWriteOneHistoryEntry",
-    "ConcurrentBulkPriceStockVersionsLeaveTheNewerUpdateInPlace",
-    "BulkPriceStockRollsBackProductAndHistoryWhenReceiptWriteFails",
+    "FreshSyncCapabilitiesRequireNoReceiptSchema",
+    "DesiredPriceStockRetriesAnUnreadResultAndRejectsStaleValues",
+    "DesiredPriceStockValidatesTheEntireBatchBeforeWriting",
+    "ConcurrentDesiredStockRetriesWriteOneHistoryEntry",
+    "WarehouseDesiredStockPreservesReservationsAndWritesHistoryOnce",
+    "WarehouseAndProductReadbackExcludeAclRestrictedOwnerBeforePaging",
     "CacheClearRequiresMaintenancePermissionAndAuditsTheCaller(True)",
     "CheckoutAcceptsAnItemWithoutAttributesAndPartialUpdatePreservesShipping(True)",
     "ProductAndCartItemCanBeCreatedUpdatedAndDeleted(True)",

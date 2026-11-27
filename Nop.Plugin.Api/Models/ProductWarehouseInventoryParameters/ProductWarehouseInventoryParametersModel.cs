@@ -20,7 +20,7 @@ namespace Nop.Plugin.Api.Models.ProductWarehouseInventoryParameters
         public int? ProductId { get; set; }
 
         /// <summary>
-        ///     Show all the product-warehouse inventories for this category
+        ///     Show all the product-warehouse inventories for this warehouse
         /// </summary>
         [JsonProperty("warehouse_id")]
         public int? WarehouseId { get; set; }

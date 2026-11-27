@@ -48,7 +48,7 @@ def check_operations(spec):
     operations = [(method, path, operation) for path, item in spec["paths"].items()
                   for method, operation in item.items()
                   if method in {"get", "post", "put", "delete", "patch", "head", "options", "trace"}]
-    assert len(operations) == 135, f"Expected 135 documented operations, got {len(operations)}"
+    assert len(operations) == 142, f"Expected 142 documented operations, got {len(operations)}"
     modules = set()
     for method, path, operation in operations:
         module = f"nop_api_client.api.{snake_case(operation['tags'][0])}.{snake_case(operation['operationId'])}"

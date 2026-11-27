@@ -20,24 +20,12 @@ internal sealed class PostgresProbe(string container)
 
     public async Task<JsonElement> ReadAsync(string select, int id)
     {
-        var result = await RunAsync($"SELECT COALESCE(({select}), 'null'::jsonb);", id, readOnly: true);
+        var result = await RunAsync($"SELECT COALESCE(({select}), 'null'::jsonb);", id);
         using var document = JsonDocument.Parse(result);
         return document.RootElement.Clone();
     }
 
-    public static void RequireDisposableStoreForFaultInjection()
-    {
-        if (Environment.GetEnvironmentVariable("NOP_API_TEST_POSTGRES_ALLOW_FAULT_INJECTION") != "1")
-            TestAssert.Ignore("Set NOP_API_TEST_POSTGRES_ALLOW_FAULT_INJECTION=1 only for a disposable local test store.");
-    }
-
-    public async Task ExecuteInDisposableStoreAsync(string sql)
-    {
-        RequireDisposableStoreForFaultInjection();
-        await RunAsync(sql, 0, readOnly: false);
-    }
-
-    private async Task<string> RunAsync(string sql, int id, bool readOnly)
+    private async Task<string> RunAsync(string sql, int id)
     {
         var startInfo = new ProcessStartInfo("docker")
         {
@@ -48,9 +36,7 @@ internal sealed class PostgresProbe(string container)
         };
         foreach (var argument in new[]
         {
-            "exec", "-i", "--env", readOnly
-                ? "PGOPTIONS=-c default_transaction_read_only=on"
-                : "PGOPTIONS=-c lock_timeout=5s -c statement_timeout=10s",
+            "exec", "-i", "--env", "PGOPTIONS=-c default_transaction_read_only=on",
             container, "psql", "-XqAtw", "--username=nopcommerce", "--dbname=nopcommerce",
             "--set=ON_ERROR_STOP=1", $"--set=id={id.ToString(CultureInfo.InvariantCulture)}"
         })

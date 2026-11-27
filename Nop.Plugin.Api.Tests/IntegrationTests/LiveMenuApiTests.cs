@@ -60,6 +60,17 @@ public class LiveMenuApiTests
 
             var retried = (await Send(HttpMethod.Post, path, HttpStatusCode.OK, body)).GetProperty("menu_items")[0];
             TestAssert.That(retried.GetProperty("id").GetInt32(), Is.EqualTo(itemId));
+            await Send(HttpMethod.Post, path, HttpStatusCode.Conflict,
+                new { link_type = linkType, entity_id = entityId, display_order = 100 });
+            await Send(HttpMethod.Put, $"{path}/{itemId}", HttpStatusCode.BadRequest, new { display_order = 42 });
+            var updated = (await Send(HttpMethod.Put, $"{path}/{itemId}", HttpStatusCode.OK,
+                new { expected_display_order = 312, display_order = 42 })).GetProperty("menu_items")[0];
+            TestAssert.That(updated.GetProperty("display_order").GetInt32(), Is.EqualTo(42));
+            var repeated = (await Send(HttpMethod.Put, $"{path}/{itemId}", HttpStatusCode.OK,
+                new { expected_display_order = 312, display_order = 42 })).GetProperty("menu_items")[0];
+            TestAssert.That(repeated.GetProperty("id").GetInt32(), Is.EqualTo(itemId));
+            await Send(HttpMethod.Put, $"{path}/{itemId}", HttpStatusCode.Conflict,
+                new { expected_display_order = 312, display_order = 100 });
             var listed = (await Send(HttpMethod.Get, path, HttpStatusCode.OK)).GetProperty("menu_items");
             TestAssert.That(listed.EnumerateArray().Count(entry => entry.GetProperty("id").GetInt32() == itemId), Is.EqualTo(1));
 
@@ -67,6 +78,8 @@ public class LiveMenuApiTests
             if (otherMenu.ValueKind != JsonValueKind.Undefined)
             {
                 var otherMenuId = otherMenu.GetProperty("id").GetInt32();
+                await Send(HttpMethod.Put, $"/api/menus/{otherMenuId}/items/{itemId}", HttpStatusCode.NotFound,
+                    new { expected_display_order = 42, display_order = 0 });
                 await Send(HttpMethod.Delete, $"/api/menus/{otherMenuId}/items/{itemId}", HttpStatusCode.NotFound);
             }
 
@@ -95,6 +108,7 @@ public class LiveMenuApiTests
             await Send(HttpMethod.Get, "/api/menus", HttpStatusCode.Forbidden);
             await Send(HttpMethod.Get, "/api/menus/1/items", HttpStatusCode.Forbidden);
             await Send(HttpMethod.Post, "/api/menus/1/items", HttpStatusCode.Forbidden, new { link_type = "category", entity_id = 1 });
+            await Send(HttpMethod.Put, "/api/menus/1/items/1", HttpStatusCode.Forbidden, new { expected_display_order = 42, display_order = 1 });
             await Send(HttpMethod.Delete, "/api/menus/1/items/1", HttpStatusCode.Forbidden);
         }
         finally
