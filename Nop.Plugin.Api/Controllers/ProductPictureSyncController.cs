@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Nop.Core;
+using Nop.Plugin.Api.Attributes;
 using Nop.Plugin.Api.Authorization.Attributes;
 using Nop.Plugin.Api.DTO.Products;
 using Nop.Plugin.Api.Services;
@@ -21,6 +22,7 @@ public sealed class ProductPictureSyncController(
     ProductPictureSyncService pictureSyncService) : ControllerBase
 {
     [HttpGet("sync/{key}", Name = "GetProductPictureDigest")]
+    [ApiAudience(ApiAudience.BackOffice)]
     [ProducesResponseType(typeof(ProductPictureSyncResult), 200)]
     [ProducesResponseType(typeof(ProductPictureSyncResult), 409)]
     [ProducesResponseType(404)]
@@ -31,6 +33,7 @@ public sealed class ProductPictureSyncController(
         ExecuteAsync(productId, key, null, cancellationToken);
 
     [HttpPut("sync/{key}", Name = "SyncProductPicture")]
+    [ApiAudience(ApiAudience.BackOffice)]
     [RequestSizeLimit(6 * 1024 * 1024)]
     [ProducesResponseType(typeof(ProductPictureSyncResult), 200)]
     [ProducesResponseType(typeof(ProductPictureSyncResult), 400)]
@@ -46,6 +49,7 @@ public sealed class ProductPictureSyncController(
         ExecuteAsync(productId, key, request, cancellationToken);
 
     [HttpGet("{mappingId:int}/{pictureId:int}/sync", Name = "GetLinkedProductPictureDigest")]
+    [ApiAudience(ApiAudience.BackOffice)]
     [ProducesResponseType(typeof(ProductPictureSyncResult), 200)]
     [ProducesResponseType(typeof(ProductPictureSyncResult), 409)]
     [ProducesResponseType(404)]
@@ -57,6 +61,7 @@ public sealed class ProductPictureSyncController(
         ExecuteAsync(productId, null, null, cancellationToken, mappingId, pictureId);
 
     [HttpPut("{mappingId:int}/{pictureId:int}/sync", Name = "SyncLinkedProductPicture")]
+    [ApiAudience(ApiAudience.BackOffice)]
     [RequestSizeLimit(6 * 1024 * 1024)]
     [ProducesResponseType(typeof(ProductPictureSyncResult), 200)]
     [ProducesResponseType(typeof(ProductPictureSyncResult), 400)]

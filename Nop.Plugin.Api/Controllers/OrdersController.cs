@@ -137,6 +137,7 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="401">Unauthorized</response>
         [HttpGet]
         [Route("/api/orders", Name = "GetOrders")]
+        [ApiAudience(ApiAudience.BackOffice)]
         [ProducesResponseType(typeof(OrdersRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
@@ -188,6 +189,7 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="401">Unauthorized</response>
         [HttpGet]
         [Route("/api/orders/count", Name = "GetOrdersCount")]
+        [ApiAudience(ApiAudience.Both)]
         [ProducesResponseType(typeof(OrdersCountRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -228,6 +230,7 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="401">Unauthorized</response>
         [HttpGet]
         [Route("/api/orders/{id}", Name = "GetOrderById")]
+        [ApiAudience(ApiAudience.BackOffice)]
         [ProducesResponseType(typeof(OrdersRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -270,6 +273,7 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="401">Unauthorized</response>
         [HttpGet]
         [Route("/api/orders/customer/{customerId}", Name = "GetOrdersByCustomerId")]
+        [ApiAudience(ApiAudience.BackOffice)]
         [ProducesResponseType(typeof(OrdersRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [GetRequestsErrorInterceptorActionFilter]
@@ -293,6 +297,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpGet]
         [Route("/api/checkout_attributes", Name = "GetCheckoutAttributes")]
+        [ApiAudience(ApiAudience.Storefront)]
         [ProducesResponseType(typeof(CheckoutAttributesRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(void), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(void), (int)HttpStatusCode.Forbidden)]
@@ -351,6 +356,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpPost]
         [Route("/api/orders", Name = "CreateOrder")]
+        [ApiAudience(ApiAudience.BackOffice)]
         [ProducesResponseType(typeof(OrdersRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -618,6 +624,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpPut]
         [Route("/api/orders/{id}", Name = "UpdateOrder")]
+        [ApiAudience(ApiAudience.BackOffice)]
         [AuthorizePermission(StandardPermission.Orders.ORDERS_CREATE_EDIT_DELETE)]
         [ProducesResponseType(typeof(OrdersRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
@@ -721,6 +728,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpDelete]
         [Route("/api/orders/{id}", Name = "DeleteOrder")]
+        [ApiAudience(ApiAudience.BackOffice)]
         [AuthorizePermission(StandardPermission.Orders.ORDERS_CREATE_EDIT_DELETE)]
         [ProducesResponseType(typeof(void), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
@@ -752,6 +760,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpGet]
         [Route("/api/orders/{orderId}/pdf-invoice", Name = "GetPdfInvoice")]
+        [ApiAudience(ApiAudience.Both)]
         [ProducesResponseType(typeof(DTOs.BinaryFileDto), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]

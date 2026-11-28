@@ -65,6 +65,7 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="401">Unauthorized</response>
         [HttpGet]
         [Route("/api/topics", Name = "GetTopics")]
+        [ApiAudience(ApiAudience.BackOffice)]
         [ProducesResponseType(typeof(TopicsRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
@@ -111,6 +112,7 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="401">Unauthorized</response>
         [HttpGet]
         [Route("/api/topics/{id}", Name = "GetTopicById")]
+        [ApiAudience(ApiAudience.BackOffice)]
         [ProducesResponseType(typeof(TopicsRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -142,6 +144,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpPost]
         [Route("/api/topics", Name = "CreateTopic")]
+        [ApiAudience(ApiAudience.BackOffice)]
         [ProducesResponseType(typeof(TopicsRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -178,6 +181,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpPut]
         [Route("/api/topics/{id}", Name = "UpdateTopic")]
+        [ApiAudience(ApiAudience.BackOffice)]
         [ProducesResponseType(typeof(TopicsRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -218,6 +222,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpDelete]
         [Route("/api/topics/{id}", Name = "DeleteTopic")]
+        [ApiAudience(ApiAudience.BackOffice)]
         [ProducesResponseType(typeof(void), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]

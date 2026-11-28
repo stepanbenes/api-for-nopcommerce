@@ -1,9 +1,10 @@
 # Checkout discovery
 
-Both endpoints require a bearer token and use the customer's shopping cart for
-the store serving the API request. An administrator with order write permission
-can add `customer_id` to discover options for another customer's cart in that
-same store.
+Both endpoints require a bearer token. In the storefront, use the shopper's
+guest or customer token and omit `customer_id` to use their own cart in the
+current store. In the back office, an administrator with order write permission
+can add `customer_id` to quote for another customer's cart in the same store.
+Supply addresses from the cart owner's address book in either workflow.
 
 - `GET /api/checkout/shipping-options?shipping_address_id=123` takes a shipping
   address ID from the cart owner's address book. Each entry in `shipping_options`
@@ -22,8 +23,10 @@ same store.
   or a different billing address can affect the final total. A non-shippable cart
   with a confirmed zero total returns an empty array.
 
-For `POST /api/orders`, use the same address IDs and copy the identifiers
-from the chosen entries into the `order` object.
+A trusted integration can submit the order with `POST /api/orders`. Handle the
+full order response on the server because it includes operational data such as
+product costs. Use the same address IDs and copy the identifiers from the chosen
+entries into the `order` object.
 
 | Value | Order field |
 | --- | --- |

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using Nop.Plugin.Api.Attributes;
 using Nop.Plugin.Api.Authorization.Attributes;
 using Nop.Plugin.Api.Services;
 using Nop.Services.Security;
@@ -14,6 +15,7 @@ namespace Nop.Plugin.Api.Controllers;
 public sealed class SyncCapabilitiesController : ControllerBase
 {
     [HttpGet("/api/sync/capabilities", Name = "GetSyncCapabilities")]
+    [ApiAudience(ApiAudience.BackOffice)]
     [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
     [ProducesResponseType(typeof(SyncCapabilities), 200)]
     [ProducesResponseType(typeof(void), 401)]

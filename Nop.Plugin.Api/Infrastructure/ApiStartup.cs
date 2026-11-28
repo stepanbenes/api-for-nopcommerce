@@ -12,6 +12,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json.Converters;
 using Nop.Core.Configuration;
@@ -51,6 +52,19 @@ namespace Nop.Plugin.Api.Infrastructure
     {
         public void Apply(OpenApiOperation operation, OperationFilterContext context)
         {
+            if (context.ApiDescription.ActionDescriptor is ControllerActionDescriptor controller &&
+                controller.ControllerTypeInfo.Namespace == typeof(Controllers.TokenController).Namespace)
+            {
+                var audiences = context.MethodInfo.GetCustomAttribute<ApiAudienceAttribute>()?.Audience switch
+                {
+                    ApiAudience.Storefront => new OpenApiArray { new OpenApiString("storefront") },
+                    ApiAudience.BackOffice => new OpenApiArray { new OpenApiString("back-office") },
+                    ApiAudience.Both => new OpenApiArray { new OpenApiString("storefront"), new OpenApiString("back-office") },
+                    _ => throw new InvalidOperationException($"Missing documentation audience for {context.MethodInfo.DeclaringType?.Name}.{context.MethodInfo.Name}.")
+                };
+                operation.Extensions.Add("x-audiences", audiences);
+            }
+
             if (context.ApiDescription.ActionDescriptor.EndpointMetadata.OfType<IAuthorizeData>().Any() &&
                 !context.ApiDescription.ActionDescriptor.EndpointMetadata.OfType<IAllowAnonymous>().Any())
             {

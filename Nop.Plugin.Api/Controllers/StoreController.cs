@@ -56,6 +56,7 @@ namespace Nop.Plugin.Api.Controllers
         /// <param name="fields">Fields you want your json to contain</param>
         [HttpGet]
         [Route("/api/stores/current", Name = "GetCurrentStore")]
+        [ApiAudience(ApiAudience.BackOffice)]
         [AuthorizePermission(StandardPermission.Configuration.MANAGE_STORES, ignore: true)] // turn off all permission authorizations, access to this action is allowed to all authenticated customers
         [ProducesResponseType(typeof(StoresRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
@@ -88,6 +89,7 @@ namespace Nop.Plugin.Api.Controllers
         /// <param name="fields">Fields you want your json to contain</param>
         [HttpGet]
         [Route("/api/stores", Name = "GetAllStores")]
+        [ApiAudience(ApiAudience.BackOffice)]
         [ProducesResponseType(typeof(StoresRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]

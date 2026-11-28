@@ -57,6 +57,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpGet]
         [Route("/api/taxcategories", Name = "getTaxCategories")]
+        [ApiAudience(ApiAudience.BackOffice)]
         [ProducesResponseType(typeof(TaxCategoriesRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -84,6 +85,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpGet]
         [Route("/api/taxcategories/{id}", Name = "GetTaxCategoryById")]
+        [ApiAudience(ApiAudience.BackOffice)]
         [ProducesResponseType(typeof(TaxCategoriesRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.NotFound)]
@@ -107,6 +109,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpPost]
         [Route("/api/taxcategories", Name = "createTaxCategory")]
+        [ApiAudience(ApiAudience.BackOffice)]
         [ProducesResponseType(typeof(TaxCategoriesRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), 422)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -138,6 +141,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpPut]
         [Route("/api/taxcategories/{id}", Name = "UpdateTaxCategory")]
+        [ApiAudience(ApiAudience.BackOffice)]
         [ProducesResponseType(typeof(TaxCategoriesRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.UnprocessableEntity)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -179,6 +183,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpDelete]
         [Route("/api/taxcategories/{id}", Name = "DeleteTaxCategory")]
+        [ApiAudience(ApiAudience.BackOffice)]
         [ProducesResponseType(typeof(void), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]

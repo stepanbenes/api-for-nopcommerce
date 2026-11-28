@@ -67,6 +67,7 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="401">Unauthorized</response>
         [HttpGet]
         [Route("/api/product_manufacturer_mappings", Name = "GetProductManufacturerMappings")]
+        [ApiAudience(ApiAudience.BackOffice)]
         [ProducesResponseType(typeof(ProductManufacturerMappingsRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -108,6 +109,7 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="401">Unauthorized</response>
         [HttpGet]
         [Route("/api/product_manufacturer_mappings/count", Name = "GetProductManufacturerMappingsCount")]
+        [ApiAudience(ApiAudience.BackOffice)]
         [ProducesResponseType(typeof(ProductManufacturerMappingsCountRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -146,6 +148,7 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="401">Unauthorized</response>
         [HttpGet]
         [Route("/api/product_manufacturer_mappings/{id}", Name = "GetProductManufacturerMappingById")]
+        [ApiAudience(ApiAudience.BackOffice)]
         [ProducesResponseType(typeof(ProductManufacturerMappingsRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -175,6 +178,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpPost]
         [Route("/api/product_manufacturer_mappings", Name = "CreateProductManufacturerMapping")]
+        [ApiAudience(ApiAudience.BackOffice)]
         [ProducesResponseType(typeof(ProductManufacturerMappingsRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -224,6 +228,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpPut]
         [Route("/api/product_manufacturer_mappings/{id}", Name = "UpdateProductManufacturerMapping")]
+        [ApiAudience(ApiAudience.BackOffice)]
         [ProducesResponseType(typeof(ProductManufacturerMappingsRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.NotFound)]
@@ -278,6 +283,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpDelete]
         [Route("/api/product_manufacturer_mappings/{id}", Name = "DeleteProductManufacturerMapping")]
+        [ApiAudience(ApiAudience.BackOffice)]
         [ProducesResponseType(typeof(void), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]

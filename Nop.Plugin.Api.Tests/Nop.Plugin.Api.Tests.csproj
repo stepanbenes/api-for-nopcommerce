@@ -12,6 +12,7 @@
     <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" PrivateAssets="all" />
     <ProjectReference Include="../Nop.Plugin.Api/Nop.Plugin.Api.csproj" />
     <ProjectReference Include="../ClientApp/ClientApp.csproj" />
+    <None Include="../ClientApp/nopapi.swagger.json" Link="nopapi.swagger.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <!-- Keep historical MVC and inactive fixtures outside the .NET 10 test build. -->

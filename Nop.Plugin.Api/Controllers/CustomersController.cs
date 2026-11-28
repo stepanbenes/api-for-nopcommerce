@@ -110,6 +110,7 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="401">Unauthorized</response>
         [HttpGet]
         [Route("/api/customers", Name = "GetCustomers")]
+        [ApiAudience(ApiAudience.BackOffice)]
         [ProducesResponseType(typeof(CustomersRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
@@ -149,6 +150,7 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="401">Unauthorized</response>
         [HttpGet]
         [Route("/api/customers/me", Name = "GetCurrentCustomer")]
+        [ApiAudience(ApiAudience.BackOffice)]
         [AuthorizePermission(StandardPermission.Customers.CUSTOMERS_CREATE_EDIT_DELETE, ignore: true)] // turn off all permission authorizations, access to this action is allowed to all authenticated customers
         [ProducesResponseType(typeof(CustomersRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -189,6 +191,7 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="401">Unauthorized</response>
         [HttpGet]
         [Route("/api/customers/{id}", Name = "GetCustomerById")]
+        [ApiAudience(ApiAudience.BackOffice)]
         [ProducesResponseType(typeof(CustomersRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
@@ -224,6 +227,7 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="401">Unauthorized</response>
         [HttpGet]
         [Route("/api/customers/count", Name = "GetCustomersCount")]
+        [ApiAudience(ApiAudience.BackOffice)]
         [ProducesResponseType(typeof(CustomersCountRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -247,6 +251,7 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="401">Unauthorized</response>
         [HttpGet]
         [Route("/api/customers/search", Name = "SearchCustomers")]
+        [ApiAudience(ApiAudience.BackOffice)]
         [ProducesResponseType(typeof(CustomersRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
@@ -285,6 +290,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpPost]
         [Route("/api/customers", Name = "CreateCustomer")]
+        [ApiAudience(ApiAudience.BackOffice)]
         [ProducesResponseType(typeof(CustomersRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), 422)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -362,6 +368,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpPut]
         [Route("/api/customers/{id}", Name = "UpdateCustomer")]
+        [ApiAudience(ApiAudience.BackOffice)]
         [ProducesResponseType(typeof(CustomersRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), 422)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -442,6 +449,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpDelete]
         [Route("/api/customers/{id}", Name = "DeleteCustomer")]
+        [ApiAudience(ApiAudience.BackOffice)]
         [GetRequestsErrorInterceptorActionFilter]
         [ProducesResponseType(typeof(void), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -494,6 +502,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpPost]
         [Route("api/customers/{customerId}/billingaddress", Name = "SetBillingAddress")]
+        [ApiAudience(ApiAudience.Both)]
         [AuthorizePermission(StandardPermission.Customers.CUSTOMERS_CREATE_EDIT_DELETE, ignore: true)]
         [GetRequestsErrorInterceptorActionFilter]
         [ProducesResponseType(typeof(AddressDto), (int)HttpStatusCode.OK)]
@@ -520,6 +529,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpPost]
         [Route("api/customers/{customerId}/shippingaddress", Name = "SetShippingAddress")]
+        [ApiAudience(ApiAudience.Both)]
         [AuthorizePermission(StandardPermission.Customers.CUSTOMERS_CREATE_EDIT_DELETE, ignore: true)]
         [GetRequestsErrorInterceptorActionFilter]
         [ProducesResponseType(typeof(AddressDto), (int)HttpStatusCode.OK)]

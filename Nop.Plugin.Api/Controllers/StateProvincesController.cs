@@ -49,6 +49,7 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="401">Unauthorized</response>
         [HttpGet]
         [Route("/api/stateprovinces", Name = "GetStateProvinces")]
+        [ApiAudience(ApiAudience.Both)]
         [ProducesResponseType(typeof(StateProvincesRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [GetRequestsErrorInterceptorActionFilter]
@@ -78,6 +79,7 @@ namespace Nop.Plugin.Api.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("/api/stateprovinces/{id}", Name = "GetStateProvinceById")]
+        [ApiAudience(ApiAudience.Both)]
         [ProducesResponseType(typeof(StateProvincesRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]

@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using Nop.Core.Configuration;
 using Nop.Core.Domain.Customers;
 using Nop.Core.Infrastructure;
+using Nop.Plugin.Api.Attributes;
 using Nop.Plugin.Api.Configuration;
 using Nop.Plugin.Api.Domain;
 using Nop.Plugin.Api.Infrastructure;
@@ -50,6 +51,7 @@ namespace Nop.Plugin.Api.Controllers
         [HttpPost]
         [AllowAnonymous]
         [Route("/token", Name = "RequestToken")]
+        [ApiAudience(ApiAudience.Both)]
         [ProducesResponseType(typeof(TokenResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Forbidden)]
@@ -118,6 +120,7 @@ namespace Nop.Plugin.Api.Controllers
         [HttpGet]
         [Authorize(Policy = JwtBearerDefaults.AuthenticationScheme, AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)] // this validates token
         [Route("/token/check", Name = "ValidateToken")]
+        [ApiAudience(ApiAudience.Both)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]

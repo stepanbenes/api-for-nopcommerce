@@ -71,6 +71,7 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="401">Unauthorized</response>
         [HttpGet]
         [Route("/api/manufacturers", Name = "GetManufacturers")]
+        [ApiAudience(ApiAudience.BackOffice)]
         [ProducesResponseType(typeof(ManufacturersRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [GetRequestsErrorInterceptorActionFilter]
@@ -112,6 +113,7 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="401">Unauthorized</response>
         [HttpGet]
         [Route("/api/manufacturers/count", Name = "GetManufacturersCount")]
+        [ApiAudience(ApiAudience.BackOffice)]
         [ProducesResponseType(typeof(ManufacturersCountRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -140,6 +142,7 @@ namespace Nop.Plugin.Api.Controllers
         /// <response code="401">Unauthorized</response>
         [HttpGet]
         [Route("/api/manufacturers/{id}", Name = "GetManufacturerById")]
+        [ApiAudience(ApiAudience.BackOffice)]
         [ProducesResponseType(typeof(ManufacturersRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Unauthorized)]
@@ -171,6 +174,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpPost]
         [Route("/api/manufacturers", Name = "CreateManufacturer")]
+        [ApiAudience(ApiAudience.BackOffice)]
         [ProducesResponseType(typeof(ManufacturersRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), 422)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
@@ -237,6 +241,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpPut]
         [Route("/api/manufacturers/{id}", Name = "UpdateManufacturer")]
+        [ApiAudience(ApiAudience.BackOffice)]
         [ProducesResponseType(typeof(ManufacturersRootObject), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), 422)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
@@ -298,6 +303,7 @@ namespace Nop.Plugin.Api.Controllers
 
         [HttpDelete]
         [Route("/api/manufacturers/{id}", Name = "DeleteManufacturer")]
+        [ApiAudience(ApiAudience.BackOffice)]
         [ProducesResponseType(typeof(void), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ErrorsRootObject), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.NotFound)]
