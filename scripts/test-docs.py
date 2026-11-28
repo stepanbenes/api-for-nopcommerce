@@ -50,7 +50,7 @@ class AudienceDocsTests(unittest.TestCase):
         with TemporaryDirectory() as temporary:
             root = Path(temporary)
             (root / "assets").mkdir()
-            for asset in ("redoc.standalone.js", "site.css"):
+            for asset in ("swagger-ui-bundle.js", "swagger-ui.css", "site.css"):
                 (root / "assets" / asset).touch()
             versions = {"v99.1": "refs/tags/v99.1", "unreleased": None}
 
@@ -79,6 +79,7 @@ class AudienceDocsTests(unittest.TestCase):
                     self.assert_refs_resolve(filtered, filtered)
                     embedded = re.search(r'<script type="application/json" id="openapi">(.*?)</script>', page, re.S)[1]
                     self.assertEqual(json.loads(embedded, parse_float=Decimal), filtered)
+                    self.assertIn("SwaggerUIBundle(", page)
                     self.assertIn('href="openapi.json" download', page)
                     for href in re.findall(r'(?:href|src)="([^"]+)"', page.split("<main>")[0] + page.split("</main>")[1]):
                         self.assertTrue((folder / href).is_file(), href)

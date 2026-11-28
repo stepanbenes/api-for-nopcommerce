@@ -23,8 +23,8 @@ SPEC = "ClientApp/nopapi.swagger.json"
 CHECKOUT_GUIDE = "docs/checkout-discovery.md"
 BASELINE_TAG = "v5.00.1"
 BASELINE_COMMIT = "189a7466ccc86ee593cc2216a346725b17b49bfc"
-REDOC_URL = "https://registry.npmjs.org/redoc/-/redoc-2.5.3.tgz"
-REDOC_SHA256 = "e09cc6eb1af62e493e92ebff1ff98b5917ff4018f24ef9be91a3d97998987a73"
+SWAGGER_UI_URL = "https://registry.npmjs.org/swagger-ui-dist/-/swagger-ui-dist-5.36.0.tgz"
+SWAGGER_UI_SHA512 = "2edebf29bd205e62dd89a6cb86fb28e157493fd57ba89581d33874833797515dfe08c393ccc9afa494525cdec40237f08b1c26a22f5ecc36cb1e27b10bb940f4"
 VERSION = re.compile(r"v\.?([0-9]+(?:\.[0-9]+)+)")
 AUDIENCES = {"storefront": "Storefront", "back-office": "Back-office"}
 HTTP_METHODS = {"get", "put", "post", "delete", "options", "head", "patch", "trace"}
@@ -70,17 +70,19 @@ def install_renderer(assets, archive_path):
     if archive_path:
         archive = archive_path.read_bytes()
     else:
-        with urlopen(REDOC_URL, timeout=60) as response:
+        with urlopen(SWAGGER_UI_URL, timeout=60) as response:
             archive = response.read()
 
-    if hashlib.sha256(archive).hexdigest() != REDOC_SHA256:
-        raise ValueError("Redoc package checksum does not match the pinned release")
+    if hashlib.sha512(archive).hexdigest() != SWAGGER_UI_SHA512:
+        raise ValueError("Swagger UI package checksum does not match the pinned release")
 
     with tarfile.open(fileobj=io.BytesIO(archive), mode="r:gz") as package:
         for member in (
             "package/LICENSE",
-            "package/bundles/redoc.standalone.js",
-            "package/bundles/redoc.standalone.js.LICENSE.txt",
+            "package/NOTICE",
+            "package/swagger-ui.css",
+            "package/swagger-ui-bundle.js",
+            "package/swagger-ui-bundle.js.LICENSE.txt",
         ):
             (assets / Path(member).name).write_bytes(package.extractfile(member).read())
 
@@ -139,7 +141,7 @@ def render_version(output, template, versions, label, ref, prefix):
     title = "Unreleased preview" if not ref else label
     heading = escape(title)
 
-    def write_page(filename, page_title, body, audience=None):
+    def write_page(filename, page_title, body, audience=None, *, reference=False):
         version_root = "../" if audience else ""
         site_root = version_root + prefix
         directory = output / audience if audience else output
@@ -160,6 +162,7 @@ def render_version(output, template, versions, label, ref, prefix):
                 title=f"{page_title} · {heading}",
                 latest=site_root,
                 assets=f"{site_root}assets/",
+                renderer_css=(f'<link rel="stylesheet" href="{site_root}assets/swagger-ui.css">' if reference else ""),
                 version_root=version_root,
                 audiences=audience_links,
                 versions=version_links,
@@ -196,11 +199,17 @@ def render_version(output, template, versions, label, ref, prefix):
   <noscript>JavaScript is required to display the reference. Use the Download OpenAPI link to get the schema.</noscript>
 </main>
 <script type="application/json" id="openapi">{embedded_spec}</script>
-<script src="{assets_root}assets/redoc.standalone.js"></script>
+<script src="{assets_root}assets/swagger-ui-bundle.js"></script>
 <script>
-  Redoc.init(JSON.parse(document.getElementById('openapi').textContent),
-             {{disableGoogleFont: true, untrustedSpec: true}}, document.getElementById('reference'));
-</script>""", audience)
+  SwaggerUIBundle({{
+    dom_id: '#reference',
+    spec: JSON.parse(document.getElementById('openapi').textContent),
+    deepLinking: true,
+    filter: true,
+    validatorUrl: null,
+    supportedSubmitMethods: []
+  }});
+</script>""", audience, reference=True)
 
     write_reference(raw_spec)
     for audience, paths in views.items():
@@ -240,7 +249,7 @@ def main():
     parser.add_argument("output", type=Path, help="new or empty directory for the generated site")
     parser.add_argument("--preview", action="store_true", help="include an unreleased reference from the working tree")
     parser.add_argument("--published-tags", type=Path, help="allowlist of published GitHub release tags, one per line")
-    parser.add_argument("--redoc-archive", type=Path, help="use a previously downloaded copy of the pinned Redoc package")
+    parser.add_argument("--swagger-ui-archive", type=Path, help="use a previously downloaded copy of the pinned Swagger UI package")
     args = parser.parse_args()
     tags = set(args.published_tags.read_text(encoding="utf-8").split()) if args.published_tags else None
     versions = released_versions(tags)
@@ -252,7 +261,7 @@ def main():
 
     assets = args.output / "assets"
     assets.mkdir(parents=True)
-    install_renderer(assets, args.redoc_archive)
+    install_renderer(assets, args.swagger_ui_archive)
     shutil.copyfile(TEMPLATES / "site.css", assets / "site.css")
     template = Template((TEMPLATES / "page.html").read_text(encoding="utf-8"))
 
